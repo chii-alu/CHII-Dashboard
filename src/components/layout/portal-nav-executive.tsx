@@ -1,0 +1,234 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { LayoutGrid, ChevronDown, Download, LogOut, Menu, X, Sun, Moon } from "lucide-react";
+
+const NAVY = "#042C53";
+
+export const IMPACT_TABS = [
+  { label: "At a Glance",                 href: "/executive/at-a-glance",      color: "#0891B2", bg: "#ECFEFF" },
+  { label: "Outreach",                    href: "/executive/outreach",         color: "#0D9488", bg: "#F0FDFA" },
+  { label: "Youth in Work",               href: "/executive/youth-in-work",    color: "#0EA5E9", bg: "#F0F9FF" },
+  { label: "Wage Employment",             href: "/executive/wage-employment",  color: "#F59E0B", bg: "#FFFBEB" },
+  { label: "Entrepreneurship",            href: "/executive/entrepreneurship", color: "#7C3AED", bg: "#F5F3FF" },
+  { label: "Further Education",           href: "/executive/further-education", color: "#10B981", bg: "#ECFDF5" },
+  { label: "Impact Reports",              href: "/executive/reports",          color: "#2563EB", bg: "#EFF6FF" },
+  { label: "Impact Stories",              href: "/executive/stories",          color: "#EA580C", bg: "#FFF7ED" },
+] as const;
+
+const PORTAL_LINKS = [
+  { label: "HENT", desc: "Entrepreneurship Pillar", href: "/hent/overview", color: "#7C3AED", bg: "#F5F3FF" },
+  { label: "HEMP", desc: "Employment Pillar",       href: "/hemp",          color: "#0D9488", bg: "#F0FDFA" },
+  { label: "HECO", desc: "Ecosystems Pillar",       href: "/heco",          color: "#2563EB", bg: "#EFF6FF" },
+] as const;
+
+export type ImpactTabLabel = typeof IMPACT_TABS[number]["label"];
+
+function getActiveTab(pathname: string): ImpactTabLabel {
+  if (pathname.startsWith("/executive/at-a-glance"))      return "At a Glance";
+  if (pathname.startsWith("/executive/outreach"))         return "Outreach";
+  if (pathname.startsWith("/executive/youth-in-work"))    return "Youth in Work";
+  if (pathname.startsWith("/executive/wage-employment"))  return "Wage Employment";
+  if (pathname.startsWith("/executive/entrepreneurship")) return "Entrepreneurship";
+  if (pathname.startsWith("/executive/further-education")) return "Further Education";
+  if (pathname.startsWith("/executive/reports"))          return "Impact Reports";
+  if (pathname.startsWith("/executive/stories"))          return "Impact Stories";
+  return "At a Glance";
+}
+
+export default function ImpactNav() {
+  const pathname    = usePathname();
+  const activeLabel = getActiveTab(pathname);
+  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dark, setDark] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const toggleTheme = () => {
+    setDark(!dark);
+    if (!dark) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  };
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  return (
+    <div className="bg-white border-b border-gray-200 sticky top-0 z-50" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 flex items-center h-16 gap-2 sm:gap-3">
+
+        {/* Logo */}
+        <Link href="/executive" className="flex items-center gap-2.5 flex-shrink-0 group">
+          <img src="/logos/CHII Logo (CLR).png" alt="CHII" width={24} height={24}
+            style={{ height: 24, width: "auto", objectFit: "contain" }} />
+        </Link>
+
+        {/* Divider */}
+        <div className="h-6 w-px bg-gray-200 flex-shrink-0" />
+
+        {/* Tab navigation — full row once there's room for all tabs, collapses to a hamburger menu below */}
+        <nav className="hidden xl:flex items-stretch justify-center flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          {IMPACT_TABS.map((tab) => {
+            const isActive = tab.label === activeLabel;
+            return (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className="relative flex flex-col items-center justify-center px-2.5 sm:px-3 h-16 transition-colors group flex-shrink-0"
+                style={{ color: isActive ? NAVY : "rgba(4,44,83,0.45)" }}
+              >
+                {!isActive && (
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ backgroundColor: "#F1F5F9" }} />
+                )}
+                <span className="relative text-[12px] font-bold leading-tight whitespace-nowrap">{tab.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-2 right-2 h-[2.5px] rounded-t-full"
+                    style={{ backgroundColor: NAVY }} />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right-aligned control group */}
+        <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+
+        {/* Hamburger — mobile/tablet only */}
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label="Toggle navigation menu"
+          aria-expanded={menuOpen}
+          className="xl:hidden flex items-center justify-center w-8 h-8 rounded-md border transition-colors flex-shrink-0"
+          style={{ borderColor: "#E5E7EB", color: NAVY, backgroundColor: "white" }}
+        >
+          {menuOpen ? <X size={16} /> : <Menu size={16} />}
+        </button>
+
+        {/* Export */}
+        <button
+          title="Export"
+          className="hidden sm:flex items-center justify-center w-7 h-7 rounded-md border transition-colors flex-shrink-0"
+          style={{ borderColor: "#E5E7EB", color: "#6B7280", backgroundColor: "white" }}
+        >
+          <Download size={12} />
+        </button>
+
+        {/* Portals dropdown */}
+        <div className="relative flex-shrink-0" ref={ref}>
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="hidden sm:flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border font-medium transition-colors"
+            style={{
+              borderColor: open ? "#9CA3AF" : "#E5E7EB",
+              color: open ? "#111827" : "#6B7280",
+              backgroundColor: open ? "#F9FAFB" : "white",
+            }}
+          >
+            <LayoutGrid size={10} />
+            Portals
+            <ChevronDown size={9} className="transition-transform" style={{ transform: open ? "rotate(180deg)" : "none" }} />
+          </button>
+
+          {open && (
+            <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden z-50">
+              <div className="px-3 py-2 border-b border-gray-50">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-gray-400">Switch Portal</p>
+              </div>
+              {PORTAL_LINKS.map((p) => (
+                <Link
+                  key={p.label}
+                  href={p.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center px-3 py-2.5 hover:bg-gray-50 transition-colors"
+                >
+                  <div>
+                    <p className="text-[12px] font-bold text-gray-900 leading-none">{p.label}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{p.desc}</p>
+                  </div>
+                </Link>
+              ))}
+
+              {/* Logout — returns to the sign-in page */}
+              <Link
+                href="/"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-3 py-2.5 border-t border-gray-50 hover:bg-gray-50 transition-colors"
+              >
+                <LogOut size={12} className="text-gray-500 flex-shrink-0" />
+                <p className="text-[12px] font-bold text-gray-900 leading-none">Logout</p>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        </div>
+      </div>
+
+      {/* Mobile/tablet menu — mirrors the desktop tabs plus the portal switcher and sign out */}
+      {menuOpen && (
+        <nav className="xl:hidden border-t border-gray-200 bg-white px-3 py-2 flex flex-col max-h-[calc(100vh-4rem)] overflow-y-auto">
+          {IMPACT_TABS.map((tab) => {
+            const isActive = tab.label === activeLabel;
+            return (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className="flex items-center px-3 py-3 rounded-md text-[13px] font-bold transition-colors"
+                style={{
+                  color: isActive ? NAVY : "#374151",
+                  backgroundColor: isActive ? "#EFF6FF" : "transparent",
+                }}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
+
+          <div className="mt-2 pt-2 border-t border-gray-100">
+            <p className="px-3 pb-1 text-[9px] font-bold uppercase tracking-[0.12em] text-gray-400">Switch Portal</p>
+            {PORTAL_LINKS.map((p) => (
+              <Link
+                key={p.label}
+                href={p.href}
+                className="flex items-center px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                <div>
+                  <p className="text-[12px] font-bold text-gray-900 leading-none">{p.label}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{p.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-1 pt-1 border-t border-gray-100 flex items-center justify-between px-3">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 py-2.5 text-[12px] font-bold text-gray-700"
+            >
+              {dark ? <Sun size={14} /> : <Moon size={14} />}
+              {dark ? "Light mode" : "Dark mode"}
+            </button>
+            <Link href="/" className="flex items-center gap-1.5 py-2.5 text-[12px] font-bold text-gray-700">
+              <LogOut size={14} />
+              Logout
+            </Link>
+          </div>
+        </nav>
+      )}
+    </div>
+  );
+}
