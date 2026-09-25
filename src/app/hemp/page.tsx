@@ -15,12 +15,23 @@ let mapboxTokenReady = false;
 const initMapboxToken = async () => {
   if (mapboxTokenReady) return;
   try {
+    console.log("[HEMP] Fetching Mapbox token from API...");
     const response = await fetch("/api/mapbox-token");
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("[HEMP] API error:", error);
+      throw new Error(`API error: ${error.error}`);
+    }
+
     const data = await response.json();
+    console.log("[HEMP] Token received, setting accessToken");
     mapboxgl.accessToken = data.token;
     mapboxTokenReady = true;
+    console.log("[HEMP] Mapbox token ready");
   } catch (error) {
-    console.error("Failed to fetch Mapbox token:", error);
+    console.error("[HEMP] Failed to fetch Mapbox token:", error);
+    throw error;
   }
 };
 

@@ -9,12 +9,23 @@ let mapboxTokenReady = false;
 const initMapboxToken = async () => {
   if (mapboxTokenReady) return;
   try {
+    console.log("[StoriesMap] Fetching Mapbox token from API...");
     const response = await fetch("/api/mapbox-token");
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("[StoriesMap] API error:", error);
+      throw new Error(`API error: ${error.error}`);
+    }
+
     const data = await response.json();
+    console.log("[StoriesMap] Token received, setting accessToken");
     mapboxgl.accessToken = data.token;
     mapboxTokenReady = true;
+    console.log("[StoriesMap] Mapbox token ready");
   } catch (error) {
-    console.error("Failed to fetch Mapbox token:", error);
+    console.error("[StoriesMap] Failed to fetch Mapbox token:", error);
+    throw error;
   }
 };
 
