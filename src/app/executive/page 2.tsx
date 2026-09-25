@@ -1,5 +1,0 @@
-import { redirect } from "next/navigation";
-
-export default function ExecutivePage() {
-  redirect("/executive/at-a-glance");
-}
