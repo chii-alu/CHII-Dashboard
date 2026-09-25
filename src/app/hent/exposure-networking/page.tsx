@@ -98,15 +98,9 @@ function derive(rows: typeof exposureEvents) {
     value: sum(rows.map(e => e.stakeholders[g as StakeholderGroup])),
   })).filter(d => d.value > 0).sort((a, b) => b.value - a.value);
 
-  // Geographic spread
-  const byCountry = COUNTRIES.map(c => {
-    const rs = rows.filter(e => e.country === c);
-    return { name: c, value: rs.length, founders: sum(rs.map(e => e.founders)) };
-  }).filter(d => d.value > 0).sort((a, b) => b.value - a.value);
-
   return {
     events, founders, femalePct, ventures, connections, followUps, deals, mous,
-    investors, visibility, funnel, byYear, byType, byStakeholder, byCountry,
+    investors, visibility, funnel, byYear, byType, byStakeholder,
   };
 }
 
@@ -364,29 +358,6 @@ export default function ExposureNetworkingPage() {
             </ChartCard>
           </div>
 
-          <div className="mt-4">
-            <ChartCard title="Geographic Spread" sub="Where founders are being exposed — events and founder placements by country"
-              info="Which markets founders are being exposed to. Heavy concentration in one country may limit the breadth of the networks being built.">
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {D.byCountry.map((row, i) => {
-                  const col = GREEN_RAMP[i % GREEN_RAMP.length];
-                  const max = D.byCountry[0]?.value || 1;
-                  return (
-                    <div key={row.name} className="flex items-center gap-2.5">
-                      <div className="w-[96px] text-[11px] text-gray-600 text-right flex-shrink-0 truncate">{row.name}</div>
-                      <div className="flex-1 rounded-sm overflow-hidden" style={{ height: 18, backgroundColor: col + "1A" }}>
-                        <div className="h-full" style={{ width: `${(row.value / max) * 100}%`, backgroundColor: col }} />
-                      </div>
-                      <div className="text-[11px] text-gray-500 tabular-nums w-32 flex-shrink-0 text-right">
-                        <b style={{ color: col }}>{row.value}</b> events · {row.founders} founders
-                      </div>
-                    </div>
-                  );
-                })}
-                {!D.byCountry.length && <p className="text-[11px] text-gray-400 text-center py-6">No events match the selected filters.</p>}
-              </div>
-            </ChartCard>
-          </div>
         </section>
 
         {/* ── PITCHING COMPETITIONS & PILOT ENGAGEMENTS ─── */}
