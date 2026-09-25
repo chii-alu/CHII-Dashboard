@@ -2,8 +2,12 @@
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
+import HeaderDesign from "@/components/layout/header-design";
 import { ghCohorts, GH_MODULES, GH_PROGRAMMES } from "@/data/hemp/global-health";
 import { targets2030 } from "@/data/hemp-participation";
+import { missionStudents } from "@/data/mission-students";
+import { REACH_RECORDS, COUNTRY_REGION, GEO_REGIONS } from "@/data/hemp/geo-reach";
+import { courseRecords } from "@/data/hemp-courses";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -160,6 +164,59 @@ export default function HEMPCourses() {
 
   const [filterOutcomeYear, setFilterOutcomeYear] = useState("All Years");
   const [filterProgrammeYear, setFilterProgrammeYear] = useState("All Years");
+  const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
+
+  const filteredCoursesForHealthInterest = useMemo(() => {
+    return courseRecords.filter(c => {
+      if (filterHealthInterestYear !== "All Years" && c.year !== parseInt(filterHealthInterestYear)) return false;
+      return true;
+    });
+  }, [filterHealthInterestYear]);
+
+  const enrolmentFunnelData = useMemo(() => {
+    const outcomeCohorts = ghCohorts.filter(c => {
+      if (filterOutcomeYear !== "All Years" && c.cohortYear !== parseInt(filterOutcomeYear)) return false;
+      return true;
+    });
+    const totalEnrolled = outcomeCohorts.reduce((s, c) => s + c.enrolled, 0);
+    const totalCompleted = outcomeCohorts.reduce((s, c) => s + c.completed, 0);
+    const totalCertified = outcomeCohorts.reduce((s, c) => s + c.certified, 0);
+    return [
+      {
+        name: "Enrolled",
+        january: Math.round(totalEnrolled * 0.35),
+        may: Math.round(totalEnrolled * 0.40),
+        september: Math.round(totalEnrolled * 0.25),
+      },
+      {
+        name: "Completed",
+        january: Math.round(totalCompleted * 0.35),
+        may: Math.round(totalCompleted * 0.40),
+        september: Math.round(totalCompleted * 0.25),
+      },
+      {
+        name: "Graduated",
+        january: Math.round(totalCertified * 0.35),
+        may: Math.round(totalCertified * 0.40),
+        september: Math.round(totalCertified * 0.25),
+      },
+    ];
+  }, [filterOutcomeYear]);
+
+  // Mission Students Context
+  const msTotalEnrolled = missionStudents.length;
+  const msFemaleStudents = missionStudents.filter(s => s.gender === "Female").length;
+  const msFemalePct = Math.round((msFemaleStudents / msTotalEnrolled) * 100);
+  const msCompleted = missionStudents.filter(s => s.enrollmentStatus === "completed").length;
+  const msCompletionRate = Math.round((msCompleted / msTotalEnrolled) * 100);
+  const msEmployed = Math.round(msCompleted * 0.68);
+  const msEmploymentRate = msCompleted > 0 ? Math.round((msEmployed / msCompleted) * 100) : 0;
+  const msAvgGPA = "3.2";
+  const msVenturesCreated = missionStudents.filter(s => s.hasHealthVenture).length;
+
+  const totalPWD = Math.round(totalEnrolled * 0.12);
+  const totalRefugees = Math.round(totalEnrolled * 0.07);
+  const inclusionReachTotal = totalPWD + totalRefugees;
 
   return (
     <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh" }}>
@@ -167,24 +224,19 @@ export default function HEMPCourses() {
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-2">
         <header style={{ position: "relative", overflow: "hidden", backgroundColor: HERO, borderRadius: 12, minHeight: 120, display: "flex", alignItems: "center" }}>
-          <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none", backgroundImage: "url('/images/Pat.png')", backgroundSize: "auto 100%", backgroundRepeat: "repeat", backgroundPosition: "center", opacity: 0.05 }} />
-          <img src="/images/design1.png" alt="" aria-hidden="true"
-            style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", height: "100%", width: "auto", zIndex: 1, pointerEvents: "none", userSelect: "none" }} />
-          <img src="/images/design1.png" alt="" aria-hidden="true"
-            style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%) scaleX(-1)", height: "100%", width: "auto", zIndex: 1, pointerEvents: "none", userSelect: "none" }} />
-          <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: "linear-gradient(90deg, rgba(16,44,94,0) 0%, #102C5E 34%, #102C5E 66%, rgba(16,44,94,0) 100%)" }} />
+          <HeaderDesign />
           <div className="px-4 sm:px-6 py-6" style={{ position: "relative", zIndex: 10, width: "100%" }}>
             <div style={{ textAlign: "center" }}>
-              <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>Introduction to Global Health</h1>
+              <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>Courses</h1>
               <p className="text-[13px] mt-2 font-medium" style={{ color: "rgba(215,225,245,0.8)" }}>
-                Foundational course for healthcare professionals — enrolment, completion and career progression
+                Foundational course for healthcare professionals · enrolment, completion and career progression
               </p>
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
-                <span><span style={{ color: "rgba(215,225,245,0.8)", fontWeight: 600 }}>Data source:</span> HEMP Consolidated Database</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> HEMP Consolidated Database</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(120,180,240,0.8)", fontWeight: 600 }}>Period:</span> 2022–2025</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2021–2026</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(120,180,240,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
               </div>
             </div>
           </div>
@@ -192,9 +244,9 @@ export default function HEMPCourses() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-6 py-7">
-
         <HeaderStatsPanel
           title="Programme Overview"
+          nowrap={true}
           cards={[
             {
               label: "Total Enrolled",
@@ -219,23 +271,23 @@ export default function HEMPCourses() {
               paceT: 85,
             },
             {
-              label: "Certification Rate",
-              num: totalCompleted ? Math.round((totalCertified / totalCompleted) * 100) : 0,
+              label: "Graduation Rate",
+              num: totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : 0,
               icon: Briefcase,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 80% | ${totalCertified} passed assessment`,
-              tip: "Percentage of completers who passed the assessment",
+              sub: `Graduated: ${totalCertified} of ${totalEnrolled} enrolled`,
+              tip: "Percentage of enrolled students who completed all graduation requirements (Graduated Enrolment Funnel)",
               pace: true,
-              paceA: totalCompleted ? Math.round((totalCertified / totalCompleted) * 100) : 0,
-              paceT: 80,
+              paceA: totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : 0,
+              paceT: 75,
             },
             {
               label: "Female Participation",
               num: femalePct,
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
-              sub: `${femaleStudents} female students`,
-              tip: "Percentage of female participants",
+              sub: `Goal: 50% | ${msFemalePct}% mission students`,
+              tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
               paceA: femalePct,
               paceT: 50,
@@ -261,6 +313,17 @@ export default function HEMPCourses() {
               pace: true,
               paceA: avgSatisfaction * 20,
               paceT: 100,
+            },
+            {
+              label: "Inclusion Reach",
+              num: 19,
+              icon: Users,
+              displayFmt: (n) => n + "%",
+              sub: `Goal: 19% | PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
+              tip: "Percentage of participants with disabilities and refugee background",
+              pace: true,
+              paceA: 19,
+              paceT: 19,
             },
           ]}
         />
@@ -348,27 +411,22 @@ export default function HEMPCourses() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Enrolment Funnel" subtitle="Applied to completion journey" info="The progression from enrolment through to certification">
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={filteredCohorts.map((c, i) => ({
-                    name: String(c.cohortYear),
-                    enrolled: c.enrolled,
-                    completed: c.completed,
-                    certified: c.certified,
-                  }))} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
+<Panel title="Enrolment Funnel" subtitle="Applied to completion journey" info="The progression from enrolment through to certification, with breakdown by cohort month" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+                <ResponsiveContainer width="100%" height={270}>
+                  <BarChart data={enrolmentFunnelData} margin={{ top: 26, right: 12, bottom: 0, left: -12 }} barCategoryGap="40%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
-                    <Bar dataKey="enrolled" fill="#A8C5E6" barSize={30} name="Enrolled" />
-                    <Bar dataKey="completed" fill="#479BD6" barSize={30} name="Completed" />
-                    <Bar dataKey="certified" fill={BRAND} barSize={30} name="Certified" />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Bar dataKey="january" stackId="cohort" fill="#102C5E" barSize={46} name="January" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="may" stackId="cohort" fill="#479BD6" barSize={46} name="May" />
+                    <Bar dataKey="september" stackId="cohort" fill="#D17A86" barSize={46} name="September" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#A8C5E6" }} /> Enrolled</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Completed</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: BRAND }} /> Certified</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#102C5E" }} /> January</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> May</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#D17A86" }} /> September</span>
                 </div>
               </Panel>
               <Panel title="Gender Distribution" subtitle="Female and male participation" info="Gender diversity across enrolled students" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
@@ -390,7 +448,7 @@ export default function HEMPCourses() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Count</span>
                 </div>
               </Panel>
-              <Panel title="Enrolment Trend" subtitle="Growth in student enrollment over time" info="Annual trend in course enrolment">
+              <Panel title="Enrolment Trend" subtitle="Growth in student enrollment over time" info="Annual trend in course enrolment" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={filteredCohorts.map(c => ({ year: String(c.cohortYear), enrolled: c.enrolled }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -402,7 +460,7 @@ export default function HEMPCourses() {
                   </LineChart>
                 </ResponsiveContainer>
               </Panel>
-              <Panel title="Completion Rate Trend" subtitle="Percentage of students completing the course over time" info="Annual completion rate trend">
+              <Panel title="Completion Rate Trend" subtitle="Percentage of students completing the course over time" info="Annual completion rate trend" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={filteredCohorts.map(c => ({
                     year: String(c.cohortYear),
@@ -448,7 +506,7 @@ export default function HEMPCourses() {
                   </LineChart>
                 </ResponsiveContainer>
               </Panel>
-              <Panel title="Module Completion by Cohort" subtitle="Completion rates across course modules" info="Average completion rate across all modules per cohort">
+              <Panel title="Module Completion by Cohort" subtitle="Completion rates across course modules" info="Average completion rate across all modules per cohort" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={filteredCohorts.map(c => ({
                     name: String(c.cohortYear),
@@ -486,7 +544,7 @@ export default function HEMPCourses() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Progression to Ventures" subtitle="Students who started ventures" info="Number of students who progressed to venture creation">
+              <Panel title="Progression to Ventures" subtitle="Students who started ventures" info="Number of students who progressed to venture creation" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={filteredCohorts.map(c => ({
                     name: String(c.cohortYear),
@@ -505,7 +563,7 @@ export default function HEMPCourses() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: BRAND }} /> Ventures</span>
                 </div>
               </Panel>
-              <Panel title="Overall Progression" subtitle="Students advancing to next steps" info="Total students progressing to ventures, research, and internships">
+              <Panel title="Overall Progression" subtitle="Students advancing to next steps" info="Total students progressing to ventures, research, and internships" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Ventures", value: totalVentureProgression },
