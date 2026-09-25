@@ -5,7 +5,18 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Story } from "@/data/executive/stories";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+let mapboxTokenReady = false;
+const initMapboxToken = async () => {
+  if (mapboxTokenReady) return;
+  try {
+    const response = await fetch("/api/mapbox-token");
+    const data = await response.json();
+    mapboxgl.accessToken = data.token;
+    mapboxTokenReady = true;
+  } catch (error) {
+    console.error("Failed to fetch Mapbox token:", error);
+  }
+};
 
 const TEXT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg>`;
 const VIDEO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="10 8 16 12 10 16 10 8"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>`;
@@ -45,24 +56,32 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: DEFAULT_CENTER,
-      zoom: DEFAULT_ZOOM,
-      scrollZoom: true,
-      cooperativeGestures: true
-    });
+    const initMap = async () => {
+      await initMapboxToken();
 
-    map.on("load", () => {
-      renderMarkers(map, stories, cluster);
-    });
+      const map = new mapboxgl.Map({
+        container: containerRef.current!,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM,
+        scrollZoom: true,
+        cooperativeGestures: true
+      });
 
-    mapRef.current = map;
+      map.on("load", () => {
+        renderMarkers(map, stories, cluster);
+      });
+
+      mapRef.current = map;
+    };
+
+    initMap();
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
   }, []);
 
@@ -249,7 +268,7 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
     }
   }, [stories, cluster]);
 
-  const resetView = () => {
+  const resetView = async () => {
     if (!mapRef.current || !containerRef.current) return;
 
     // Remove individual markers
@@ -260,6 +279,9 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
 
     // Remove old map
     mapRef.current.remove();
+
+    // Ensure token is ready
+    await initMapboxToken();
 
     // Create fresh map
     const newMap = new mapboxgl.Map({

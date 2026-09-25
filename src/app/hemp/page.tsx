@@ -10,7 +10,19 @@ import HeaderDesign from "@/components/layout/header-design";
 import { missionStudents } from "@/data/mission-students";
 import { hempParticipations } from "@/data/hemp-participation";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+// Fetch Mapbox token from server-side API on mount
+let mapboxTokenReady = false;
+const initMapboxToken = async () => {
+  if (mapboxTokenReady) return;
+  try {
+    const response = await fetch("/api/mapbox-token");
+    const data = await response.json();
+    mapboxgl.accessToken = data.token;
+    mapboxTokenReady = true;
+  } catch (error) {
+    console.error("Failed to fetch Mapbox token:", error);
+  }
+};
 
 const HEADER_NAVY = "#042C53";
 const RED_FEMALE = "#DC2626";
@@ -223,14 +235,20 @@ function MapContainer() {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [20, 3],
-      zoom: 2.6,
-      attributionControl: false,
-      cooperativeGestures: true,
-    });
+    const initMap = async () => {
+      await initMapboxToken();
+
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current!,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: [20, 3],
+        zoom: 2.6,
+        attributionControl: false,
+        cooperativeGestures: true,
+      });
+    };
+
+    initMap();
 
     map.current.on("load", () => {
       Array.from(studentsByCountry.entries()).forEach(([country, count]) => {
