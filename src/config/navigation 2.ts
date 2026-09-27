@@ -1,0 +1,73 @@
+// Navigation — the single source of truth for every portal's routes and labels.
+// Adding a page means adding one entry here; the nav renders itself.
+
+import type { Portal } from "@/theme/portals";
+
+export interface NavItem {
+  label: string;
+  href: string;
+}
+
+export interface PortalNavConfig {
+  /** Large wordmark in the nav, e.g. "HENT". */
+  wordmark: string;
+  /** Stacked lines beside the wordmark. */
+  wordmarkLines: string[];
+  /** The portal's index route. */
+  rootHref: string;
+  items: NavItem[];
+}
+
+export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
+  hent: {
+    wordmark: "HENT",
+    wordmarkLines: ["HEALTH", "ENTREPRENEURSHIP", "PILLAR"],
+    rootHref: "/hent/overview",
+    items: [
+      { label: "Overview",              href: "/hent/overview" },
+      { label: "Ventures",              href: "/hent/ventures" },
+      { label: "Venture Funding",       href: "/hent/venture-funding" },
+      { label: "Masterclass",           href: "/hent/masterclasses" },
+      { label: "Hackathon",             href: "/hent/hackathons" },
+      { label: "Mentorship",            href: "/hent/mentorship" },
+      { label: "Exposure & Networking", href: "/hent/exposure-networking" },
+      { label: "Study Trips",           href: "/hent/study-trips" },
+    ],
+  },
+
+  hemp: {
+    wordmark: "HEMP",
+    wordmarkLines: ["HEALTH", "EMPLOYMENT", "PILLAR"],
+    rootHref: "/hemp",
+    items: [
+      { label: "At a Glance",                    href: "/hemp/at-a-glance" },
+      { label: "Overview",                       href: "/hemp" },
+      { label: "Mission Students",               href: "/hemp/mission-students" },
+      { label: "Career Workshops",               href: "/hemp/career-development" },
+      { label: "Exposure Events",                href: "/hemp/exposure-events" },
+      { label: "Internships",                    href: "/hemp/internships" },
+      { label: "SIE",                             href: "/hemp/sie" },
+      { label: "Courses",                        href: "/hemp/course" },
+    ],
+  },
+
+  heco: {
+    wordmark: "HECO",
+    wordmarkLines: ["HEALTH", "ECOSYSTEMS", "PILLAR"],
+    rootHref: "/heco",
+    items: [
+      { label: "Overview",          href: "/heco" },
+      { label: "CRA",               href: "/heco/cra" },
+    ],
+  },
+
+  executive: {
+    wordmark: "CHII",
+    wordmarkLines: ["EXECUTIVE", "IMPACT", "DASHBOARD"],
+    rootHref: "/executive",
+    items: [
+      { label: "At a Glance", href: "/executive/at-a-glance" },
+      { label: "Overview",    href: "/executive" },
+    ],
+  },
+};
