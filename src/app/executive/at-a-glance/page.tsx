@@ -11,7 +11,29 @@ import { OUTREACH_PARTICIPANTS } from "@/data/executive/outreach";
 import { missionStudents } from "@/data/hemp/mission-students";
 import { Users, BookOpen, Briefcase, TrendingUp, Zap, Target, Award, MessageCircle } from "lucide-react";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+let mapboxTokenReady = false;
+const initMapboxToken = async () => {
+  if (mapboxTokenReady) return;
+  try {
+    console.log("[AtAGlance] Fetching Mapbox token from API...");
+    const response = await fetch("/api/mapbox-token");
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("[AtAGlance] API error:", error);
+      throw new Error(`API error: ${error.error}`);
+    }
+
+    const data = await response.json();
+    console.log("[AtAGlance] Token received, setting accessToken");
+    mapboxgl.accessToken = data.token;
+    mapboxTokenReady = true;
+    console.log("[AtAGlance] Mapbox token ready");
+  } catch (error) {
+    console.error("[AtAGlance] Failed to fetch Mapbox token:", error);
+    throw error;
+  }
+};
 
 /* ─ Colors ─ */
 const HEADER_NAVY = "#102C5E"; // Primary brand navy (from header)
@@ -79,8 +101,10 @@ function MapContainer({
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    const initMap = () => {
+    const initMap = async () => {
       if (!mapContainer.current) return;
+
+      await initMapboxToken();
 
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
@@ -223,11 +247,9 @@ function MapContainer({
       };
     };
 
-    let resizeCleanup: (() => void) | void;
-    resizeCleanup = initMap();
+    initMap();
 
     return () => {
-      resizeCleanup?.();
       if (map.current) {
         map.current.remove();
         map.current = null;
