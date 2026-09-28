@@ -257,67 +257,67 @@ function MapContainer() {
         attributionControl: false,
         cooperativeGestures: true,
       });
+
+      map.current.on("load", () => {
+        Array.from(studentsByCountry.entries()).forEach(([country, count]) => {
+          const coords = COUNTRY_COORDS[country];
+          if (!coords) return;
+
+          const el = document.createElement("div");
+          const size = Math.min(8 + Math.log(count) * 2, 16) * 2;
+
+          el.style.width = `${size}px`;
+          el.style.height = `${size}px`;
+          el.style.borderRadius = "50%";
+          el.style.background = "#479BD6";
+          el.style.border = "3px solid white";
+          el.style.cursor = "pointer";
+          el.style.boxShadow = "0 2px 10px rgba(71, 155, 214, 0.5)";
+          el.style.display = "flex";
+          el.style.alignItems = "center";
+          el.style.justifyContent = "center";
+          el.style.fontSize = "11px";
+          el.style.fontWeight = "700";
+          el.style.color = "white";
+          el.style.transition = "all 200ms ease";
+          el.textContent = count.toString();
+
+          const marker = new mapboxgl.Marker({ element: el }).setLngLat([coords[1], coords[0]]).addTo(map.current!);
+
+          el.addEventListener("click", () => {
+            const point = map.current!.project([coords[1], coords[0]]);
+            map.current!.flyTo({ center: [coords[1], coords[0]], zoom: 4, duration: 1000 });
+
+            const careerWorkshops = hempParticipations.filter(p => p.country === country && p.activity === "Career Workshops").length;
+            const internships = hempParticipations.filter(p => p.country === country && p.activity === "Internships").length;
+            const sie = hempParticipations.filter(p => p.country === country && p.activity === "Student Immersive Experience").length;
+            const courses = hempParticipations.filter(p => p.country === country && p.activity === "Courses").length;
+
+            setSelectedCountry({
+              name: country,
+              students: count,
+              careerWorkshops,
+              internships,
+              sie,
+              courses
+            });
+            setPopupPos({ top: point.y + 20, left: point.x + 20 });
+          });
+
+          el.addEventListener("mouseenter", () => {
+            el.style.opacity = "0.8";
+            el.style.filter = "brightness(1.2)";
+          });
+
+          el.addEventListener("mouseleave", () => {
+            el.style.opacity = "1";
+            el.style.filter = "brightness(1)";
+          });
+        });
+      });
     };
 
     initMap();
-
-    map.current.on("load", () => {
-      Array.from(studentsByCountry.entries()).forEach(([country, count]) => {
-        const coords = COUNTRY_COORDS[country];
-        if (!coords) return;
-
-        const el = document.createElement("div");
-        const size = Math.min(8 + Math.log(count) * 2, 16) * 2;
-
-        el.style.width = `${size}px`;
-        el.style.height = `${size}px`;
-        el.style.borderRadius = "50%";
-        el.style.background = "#479BD6";
-        el.style.border = "3px solid white";
-        el.style.cursor = "pointer";
-        el.style.boxShadow = "0 2px 10px rgba(71, 155, 214, 0.5)";
-        el.style.display = "flex";
-        el.style.alignItems = "center";
-        el.style.justifyContent = "center";
-        el.style.fontSize = "11px";
-        el.style.fontWeight = "700";
-        el.style.color = "white";
-        el.style.transition = "all 200ms ease";
-        el.textContent = count.toString();
-
-        const marker = new mapboxgl.Marker({ element: el }).setLngLat([coords[1], coords[0]]).addTo(map.current!);
-
-        el.addEventListener("click", () => {
-          const point = map.current!.project([coords[1], coords[0]]);
-          map.current!.flyTo({ center: [coords[1], coords[0]], zoom: 4, duration: 1000 });
-
-          const careerWorkshops = hempParticipations.filter(p => p.country === country && p.activity === "Career Workshops").length;
-          const internships = hempParticipations.filter(p => p.country === country && p.activity === "Internships").length;
-          const sie = hempParticipations.filter(p => p.country === country && p.activity === "Student Immersive Experience").length;
-          const courses = hempParticipations.filter(p => p.country === country && p.activity === "Courses").length;
-
-          setSelectedCountry({
-            name: country,
-            students: count,
-            careerWorkshops,
-            internships,
-            sie,
-            courses
-          });
-          setPopupPos({ top: point.y + 20, left: point.x + 20 });
-        });
-
-        el.addEventListener("mouseenter", () => {
-          el.style.opacity = "0.8";
-          el.style.filter = "brightness(1.2)";
-        });
-
-        el.addEventListener("mouseleave", () => {
-          el.style.opacity = "1";
-          el.style.filter = "brightness(1)";
-        });
-      });
-    });
 
     return () => {
       if (map.current) map.current.remove();
