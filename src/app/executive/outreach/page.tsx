@@ -249,14 +249,6 @@ export default function OutreachPage() {
     })).filter(d => d.value > 0).sort((a, b) => b.value - a.value),
   [scope]);
 
-  // Participation trend — from 2022 onward
-  // Annual = participants first engaged that year; Cumulative = total reached by that year.
-  const trend = useMemo(() => OA_YEARS.map(y => ({
-    year: y,
-    Cumulative: scope.filter(s => s.yearEngaged <= y).length,
-    Annual: scope.filter(s => s.yearEngaged === y).length,
-  })), [scope]);
-
   /* ── Section 3: demographics ───────────────────────── */
   const inclusion = useMemo(() => {
     const t = scope.length;
@@ -478,20 +470,6 @@ export default function OutreachPage() {
             </Panel>
           </div>
 
-          <Panel title="Participation Trend" subtitle="Annual (engaged that year) vs cumulative (total reached by year), 2022–2026"
-            info="Annual participants (engaged that year) versus cumulative reach (everyone reached up to that year).">
-            <ResponsiveContainer width="100%" height={230}>
-              <LineChart data={trend} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
-                <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} />
-                <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                <Line type="monotone" dataKey="Cumulative" stroke={C_FEMALE} strokeWidth={2.5} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="Annual" stroke={C_MALE} strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </Panel>
           <Panel title="Inclusion by Program" subtitle="Share of each group within HEMP · HENT · HECO"
             info="Share of each priority group within HEMP, HENT and HECO.">
             <ResponsiveContainer width="100%" height={280}>
