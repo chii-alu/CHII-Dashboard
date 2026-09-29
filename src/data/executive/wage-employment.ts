@@ -39,6 +39,8 @@ export interface Worker {
   inTech: boolean;
   decentWork: boolean;
   salaryUSD: number;        // monthly
+  pwd: boolean;             // person with disability
+  refugee: boolean;         // refugee / IDP
 }
 
 export const EMPLOYMENT_TYPES: EmploymentType[] = ["Full-time", "Part-time", "Seasonal"];
@@ -146,6 +148,8 @@ function buildWorkers(n: number): Worker[] {
       inTech: sector === "Digital Health",
       decentWork: r() < 0.74,
       salaryUSD: Math.round(250 + Math.pow(r(), 1.7) * 2200),
+      pwd: r() < 0.06,
+      refugee: r() < 0.12,
     });
   }
   return out;

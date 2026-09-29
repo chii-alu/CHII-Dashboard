@@ -221,10 +221,12 @@ export default function WageEmploymentPage() {
 
   /* ── Section 3: employment trends (computed by year) ─ */
   const trends = useMemo(() => {
-    const TREND_YEARS = [2022, 2023, 2024, 2025, 2026];
+    const TREND_YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
     const yearly = TREND_YEARS.map(yr => {
       const rows = scope.filter(w => w.year === yr);
       const fem = rows.filter(w => w.gender === "Female");
+      const pwd = rows.filter(w => w.pwd);
+      const refugee = rows.filter(w => w.refugee);
       const placed = rows.filter(w => w.timeToEmployment <= 12);
       const placedFem = fem.filter(w => w.timeToEmployment <= 12);
       const avg = (a: Worker[]) => a.length ? Math.round(a.reduce((s, w) => s + w.salaryUSD, 0) / a.length) : 0;
@@ -234,6 +236,8 @@ export default function WageEmploymentPage() {
         year: yr,
         Total: rows.length,
         Female: fem.length,
+        PWD: pwd.length,
+        "Refugee/IDP": refugee.length,
         placeTotal: share(placed.length, rows.length),
         placeFemale: share(placedFem.length, fem.length),
         incomeTotal: avg(rows),
@@ -470,17 +474,18 @@ export default function WageEmploymentPage() {
         <section className="space-y-4">
           <SectionHeader title="Employment Trends" blurb="How is wage employment growing, and where?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-          <Panel title="Yearly Wage Jobs Trend" subtitle="Total vs female, by year"
-            info="Wage jobs recorded each year; total is solid, female dashed.">
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={trends} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+          <Panel title="Yearly Wage Jobs Trend" subtitle="Wage jobs recorded each year across all participant groups"
+            info="Total participants in employment, segmented by gender, persons with disability, and refugee/IDP status.">
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={trends} margin={{ top: 16, right: 16, bottom: 0, left: -8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
                 <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTip />} />
                 <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
-                <Line type="monotone" dataKey="Total" stroke={C_TOTAL} strokeWidth={2.5} dot={{ r: 3.5 }} activeDot={{ r: 5 }} />
-                <Line type="monotone" dataKey="Female" stroke={C_FEMALE} strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3.5 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="Female" stroke="#479BD6" strokeWidth={2.5} dot={{ r: 3.5 }} activeDot={{ r: 5 }} name="Female" />
+                <Line type="monotone" dataKey="PWD" stroke="#E0A458" strokeWidth={2.5} dot={{ r: 3.5 }} activeDot={{ r: 5 }} name="Persons with Disability" />
+                <Line type="monotone" dataKey="Refugee/IDP" stroke="#D45F2C" strokeWidth={2.5} dot={{ r: 3.5 }} activeDot={{ r: 5 }} name="Refugee/IDP" />
               </LineChart>
             </ResponsiveContainer>
           </Panel>
@@ -501,36 +506,6 @@ export default function WageEmploymentPage() {
             </ResponsiveContainer>
           </Panel>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Top Employment Sectors" subtitle="Sectors employing participants, ranked"
-              info="Sectors employing participants, sorted from most to least.">
-              <ResponsiveContainer width="100%" height={Math.max(240, sectorData.length * 32)}>
-                <BarChart layout="vertical" data={sectorData} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={110} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="value" name="Employed" fill={BAND} radius={[0, 4, 4, 0]} barSize={16}>
-                    <LabelList dataKey="value" position="right" fontSize={10} fill="var(--chart-label)" fontWeight={700} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Panel>
-            <Panel title="Employer Geography" subtitle="Where participants work, ranked"
-              info="Locations where employed participants are based, sorted from most to least.">
-              <ResponsiveContainer width="100%" height={Math.max(240, geoData.length * 32)}>
-                <BarChart layout="vertical" data={geoData} margin={{ top: 4, right: 44, bottom: 0, left: 8 }}>
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="value" name="Employed" fill={C_FEMALE} radius={[0, 4, 4, 0]} barSize={16}>
-                    <LabelList dataKey="value" position="right" fontSize={10} fill="var(--chart-label)" fontWeight={700} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Panel>
-          </div>
         </section>
 
         )}
@@ -539,6 +514,7 @@ export default function WageEmploymentPage() {
         {show(3) && (
         <section className="space-y-4">
           <SectionHeader title="Program Outcomes" blurb="Which programs lead to the strongest employment?" />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
           <Panel title="Employment Rate by Program" subtitle="Share employed, ranked"
             info="Employment rate for each academic program, sorted highest to lowest.">
             <ResponsiveContainer width="100%" height={Math.max(240, programOutcomes.count * 44)}>
@@ -553,7 +529,6 @@ export default function WageEmploymentPage() {
               </BarChart>
             </ResponsiveContainer>
           </Panel>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
           <Panel title="Employment Type by Program" subtitle="Full-time · Part-time · Seasonal (100%)"
             info="Contract-type composition within each program, normalised to 100%. Same program order as above.">
             <ResponsiveContainer width="100%" height={Math.max(240, programOutcomes.count * 44)}>
@@ -565,21 +540,6 @@ export default function WageEmploymentPage() {
                 {EMPLOYMENT_TYPES.map((t, i) => (
                   <Bar key={t} dataKey={t} stackId="t" fill={EMP_COLOR[t]} barSize={22}
                     radius={i === EMPLOYMENT_TYPES.length - 1 ? [0, 4, 4, 0] : undefined} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
-          <Panel title="Employment Quality by Program" subtitle="Employment Rate · Decent Work · Median Salary"
-            info="Side-by-side comparison of program performance across three quality metrics (all %).">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={programOutcomes.qualityData} margin={{ top: 16, right: 12, bottom: 8, left: -10 }} barGap={3} barCategoryGap="24%">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                <XAxis dataKey="name" tick={<WrapTick />} axisLine={false} tickLine={false} interval={0} height={52} />
-                <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                {(["Employment Rate", "Decent Work", "12-Mo Placement"] as const).map(k => (
-                  <Bar key={k} dataKey={k} fill={QUALITY_COLORS[k]} radius={[3, 3, 0, 0]} barSize={16} />
                 ))}
               </BarChart>
             </ResponsiveContainer>
