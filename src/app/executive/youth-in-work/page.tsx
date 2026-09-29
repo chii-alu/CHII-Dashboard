@@ -331,7 +331,13 @@ export default function YouthInWorkPage() {
     // trends
     const youthTrend = TREND_YEARS.map(yr => {
       const inw = scope.filter(y => y.year === yr && (y.primaryJob || y.secondaryJob));
-      return { year: yr, Total: inw.length, Female: inw.filter(y => y.gender === "Female").length };
+      return {
+        year: yr,
+        Total: inw.length,
+        Female: inw.filter(y => y.gender === "Female").length,
+        PWD: inw.filter(y => y.pwd).length,
+        Refugee: inw.filter(y => y.refugee).length,
+      };
     });
     const psTrend = TREND_YEARS.map(yr => {
       const rows = scope.filter(y => y.year === yr);
@@ -638,13 +644,47 @@ export default function YouthInWorkPage() {
           </Panel>
           </div>
 
+          {/* Trends */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
+            <Panel title="Primary & Secondary Jobs Trend" subtitle="Primary vs secondary roles, by year"
+              info="How primary and secondary job-holding changes over time.">
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={jobs.psTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Line type="monotone" dataKey="Primary" stroke={C_BLUE} strokeWidth={2.5} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="Secondary" stroke={C_GREEN} strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Panel>
+            <Panel title="Youth in Work Trend" subtitle="Participants in work, by year"
+              info="Youth holding a primary or secondary job each year, including total, female, PWD, and refugee participants.">
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={jobs.youthTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Line type="monotone" dataKey="Total" stroke="#102C5E" strokeWidth={2.5} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="Female" stroke="#479BD6" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="PWD" stroke="#E0A458" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="Refugee" stroke="#D45F2C" strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Panel>
+          </div>
+
           {/* Jobs by category + jobs created by program (with legends) */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Jobs by Category" subtitle="Full-time · Part-time · Seasonal"
               info="Distribution of jobs by employment category type.">
               <Donut data={jobs.byCategory.filter(d => ["Full-time", "Part-time", "Seasonal"].includes(d.name))} colors={WORKCAT_COLOR} total={jobs.byCategory.filter(d => ["Full-time", "Part-time", "Seasonal"].includes(d.name)).reduce((sum, d) => sum + d.value, 0)} totalLabel="Jobs" height={300} legendPercent />
             </Panel>
-            <Panel title="Jobs Created by Program" subtitle="Positions attributable to each program's enterprises"
+            <Panel title="Jobs Created by Pillar" subtitle="Positions attributable to each program's enterprises"
               info="Total jobs created by enterprises, grouped by the founder's program.">
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={jobs.createdByProgram} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="38%">
@@ -667,52 +707,13 @@ export default function YouthInWorkPage() {
               </div>
             </Panel>
           </div>
-
-          {/* Trends */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Youth in Work Trend — Total vs Female" subtitle="Participants in work, by year"
-              info="Youth holding a primary or secondary job each year, total and female.">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={jobs.youthTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="Total" stroke={C_BLUE} strokeWidth={2.5} dot={{ r: 3 }} />
-                  <Line type="monotone" dataKey="Female" stroke={C_VIOLET} strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Panel>
-            <Panel title="Primary & Secondary Jobs Trend" subtitle="Primary vs secondary roles, by year"
-              info="How primary and secondary job-holding changes over time.">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={jobs.psTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="Primary" stroke={C_BLUE} strokeWidth={2.5} dot={{ r: 3 }} />
-                  <Line type="monotone" dataKey="Secondary" stroke={C_GREEN} strokeWidth={2} dot={{ r: 3 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Panel>
-          </div>
         </section>
         )}
 
         {/* ════ SECTION 3 — INCLUSION ════ */}
         {show(3) && (
         <section className="space-y-4">
-          <SectionHeader title="Inclusion" blurb="Who is accessing work opportunities?" />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))", gap: 12 }}>
-            <MiniKpi Icon={WomanIcon} label="Female" value={`${inclusion.cards.female}%`} />
-            <MiniKpi Icon={Shield} label="Refugee / IDP" value={`${inclusion.cards.refugee}%`} />
-            <MiniKpi Icon={Accessibility} label="Persons w/ Disability" value={`${inclusion.cards.pwd}%`} />
-            <MiniKpi Icon={GraduationCap} label="Scholars" value={`${inclusion.cards.scholar}%`} />
-            <MiniKpi Icon={Globe} label="Based in Africa" value={`${inclusion.cards.africa}%`} />
-          </div>
+          <SectionHeader title="Inclusion Reach" blurb="Who is accessing work opportunities?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Employment by Priority Group" subtitle="Employed participants in each group"
               info="Number of employed participants who are women, refugees/IDPs, persons with disability, or scholars.">
