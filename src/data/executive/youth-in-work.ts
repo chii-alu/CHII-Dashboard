@@ -88,7 +88,7 @@ export const SECTORS = [
   "Maternal Health", "Other",
 ];
 
-export const YEARS = [2020, 2021, 2022, 2023, 2024, 2025];
+export const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 
 /* mulberry32 — small deterministic PRNG */
 function rng(seed: number) {

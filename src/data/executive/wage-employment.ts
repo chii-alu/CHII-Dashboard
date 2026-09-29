@@ -11,7 +11,7 @@ export { GENDERS } from "@/types";
    programs produced them, and whether the work is meaningful.)
 ═══════════════════════════════════════════════════════ */
 
-export type EmploymentType = "Full-time" | "Part-time" | "Temporary" | "Contract";
+export type EmploymentType = "Full-time" | "Part-time" | "Seasonal";
 export type RoleLevel = "Entry" | "Mid" | "Senior" | "Lead/Manager" | "Exec";
 export type Arrangement = "Remote" | "On-site" | "Hybrid";
 export type OrgType =
@@ -41,7 +41,7 @@ export interface Worker {
   salaryUSD: number;        // monthly
 }
 
-export const EMPLOYMENT_TYPES: EmploymentType[] = ["Full-time", "Part-time", "Temporary", "Contract"];
+export const EMPLOYMENT_TYPES: EmploymentType[] = ["Full-time", "Part-time", "Seasonal"];
 export const ROLE_LEVELS: RoleLevel[] = ["Entry", "Mid", "Senior", "Lead/Manager", "Exec"];
 export const ARRANGEMENTS: Arrangement[] = ["Remote", "On-site", "Hybrid"];
 /** Wage employment records no venture employees — the population exists (see
@@ -61,7 +61,7 @@ export const COUNTRIES = [
   "Ghana", "Uganda", "Other Africa", "Diaspora",
 ];
 
-export const YEARS = [2021, 2022, 2023, 2024, 2025];
+export const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 export const COHORTS = [2019, 2020, 2021, 2022, 2023, 2024];
 
 export interface ProgramMeta { name: string; employmentRate: number; }
@@ -125,7 +125,7 @@ function buildWorkers(n: number): Worker[] {
         ["International Business & Trade", 0.2],
       ]),
       employmentType: pick<EmploymentType>(r, [
-        ["Full-time", 0.62], ["Part-time", 0.16], ["Temporary", 0.12], ["Contract", 0.1],
+        ["Full-time", 0.62], ["Part-time", 0.16], ["Seasonal", 0.22],
       ]),
       roleLevel: pick<RoleLevel>(r, [
         ["Entry", 0.4], ["Mid", 0.3], ["Senior", 0.17], ["Lead/Manager", 0.09], ["Exec", 0.04],

@@ -30,7 +30,7 @@ const C_FEMALE = "#479BD6";
 
 const GENDER_COLOR: Record<Gender, string> = { Female: "#102C5E", Male: "#479BD6", "Non-binary": "#D45F2C" };
 const EMP_COLOR: Record<string, string> = {
-  "Full-time": "#102C5E", "Part-time": "#479BD6", "Temporary": "#A81B2D", "Contract": "#D45F2C",
+  "Full-time": "#102C5E", "Part-time": "#479BD6", "Seasonal": "#E0A458",
 };
 const ARR_COLOR: Record<string, string> = { Remote: "#102C5E", "On-site": "#479BD6", Hybrid: "#D45F2C" };
 
@@ -197,10 +197,11 @@ export default function WageEmploymentPage() {
     const tech = scope.filter(w => w.inTech).length;
     const placed = scope.filter(w => w.timeToEmployment <= 12).length;
     const medMonths = median(scope.map(w => w.timeToEmployment));
+    const medSalary = scope.length > 0 ? Math.round(median(scope.map(w => w.salaryUSD))) : 0;
     return {
       female, femalePct: share(female, total),
       decentPct: share(decent, total), techPct: share(tech, total),
-      placePct: share(placed, total), medMonths: Math.round(medMonths),
+      placePct: share(placed, total), medMonths: Math.round(medMonths), medSalary,
     };
   }, [scope, total]);
 
@@ -348,8 +349,8 @@ export default function WageEmploymentPage() {
               tooltip="Total CHII participants currently in wage employment within the active filters." />
             <StatsKpiCard label="Female Wage Employed" num={kpis.female} sub={`${kpis.femalePct}% of employed`} Icon={WomanIcon}
               tooltip="Number and share of female participants in wage employment." />
-            <StatsKpiCard label="Average Placement" num={kpis.placePct} displayFmt={(n) => `${Math.round(n)}%`} sub="employed within 12 months" Icon={ArrowUpRight}
-              tooltip="Share of participants placed into wage employment within twelve months." />
+            <StatsKpiCard label="Median Salary" num={kpis.medSalary} displayFmt={(n) => `$${(n / 1000).toFixed(1)}k`} sub="monthly" Icon={ArrowUpRight}
+              tooltip="Median monthly salary of wage-employed participants." />
             <StatsKpiCard label="Decent Work Rate" num={kpis.decentPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={ShieldCheck}
               tooltip="Share of employed participants in roles meeting decent-work criteria." />
             <StatsKpiCard label="Non-clinical Roles" num={kpis.techPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={Cpu}
@@ -426,7 +427,7 @@ export default function WageEmploymentPage() {
               info="Distribution of employed participants by gender.">
               <Donut data={genderData} colors={GENDER_COLOR} total={total} totalLabel="Employed" height={340} legendPercent />
             </Panel>
-            <Panel title="Contract Type" subtitle="Full-time · Part-time · Temporary · Contract"
+            <Panel title="Contract Type" subtitle="Full-time · Part-time · Seasonal"
               info="Contract-type split across the employed population.">
               <Donut data={empTypeData} colors={EMP_COLOR} total={total} totalLabel="Employed" height={340} legendPercent />
             </Panel>
@@ -493,7 +494,7 @@ export default function WageEmploymentPage() {
             </ResponsiveContainer>
           </Panel>
           <Panel title="Job Type Evolution" subtitle="Contract-type composition by year"
-            info="How employment composition shifts each year — full-time, part-time, temporary, and contract.">
+            info="How employment composition shifts each year — full-time, part-time, and seasonal.">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={trends} margin={{ top: 10, right: 12, bottom: 0, left: -10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -510,8 +511,8 @@ export default function WageEmploymentPage() {
           </Panel>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Average Placement Rate" subtitle="Total vs female, % placed within 12 months"
-              info="Share employed within twelve months of graduating, by year.">
+            <Panel title="Median Salary Trend" subtitle="Total vs female, monthly salary"
+              info="Median monthly salary of wage-employed participants, by year.">
               <ResponsiveContainer width="100%" height={230}>
                 <LineChart data={trends} margin={{ top: 10, right: 16, bottom: 0, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
@@ -592,7 +593,7 @@ export default function WageEmploymentPage() {
             </ResponsiveContainer>
           </Panel>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
-          <Panel title="Employment Type by Program" subtitle="Contract mix per program (100%)"
+          <Panel title="Employment Type by Program" subtitle="Full-time · Part-time · Seasonal (100%)"
             info="Contract-type composition within each program, normalised to 100%. Same program order as above.">
             <ResponsiveContainer width="100%" height={Math.max(240, programOutcomes.count * 44)}>
               <BarChart layout="vertical" data={programOutcomes.typeData} stackOffset="expand" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
@@ -607,7 +608,7 @@ export default function WageEmploymentPage() {
               </BarChart>
             </ResponsiveContainer>
           </Panel>
-          <Panel title="Employment Quality by Program" subtitle="Employment Rate · Decent Work · Average Placement"
+          <Panel title="Employment Quality by Program" subtitle="Employment Rate · Decent Work · Median Salary"
             info="Side-by-side comparison of program performance across three quality metrics (all %).">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={programOutcomes.qualityData} margin={{ top: 16, right: 12, bottom: 8, left: -10 }} barGap={3} barCategoryGap="24%">

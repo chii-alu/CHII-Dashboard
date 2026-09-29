@@ -47,7 +47,7 @@ const INTERVENTION_WEIGHT: Record<string, number> = {
   "Community Outreach": 1.8, "STEM Clubs": 1.3,
 };
 
-const YEARS = [2019, 2020, 2021, 2022, 2023, 2024] as const;
+const YEARS = [2025, 2026, 2027, 2028, 2029, 2030] as const;
 
 function sd(n: number): number {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;

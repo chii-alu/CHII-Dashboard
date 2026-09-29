@@ -30,7 +30,7 @@ export const DESTINATIONS = ["Within Africa", "Europe", "North America", "Asia /
 export const RELEVANCE = ["Directly related", "Somewhat related", "Different field"];
 export const COUNTRIES = ["Rwanda", "Kenya", "Nigeria", "Ghana", "Uganda", "South Africa", "Ethiopia", "Other Africa"];
 export const PROGRAMMES = ["BSc Software Eng", "Computer Science", "Entrepreneurial Leadership", "International Business & Trade", "Global Challenges"];
-export const YEARS = [2020, 2021, 2022, 2023, 2024];
+export const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 
 const STUDY_COUNTRIES: Record<string, string[]> = {
   "Within Africa": ["Rwanda", "Kenya", "South Africa", "Ghana"],
