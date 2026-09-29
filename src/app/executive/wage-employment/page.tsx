@@ -348,12 +348,12 @@ export default function WageEmploymentPage() {
               tooltip="Total CHII participants currently in wage employment within the active filters." />
             <StatsKpiCard label="Female Wage Employed" num={kpis.female} sub={`${kpis.femalePct}% of employed`} Icon={WomanIcon}
               tooltip="Number and share of female participants in wage employment." />
-            <StatsKpiCard label="12-Month Placement" num={kpis.placePct} displayFmt={(n) => `${Math.round(n)}%`} sub="employed within 12 months" Icon={ArrowUpRight}
+            <StatsKpiCard label="Average Placement" num={kpis.placePct} displayFmt={(n) => `${Math.round(n)}%`} sub="employed within 12 months" Icon={ArrowUpRight}
               tooltip="Share of participants placed into wage employment within twelve months." />
             <StatsKpiCard label="Decent Work Rate" num={kpis.decentPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={ShieldCheck}
               tooltip="Share of employed participants in roles meeting decent-work criteria." />
-            <StatsKpiCard label="Tech Roles" num={kpis.techPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={Cpu}
-              tooltip="Share of employed participants working in technology roles." />
+            <StatsKpiCard label="Non-clinical Roles" num={kpis.techPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={Cpu}
+              tooltip="Share of employed participants working in non-clinical roles." />
             <StatsKpiCard label="Median Time to Job" num={kpis.medMonths} displayFmt={(n) => `${Math.round(n)} mo`} sub="to first job" Icon={Clock}
               tooltip="Median number of months from completing a program to first wage employment." />
           </div>
@@ -426,21 +426,6 @@ export default function WageEmploymentPage() {
               info="Distribution of employed participants by gender.">
               <Donut data={genderData} colors={GENDER_COLOR} total={total} totalLabel="Employed" height={340} legendPercent />
             </Panel>
-            <Panel title="Role Level" subtitle="Seniority ranked by volume"
-              info="Employed participants grouped by seniority, from most to least common.">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", minHeight: 300 }}>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart layout="vertical" data={roleData} margin={{ top: 4, right: 28, bottom: 0, left: 8 }}>
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={96} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="value" name="Employed" fill={C_TOTAL} radius={[0, 4, 4, 0]} barSize={16}
-                    label={{ position: "right", fontSize: 10, fill: "#374151", fontWeight: 700 }} />
-                </BarChart>
-              </ResponsiveContainer>
-              </div>
-            </Panel>
             <Panel title="Contract Type" subtitle="Full-time · Part-time · Temporary · Contract"
               info="Contract-type split across the employed population.">
               <Donut data={empTypeData} colors={EMP_COLOR} total={total} totalLabel="Employed" height={340} legendPercent />
@@ -462,6 +447,26 @@ export default function WageEmploymentPage() {
                 </BarChart>
               </ResponsiveContainer>
               </div>
+            </Panel>
+            <Panel title="Time to Employment after Graduation" subtitle="When graduates found employment"
+              info="Distribution of time between graduation and first employment.">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={[
+                  { name: "Before Graduation", value: 45 },
+                  { name: "Less than 3 months", value: 78 },
+                  { name: "3-6 months", value: 62 },
+                  { name: "6-12 months", value: 38 },
+                  { name: "12+ months", value: 25 },
+                ]} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="26%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                  <Bar dataKey="value" name="Graduates" fill={C_TOTAL} radius={[4, 4, 0, 0]} barSize={48}>
+                    <LabelList dataKey="value" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </Panel>
           </div>
         </section>
@@ -505,7 +510,7 @@ export default function WageEmploymentPage() {
           </Panel>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="12-Month Placement Rate" subtitle="Total vs female, % placed within 12 months"
+            <Panel title="Average Placement Rate" subtitle="Total vs female, % placed within 12 months"
               info="Share employed within twelve months of graduating, by year.">
               <ResponsiveContainer width="100%" height={230}>
                 <LineChart data={trends} margin={{ top: 10, right: 16, bottom: 0, left: 0 }}>
@@ -602,7 +607,7 @@ export default function WageEmploymentPage() {
               </BarChart>
             </ResponsiveContainer>
           </Panel>
-          <Panel title="Employment Quality by Program" subtitle="Employment Rate · Decent Work · 12-Month Placement"
+          <Panel title="Employment Quality by Program" subtitle="Employment Rate · Decent Work · Average Placement"
             info="Side-by-side comparison of program performance across three quality metrics (all %).">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={programOutcomes.qualityData} margin={{ top: 16, right: 12, bottom: 8, left: -10 }} barGap={3} barCategoryGap="24%">

@@ -365,7 +365,6 @@ export default function YouthInWorkPage() {
       { name: "Women", value: employed.filter(y => y.gender === "Female").length },
       { name: "Refugees / IDPs", value: employed.filter(y => y.refugee).length },
       { name: "Persons w/ disability", value: employed.filter(y => y.pwd).length },
-      { name: "Scholars", value: employed.filter(y => y.scholar).length },
     ].sort((a, b) => b.value - a.value);
     const genderByPathway = [
       { name: "Employment", rows: employed },
@@ -392,10 +391,10 @@ export default function YouthInWorkPage() {
     const primaryRows = scope.filter(y => y.primaryJob);
     const secondaryRows = scope.filter(y => y.secondaryJob);
     const primaryByGroup = [
-      { name: "Women", value: primaryRows.filter(y => y.gender === "Female").length },
-      { name: "Refugees / displaced", value: primaryRows.filter(y => y.refugee).length },
-      { name: "Persons w/ disability", value: primaryRows.filter(y => y.pwd).length },
-    ].sort((a, b) => b.value - a.value);
+      { name: "Women", Primary: primaryRows.filter(y => y.gender === "Female").length, Secondary: secondaryRows.filter(y => y.gender === "Female").length },
+      { name: "Refugees / displaced", Primary: primaryRows.filter(y => y.refugee).length, Secondary: secondaryRows.filter(y => y.refugee).length },
+      { name: "Persons w/ disability", Primary: primaryRows.filter(y => y.pwd).length, Secondary: secondaryRows.filter(y => y.pwd).length },
+    ].sort((a, b) => (b.Primary + b.Secondary) - (a.Primary + a.Secondary));
     const femaleShare = [
       { name: "Primary", value: share(primaryRows.filter(y => y.gender === "Female").length, primaryRows.length) },
       { name: "Secondary", value: share(secondaryRows.filter(y => y.gender === "Female").length, secondaryRows.length) },
@@ -409,7 +408,27 @@ export default function YouthInWorkPage() {
         PwD: share(rows.filter(y => y.pwd).length, rows.length),
       };
     });
-    return { cards, priorityGroups, genderByPathway, africaSplit, topCountries, byProgram, primaryByGroup, femaleShare };
+    const outcomesByPriorityGroup = [
+      {
+        name: "Women",
+        Employment: employed.filter(y => y.gender === "Female").length,
+        Internships: scope.filter(y => y.gender === "Female" && isInternship(y)).length,
+        Enterprise: scope.filter(y => y.gender === "Female" && isVenture(y)).length,
+      },
+      {
+        name: "Refugees / IDPs",
+        Employment: employed.filter(y => y.refugee).length,
+        Internships: scope.filter(y => y.refugee && isInternship(y)).length,
+        Enterprise: scope.filter(y => y.refugee && isVenture(y)).length,
+      },
+      {
+        name: "Persons w/ disability",
+        Employment: employed.filter(y => y.pwd).length,
+        Internships: scope.filter(y => y.pwd && isInternship(y)).length,
+        Enterprise: scope.filter(y => y.pwd && isVenture(y)).length,
+      },
+    ];
+    return { cards, priorityGroups, genderByPathway, africaSplit, topCountries, byProgram, primaryByGroup, femaleShare, outcomesByPriorityGroup };
   }, [scope]);
 
   /* ── Section 4: quality of work ────────────────────── */
@@ -602,8 +621,8 @@ export default function YouthInWorkPage() {
 
           {/* Primary & secondary jobs + job categories */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-          <Panel title="Primary &amp; Secondary Jobs" subtitle="Total vs female, by job type"
-            info="Participants holding a primary (main) or secondary (additional) job, with the female share of each.">
+          <Panel title="Primary &amp; Secondary Jobs" subtitle="Participants by job type"
+            info="Participants holding a primary (main) or secondary (additional) job.">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={jobs.primarySecondary} margin={{ top: 18, right: 12, bottom: 0, left: -8 }} barGap={6} barCategoryGap="36%">
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -613,9 +632,6 @@ export default function YouthInWorkPage() {
                 <Legend wrapperStyle={{ fontSize: 10 }} />
                 <Bar dataKey="Total" fill={C_BLUE} barSize={46} radius={[4, 4, 0, 0]}>
                   <LabelList dataKey="Total" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                </Bar>
-                <Bar dataKey="Female" fill={C_VIOLET} barSize={46} radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="Female" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -715,114 +731,43 @@ export default function YouthInWorkPage() {
         <section className="space-y-4">
           <SectionHeader title="Inclusion Reach" blurb="Who is accessing work opportunities?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Employment by Priority Group" subtitle="Employed participants in each group"
-              info="Number of employed participants who are women, refugees/IDPs, persons with disability, or scholars.">
+            <Panel title="Work Outcomes by Priority Group" subtitle="Employment · Internships · Enterprise"
+              info="Participants in each work outcome by priority group.">
               <ResponsiveContainer width="100%" height={230}>
-                <BarChart layout="vertical" data={inclusion.priorityGroups} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                <BarChart layout="vertical" data={inclusion.outcomesByPriorityGroup} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                   <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={140} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="value" name="Employed" fill={C_BLUE} radius={[0, 4, 4, 0]} barSize={20}>
-                    <LabelList dataKey="value" position="right" fontSize={10} fill="#374151" fontWeight={700} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Panel>
-            <Panel title="Gender Across Work Pathways" subtitle="Female · Male within each pathway"
-              info="Gender composition within Employment, Internships, and Enterprise (each on a 0–100% scale).">
-              <ResponsiveContainer width="100%" height={230}>
-                <BarChart data={inclusion.genderByPathway} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={4} barCategoryGap="30%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="pathway" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {GENDER_2.map(g => (
-                    <Bar key={g} dataKey={g} fill={GENDER_COLOR[g]} radius={[3, 3, 0, 0]} barSize={20}>
-                      <LabelList dataKey={g} position="top" fontSize={9} fill="#374151" fontWeight={700} formatter={(v: number) => `${v}%`} />
-                    </Bar>
-                  ))}
+                  <Bar dataKey="Employment" name="Employment" stackId="o" fill={OUTCOME_COLOR.Employment} barSize={20} />
+                  <Bar dataKey="Internships" name="Internships" stackId="o" fill={OUTCOME_COLOR.Internships} barSize={20} />
+                  <Bar dataKey="Enterprise" name="Enterprise" stackId="o" fill={OUTCOME_COLOR.Ventures} radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             </Panel>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Primary Jobs by Priority Group" subtitle="Women · Refugees / displaced · Persons w/ disability"
-              info="Primary-job holders who belong to each priority group.">
+            <Panel title="Primary & Secondary Jobs by Priority Group" subtitle="Women · Refugees / displaced · Persons w/ disability"
+              info="Primary and secondary job holders who belong to each priority group.">
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart layout="vertical" data={inclusion.primaryByGroup} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                   <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="value" name="Primary jobs" fill={C_GREEN} radius={[0, 4, 4, 0]} barSize={20}>
-                    <LabelList dataKey="value" position="right" fontSize={10} fill="#374151" fontWeight={700} />
+                  <Bar dataKey="Primary" name="Primary jobs" fill={C_BLUE} radius={[0, 4, 4, 0]} barSize={20} />
+                  <Bar dataKey="Secondary" name="Secondary jobs" fill={C_GREEN} radius={[0, 4, 4, 0]} barSize={20}>
+                    <LabelList dataKey="Secondary" position="right" fontSize={10} fill="#374151" fontWeight={700} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </Panel>
-            <Panel title="Female Share — Primary vs Secondary" subtitle="% female by job type"
-              info="Share of primary and secondary job holders who are female.">
-              <ResponsiveContainer width="100%" height={230}>
-                <BarChart data={inclusion.femaleShare} margin={{ top: 18, right: 12, bottom: 0, left: -10 }} barCategoryGap="40%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Bar dataKey="value" name="Female share" barSize={56} radius={[4, 4, 0, 0]}>
-                    <LabelList dataKey="value" position="top" fontSize={11} fill={NAVY} fontWeight={700} formatter={(v: number) => `${v}%`} />
-                    {inclusion.femaleShare.map((d, i) => <Cell key={d.name} fill={[C_BLUE, C_GREEN][i]} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 8, justifyContent: "center" }}>
-                {inclusion.femaleShare.map((d, i) => (
-                  <span key={d.name} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: [C_BLUE, C_GREEN][i] }} />{d.name}
-                  </span>
-                ))}
-              </div>
-            </Panel>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Geographic Distribution" subtitle="Africa vs outside Africa"
               info="Share of participants based in Africa versus the diaspora.">
               <Donut data={inclusion.africaSplit} colors={[C_GREEN, "#C5D2E0"]} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
             </Panel>
-            <Panel title="Top Countries" subtitle="Participants by country, ranked"
-              info="Where participants are based, sorted from most to least.">
-              <ResponsiveContainer width="100%" height={Math.max(230, inclusion.topCountries.length * 28)}>
-                <BarChart layout="vertical" data={inclusion.topCountries} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={120} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Female" name="Female" stackId="c" fill={GENDER_COLOR.Female} barSize={15} />
-                  <Bar dataKey="Male" name="Male" stackId="c" fill={GENDER_COLOR.Male} radius={[0, 4, 4, 0]} barSize={15} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Panel>
           </div>
-          <Panel title="Inclusion by Program" subtitle="Priority-group share within HEMP · HENT · HECO"
-            info="Share of each priority group within each program (0–100% scale).">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={inclusion.byProgram} margin={{ top: 16, right: 12, bottom: 0, left: -12 }} barGap={5} barCategoryGap="34%">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                {([["Female", C_BLUE], ["Refugee / IDP", C_AMBER], ["PwD", C_VIOLET]] as const).map(([k, c]) => (
-                  <Bar key={k} dataKey={k} fill={c} radius={[3, 3, 0, 0]} barSize={24}>
-                    <LabelList dataKey={k} position="top" fontSize={9} fill="#374151" fontWeight={700} formatter={(v: number) => `${v}%`} />
-                  </Bar>
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
         </section>
         )}
 
@@ -831,10 +776,6 @@ export default function YouthInWorkPage() {
         <section className="space-y-4">
           <SectionHeader title="Quality of Work" blurb="Are participants accessing meaningful and sustainable work?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
-            <Panel title="Employment Type" subtitle="Permanent · Contract · Internship · Freelance · Enterprise"
-              info="Composition of how working participants are engaged.">
-              <Donut data={quality.empType} colors={WORKCAT_COLOR} total={quality.empType.reduce((s, d) => s + d.value, 0)} totalLabel="Working" height={340} legendPercent />
-            </Panel>
             <Panel title="Decent Work Indicators" subtitle="Average score out of 100"
               info="How working participants score on each dignified-work indicator — reliable income, sense of purpose, reputation, and respect in the workplace.">
               <ResponsiveContainer width="100%" height={250}>
@@ -843,32 +784,21 @@ export default function YouthInWorkPage() {
                   <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Score" name="Score" fill={C_BLUE} radius={[0, 4, 4, 0]} barSize={20}>
+                  <Bar dataKey="Score" radius={[0, 4, 4, 0]} barSize={20}>
                     <LabelList dataKey="Score" position="right" fontSize={10} fill="#374151" fontWeight={700} />
+                    {quality.indicators.map((d, i) => (
+                      <Cell key={d.name} fill={["#102C5E", "#479BD6", "#E0A458", "#D45F2C"][i % 4]} />
+                    ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </Panel>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
-            <Panel title="Employment Before vs After CHII" subtitle="Change in outcomes following CHII engagement"
-              info="Share of participants meeting each outcome before versus after engaging with CHII.">
-              <ResponsiveContainer width="100%" height={230}>
-                <BarChart data={quality.beforeAfter} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={6} barCategoryGap="34%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Before" fill="#C5D2E0" radius={[3, 3, 0, 0]} barSize={26}>
-                    <LabelList dataKey="Before" position="top" fontSize={9.5} fill="#374151" formatter={(v: number) => `${v}%`} />
-                  </Bar>
-                  <Bar dataKey="After" fill={C_BLUE} radius={[3, 3, 0, 0]} barSize={26}>
-                    <LabelList dataKey="After" position="top" fontSize={9.5} fill="#374151" formatter={(v: number) => `${v}%`} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 8, justifyContent: "center" }}>
+                {quality.indicators.map((d, i) => (
+                  <span key={d.name} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: ["#102C5E", "#479BD6", "#E0A458", "#D45F2C"][i % 4] }} />{d.name}
+                  </span>
+                ))}
+              </div>
             </Panel>
             <Panel title="Dignified Work Status" subtitle="Accessing vs progressing"
               info="Working participants accessing dignified work versus those still progressing toward it.">
