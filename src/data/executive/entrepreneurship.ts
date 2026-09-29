@@ -71,7 +71,7 @@ function buildVentures(n: number): Venture[] {
       ]),
       formal: r() < 0.58,
       enablerSupport: r() < 0.47,
-      yearLaunched: pick<number>(r, [[2020, 0.12], [2021, 0.16], [2022, 0.2], [2023, 0.24], [2024, 0.28]]),
+      yearLaunched: pick<number>(r, [[2025, 0.2], [2026, 0.2], [2027, 0.2], [2028, 0.2], [2029, 0.1], [2030, 0.1]]),
       jobsCreated: Math.round(Math.pow(r(), 1.6) * 9),
       rating: 1 + Math.round(r() * 4),
     });

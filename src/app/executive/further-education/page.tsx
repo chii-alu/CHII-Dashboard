@@ -271,19 +271,7 @@ export default function FurtherEducationPage() {
               <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
             </div>
           </div>
-          <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <FilterSelect label="Gender" value={gender} onChange={setGender}
-              options={[{ value: "all" as const, label: "All Genders" }, ...(["Female", "Male"] as Gender[]).map(g => ({ value: g, label: g }))]} />
-            <FilterSelect label="Cohort" value={scholar} onChange={setScholar}
-              options={[{ value: "all" as const, label: "All Cohorts" }, { value: "scholar" as const, label: "Scholars" }, { value: "non" as const, label: "Non-scholar" }]} />
-            <FilterSelect label="Qualification" value={qualification} onChange={setQualification}
-              options={[{ value: "all", label: "All Qualifications" }, ...QUALIFICATIONS.map(q => ({ value: q, label: q }))]} />
-            <FilterSelect label="Field" value={field} onChange={setField}
-              options={[{ value: "all", label: "All Fields" }, ...FIELDS.map(f => ({ value: f, label: f }))]} />
-            <FilterSelect label="Funding" value={funding} onChange={setFunding}
-              options={[{ value: "all", label: "All Funding" }, ...FUNDING_SOURCES.map(f => ({ value: f, label: f }))]} />
-            <FilterSelect label="Destination" value={destination} onChange={setDestination}
-              options={[{ value: "all", label: "All Destinations" }, ...DESTINATIONS.map(ds => ({ value: ds, label: ds }))]} />
+          <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
             <FilterSelect label="Year" value={year} onChange={setYear}
               options={[{ value: "all" as const, label: "All Years" }, ...YEARS.map(y => ({ value: y, label: String(y) }))]} />
           </div>

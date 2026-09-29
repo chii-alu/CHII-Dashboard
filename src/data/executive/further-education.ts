@@ -92,7 +92,7 @@ function build(n: number): FeStudent[] {
       relevance: pick<string>(r, [
         ["Directly related", 0.57], ["Somewhat related", 0.3], ["Different field", 0.13],
       ]),
-      year: pick<number>(r, [[2020, 0.31], [2021, 0.14], [2022, 0.17], [2023, 0.19], [2024, 0.19]]),
+      year: pick<number>(r, [[2025, 0.2], [2026, 0.2], [2027, 0.2], [2028, 0.2], [2029, 0.1], [2030, 0.1]]),
       active: r() < 0.55,
     });
   }

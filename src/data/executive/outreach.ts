@@ -87,7 +87,7 @@ function makeParticipants(): OutreachParticipant[] {
     const yearEngaged = pick(YEARS, i * 17 + 6);
 
     // Status — Registered or Completed; older engagements more likely completed
-    const age = 2024 - yearEngaged;
+    const age = 2030 - yearEngaged;
     const r = sd(i * 29 + 9);
     let status: EngagementStatus;
     if (age >= 2) {

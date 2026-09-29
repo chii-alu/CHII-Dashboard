@@ -114,7 +114,7 @@ function buildWorkers(n: number): Worker[] {
       ["Personalized & Precision Medicine", 0.06], ["Other", 0.05],
     ]);
     const cohort = pick<number>(r, [[2019, 0.12], [2020, 0.14], [2021, 0.17], [2022, 0.19], [2023, 0.2], [2024, 0.18]]);
-    const year = Math.min(2025, cohort + Math.floor(r() * 3));
+    const year = 2025 + Math.floor(r() * 6);
 
     out.push({
       id: i + 1,

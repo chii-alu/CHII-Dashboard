@@ -333,17 +333,9 @@ export default function OutreachPage() {
               <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
             </div>
           </div>
-          <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <FilterSelect label="Program" value={program} onChange={setProgram}
-              options={[{ value: "All", label: "All Programs" }, ...PILLARS.map(p => ({ value: p, label: p }))]} />
-            <FilterSelect label="Institution" value={institution} onChange={setInstitution}
-              options={[{ value: "all", label: "All Institutions" }, ...INSTITUTIONS.map(c => ({ value: c, label: c }))]} />
-            <FilterSelect label="Student Population" value={population} onChange={setPopulation}
-              options={[{ value: "all", label: "All Students" }, { value: "mission", label: "Mission Students" }, { value: "non", label: "Non-mission" }]} />
+          <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
             <FilterSelect label="Year" value={year} onChange={setYear}
               options={[{ value: "all", label: "All Years" }, ...OA_YEARS.map(y => ({ value: y, label: String(y) }))]} />
-            <FilterSelect label="Intervention" value={intervention} onChange={setIntervention}
-              options={[{ value: "all", label: "All Interventions" }, ...INTERVENTIONS.map(i => ({ value: i, label: i }))]} />
           </div>
         </div>
       )}
@@ -557,7 +549,7 @@ export default function OutreachPage() {
             </Panel>
           </div>
 
-          <Panel title="Intervention by Institution" subtitle="ALU · ALX · ALCHE · Other"
+          <Panel title="Intervention Participation by Institution" subtitle="ALU · ALX · ALCHE · Other"
             info="Interventions split across partner institutions.">
             <ResponsiveContainer width="100%" height={260}>
               <BarChart layout="vertical" data={byInstitution} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>

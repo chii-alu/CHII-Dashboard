@@ -231,6 +231,7 @@ const YIW_SECTIONS: { n: number; label: string }[] = [
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function YouthInWorkPage() {
+  const [year, setYear] = useState<"all" | number>("all");
   const [program, setProgram] = useState<"all" | Program>("all");
   const [ptype, setPtype] = useState<"all" | ParticipantType>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");
@@ -243,6 +244,7 @@ export default function YouthInWorkPage() {
 
   const scope = useMemo(() =>
     YOUTH.filter(y => {
+      if (year !== "all" && y.year !== year) return false;
       if (program !== "all" && y.program !== program) return false;
       if (ptype !== "all" && y.participantType !== ptype) return false;
       if (gender !== "all" && y.gender !== gender) return false;
@@ -251,7 +253,7 @@ export default function YouthInWorkPage() {
       if (pathway !== "all" && y.pathway !== pathway) return false;
       return true;
     }),
-  [program, ptype, gender, country, cohort, pathway]);
+  [year, program, ptype, gender, country, cohort, pathway]);
 
   /* ── Executive snapshot KPIs ───────────────────────── */
   const kpis = useMemo(() => {
@@ -458,7 +460,7 @@ export default function YouthInWorkPage() {
   }, [scope]);
 
   const activeCount = [program, ptype, gender, country, cohort, pathway].filter(v => v !== "all").length;
-  const reset = () => { setProgram("all"); setPtype("all"); setGender("all"); setCountry("all"); setCohort("all"); setPathway("all"); };
+  const reset = () => { setYear("all"); setProgram("all"); setPtype("all"); setGender("all"); setCountry("all"); setCohort("all"); setPathway("all"); };
 
   return (
     <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh" }}>
@@ -546,19 +548,9 @@ export default function YouthInWorkPage() {
                       <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
                     </div>
                   </div>
-                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <FilterSelect label="Program" value={program} onChange={setProgram}
-                      options={[{ value: "all" as const, label: "All Programs" }, ...PROGRAMS.map(p => ({ value: p, label: p }))]} />
-                    <FilterSelect label="Participant Type" value={ptype} onChange={setPtype}
-                      options={[{ value: "all" as const, label: "All Types" }, ...PARTICIPANT_TYPES.map(p => ({ value: p, label: p }))]} />
-                    <FilterSelect label="Gender" value={gender} onChange={setGender}
-                      options={[{ value: "all" as const, label: "All Genders" }, ...GENDER_2.map(g => ({ value: g, label: g }))]} />
-                    <FilterSelect label="Country" value={country} onChange={setCountry}
-                      options={[{ value: "all", label: "All Countries" }, ...COUNTRIES.map(c => ({ value: c, label: c }))]} />
-                    <FilterSelect label="Cohort" value={cohort} onChange={setCohort}
-                      options={[{ value: "all" as const, label: "All Cohorts" }, ...COHORTS.map(c => ({ value: c, label: String(c) }))]} />
-                    <FilterSelect label="Employment Status" value={pathway} onChange={setPathway}
-                      options={[{ value: "all" as const, label: "All Pathways" }, ...PATHWAYS.map(p => ({ value: p, label: p }))]} />
+                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+                    <FilterSelect label="Year" value={year} onChange={setYear}
+                      options={[{ value: "all" as const, label: "All Years" }, ...YEARS.map(y => ({ value: y, label: String(y) }))]} />
                   </div>
                 </div>
               )}

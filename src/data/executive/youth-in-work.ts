@@ -159,7 +159,7 @@ function buildYouth(n: number): Youth[] {
       ["Other Africa", 0.1], ["Diaspora", 0.08],
     ]);
 
-    const year = pick<number>(r, [[2020, 0.1], [2021, 0.13], [2022, 0.16], [2023, 0.19], [2024, 0.22], [2025, 0.2]]);
+    const year = pick<number>(r, [[2025, 0.2], [2026, 0.2], [2027, 0.2], [2028, 0.2], [2029, 0.1], [2030, 0.1]]);
 
     const employerType: EmployerType = isFounder
       ? "Self-employed"

@@ -432,17 +432,9 @@ export default function EntrepreneurshipPage() {
                       <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
                     </div>
                   </div>
-                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
                     <FilterSelect label="Year Launched" value={year} onChange={setYear}
                       options={[{ value: "all" as const, label: "All Years" }, ...YEARS.map(y => ({ value: y, label: String(y) }))]} />
-                    <FilterSelect label="Founder Gender" value={gender} onChange={setGender}
-                      options={[{ value: "all" as const, label: "All Genders" }, ...(["Female", "Male"] as Gender[]).map(g => ({ value: g, label: g }))]} />
-                    <FilterSelect label="Stage" value={stage} onChange={setStage}
-                      options={[{ value: "all" as const, label: "All Stages" }, ...STAGES.map(s => ({ value: s, label: s }))]} />
-                    <FilterSelect label="Status" value={status} onChange={setStatus}
-                      options={[{ value: "all" as const, label: "All Statuses" }, ...STATUSES.map(s => ({ value: s, label: s }))]} />
-                    <FilterSelect label="Funding Source" value={funding} onChange={setFunding}
-                      options={[{ value: "all" as const, label: "All Sources" }, ...FUNDING_SOURCES.map(f => ({ value: f, label: f }))]} />
                   </div>
                 </div>
               )}

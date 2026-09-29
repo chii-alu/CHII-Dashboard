@@ -157,7 +157,7 @@ function WrapTick({ x, y, payload }: any) {
 
 const WE_SECTIONS: { n: number; label: string }[] = [
   { n: 1, label: "Workforce Profile" },
-  { n: 2, label: "Employment Trends & Sectors" },
+  { n: 2, label: "Employment Trends" },
   { n: 3, label: "Program Outcomes" },
   { n: 4, label: "Quality & Impact" },
 ];
@@ -397,19 +397,9 @@ export default function WageEmploymentPage() {
                       <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
                     </div>
                   </div>
-                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
                     <FilterSelect label="Year" value={year} onChange={setYear}
                       options={[{ value: "all" as const, label: "All Years" }, ...YEARS.map(y => ({ value: y, label: String(y) }))]} />
-                    <FilterSelect label="Program" value={program} onChange={setProgram}
-                      options={[{ value: "all", label: "All Programs" }, ...PROGRAM_NAMES.map(p => ({ value: p, label: p }))]} />
-                    <FilterSelect label="Participant Type" value={ptype} onChange={setPtype}
-                      options={[{ value: "all" as const, label: "All Types" }, { value: "Alumni" as const, label: "Alumni" }, { value: "Student" as const, label: "Student" }]} />
-                    <FilterSelect label="Gender" value={gender} onChange={setGender}
-                      options={[{ value: "all" as const, label: "All Genders" }, ...(["Female", "Male"] as Gender[]).map(g => ({ value: g, label: g }))]} />
-                    <FilterSelect label="Country" value={country} onChange={setCountry}
-                      options={[{ value: "all", label: "All Countries" }, ...COUNTRIES.map(c => ({ value: c, label: c }))]} />
-                    <FilterSelect label="Graduation Cohort" value={cohort} onChange={setCohort}
-                      options={[{ value: "all" as const, label: "All Cohorts" }, ...COHORTS.map(c => ({ value: c, label: String(c) }))]} />
                   </div>
                 </div>
               )}
@@ -463,6 +453,7 @@ export default function WageEmploymentPage() {
                   <XAxis dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                  <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
                   <Bar dataKey="value" name="Graduates" fill={C_TOTAL} radius={[4, 4, 0, 0]} barSize={48}>
                     <LabelList dataKey="value" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
                   </Bar>
@@ -477,7 +468,7 @@ export default function WageEmploymentPage() {
         {/* ════ SECTION 3 — EMPLOYMENT TRENDS ════ */}
         {show(2) && (
         <section className="space-y-4">
-          <SectionHeader title="Employment Trends & Sectors" blurb="How is wage employment growing, and where?" />
+          <SectionHeader title="Employment Trends" blurb="How is wage employment growing, and where?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
           <Panel title="Yearly Wage Jobs Trend" subtitle="Total vs female, by year"
             info="Wage jobs recorded each year; total is solid, female dashed.">
@@ -509,36 +500,6 @@ export default function WageEmploymentPage() {
               </BarChart>
             </ResponsiveContainer>
           </Panel>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Median Salary Trend" subtitle="Total vs female, monthly salary"
-              info="Median monthly salary of wage-employed participants, by year.">
-              <ResponsiveContainer width="100%" height={230}>
-                <LineChart data={trends} margin={{ top: 10, right: 16, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<PctTip />} />
-                  <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="placeTotal" name="Overall" stroke={C_TOTAL} strokeWidth={2.5} dot={{ r: 3.5 }} />
-                  <Line type="monotone" dataKey="placeFemale" name="Female" stroke={C_FEMALE} strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3.5 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Panel>
-            <Panel title="Average Monthly Income" subtitle="Total vs female, USD"
-              info="Average monthly income by year, in USD.">
-              <ResponsiveContainer width="100%" height={230}>
-                <LineChart data={trends} margin={{ top: 10, right: 16, bottom: 0, left: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
-                  <YAxis tickFormatter={usd} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={56} />
-                  <Tooltip content={<MoneyTip />} />
-                  <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="incomeTotal" name="Overall" stroke={C_TOTAL} strokeWidth={2.5} dot={{ r: 3.5 }} />
-                  <Line type="monotone" dataKey="incomeFemale" name="Female" stroke={C_FEMALE} strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3.5 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Panel>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Top Employment Sectors" subtitle="Sectors employing participants, ranked"
