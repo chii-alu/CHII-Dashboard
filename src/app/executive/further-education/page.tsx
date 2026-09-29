@@ -144,8 +144,8 @@ const FE_SECTIONS: { n: number; label: string }[] = [
 ═══════════════════════════════════════════════════════ */
 
 export default function FurtherEducationPage() {
-  const [activeSection, setActiveSection] = useState<number | "all">("all");
-  const show = (n: number) => activeSection === "all" || activeSection === n;
+  const [activeSection, setActiveSection] = useState<number>(1);
+  const show = (n: number) => activeSection === n;
 
   const [gender, setGender] = useState<"all" | Gender>("all");
   const [scholar, setScholar] = useState<"all" | "scholar" | "non">("all");
@@ -233,10 +233,10 @@ export default function FurtherEducationPage() {
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
       {/* Section pills (left) */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {[{ n: 0, label: "All Sections" }, ...FE_SECTIONS].map(({ n, label }) => {
-          const on = n === 0 ? activeSection === "all" : activeSection === n;
+        {FE_SECTIONS.map(({ n, label }) => {
+          const on = activeSection === n;
           return (
-            <button key={n} onClick={() => setActiveSection(n === 0 ? "all" : n)}
+            <button key={n} onClick={() => setActiveSection(n)}
               style={{
                 fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
                 border: `1px solid ${on ? NAVY : "rgba(0,33,71,0.15)"}`,

@@ -152,9 +152,9 @@ export default function EntrepreneurshipPage() {
   const [stage, setStage] = useState<"all" | Stage>("all");
   const [status, setStatus] = useState<"all" | Status>("all");
   const [funding, setFunding] = useState<"all" | FundingSource>("all");
-  const [active, setActive] = useState<number | "all">("all");
+  const [active, setActive] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const show = (n: number) => active === "all" || active === n;
+  const show = (n: number) => active === n;
 
   const scope = useMemo(() =>
     VENTURES.filter(x => {
@@ -397,10 +397,10 @@ export default function EntrepreneurshipPage() {
           {/* Section pills (left) + compact filters dropdown (right) */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {[{ n: 0, label: "All Sections" }, ...SECTIONS].map(({ n, label }) => {
-                const on = n === 0 ? active === "all" : active === n;
+              {SECTIONS.map(({ n, label }) => {
+                const on = active === n;
                 return (
-                  <button key={n} onClick={() => setActive(n === 0 ? "all" : n)}
+                  <button key={n} onClick={() => setActive(n)}
                     style={{ fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
                       border: `1px solid ${on ? NAVY : "rgba(0,33,71,0.15)"}`,
                       backgroundColor: on ? NAVY : "white", color: on ? "white" : "#6B7280" }}>

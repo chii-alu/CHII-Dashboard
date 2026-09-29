@@ -194,9 +194,9 @@ export default function OutreachPage() {
   const [population, setPopulation] = useState<PopulationFilter>("all");
   const [year, setYear] = useState<"all" | number>("all");
   const [intervention, setIntervention] = useState<string>("all");
-  const [activeSection, setActiveSection] = useState<number | "all">("all");
+  const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const show = (n: number) => activeSection === "all" || activeSection === n;
+  const show = (n: number) => activeSection === n;
 
   const scope = useMemo(() =>
     OUTREACH_PARTICIPANTS.filter(p => {
@@ -399,10 +399,10 @@ export default function OutreachPage() {
           {/* Section pills (left) + compact filters dropdown (right) */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {[{ n: 0, label: "All Sections" }, ...OA_SECTIONS].map(({ n, label }) => {
-                const on = n === 0 ? activeSection === "all" : activeSection === n;
+              {OA_SECTIONS.map(({ n, label }) => {
+                const on = activeSection === n;
                 return (
-                  <button key={n} onClick={() => setActiveSection(n === 0 ? "all" : n)}
+                  <button key={n} onClick={() => setActiveSection(n)}
                     style={{ fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
                       border: `1px solid ${on ? NAVY : "rgba(0,33,71,0.15)"}`,
                       backgroundColor: on ? NAVY : "white", color: on ? "white" : "#6B7280" }}>

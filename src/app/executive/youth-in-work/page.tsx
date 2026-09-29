@@ -40,7 +40,7 @@ const OUTCOME_COLOR: Record<string, string> = { Employment: "#102C5E", Internshi
 const WORKCAT_COLOR: Record<string, string> = {
   "Full-time": "#102C5E", "Part-time": "#479BD6", "Contract": "#D45F2C",
   "Internship": "#E0A458", "Self-employed": "#D17A86", "Enterprise": "#A81B2D",
-  "Permanent": "#102C5E", "Freelance": "#479BD6",
+  "Permanent": "#102C5E", "Freelance": "#479BD6", "Seasonal": "#E0A458",
 };
 const JOBCAT_COLOR: Record<string, string> = { New: "#102C5E", Additional: "#479BD6", Improved: "#A81B2D" };
 /* trend reporting window: 2022 → 2026 */
@@ -237,9 +237,9 @@ export default function YouthInWorkPage() {
   const [country, setCountry] = useState<string>("all");
   const [cohort, setCohort] = useState<"all" | number>("all");
   const [pathway, setPathway] = useState<"all" | Pathway>("all");
-  const [activeSection, setActiveSection] = useState<number | "all">("all");
+  const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const show = (n: number) => activeSection === "all" || activeSection === n;
+  const show = (n: number) => activeSection === n;
 
   const scope = useMemo(() =>
     YOUTH.filter(y => {
@@ -277,27 +277,6 @@ export default function YouthInWorkPage() {
       { name: "Enterprise", value: enterprise },
       { name: "Freelance", value: freelance },
     ].filter(d => d.value > 0);
-  }, [scope]);
-
-  const participantCompare = useMemo(() => {
-    const groups: { name: string; rows: Youth[] }[] = [
-      { name: "Students", rows: scope.filter(y => y.participantType === "Student") },
-      { name: "Alumni", rows: scope.filter(y => y.participantType === "Alumni") },
-      { name: "Scholars", rows: scope.filter(y => y.scholar) },
-    ];
-    const metrics: { metric: string; pick: (y: Youth) => boolean }[] = [
-      { metric: "Female", pick: y => y.gender === "Female" },
-      { metric: "In Africa", pick: y => y.basedInAfrica },
-      { metric: "Employment", pick: isEmployed },
-      { metric: "Internships", pick: isInternship },
-      { metric: "Enterprise", pick: isVenture },
-      { metric: "Further Ed.", pick: y => y.pathway === "Further Education" },
-    ];
-    return metrics.map(m => {
-      const rec: Record<string, number | string> = { metric: m.metric };
-      groups.forEach(g => { rec[g.name] = share(g.rows.filter(m.pick).length, g.rows.length); });
-      return rec;
-    });
   }, [scope]);
 
   const byProgram = useMemo(() =>
@@ -507,10 +486,10 @@ export default function YouthInWorkPage() {
           {/* Section pills (left) + compact filters dropdown (right) */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {[{ n: 0, label: "All Sections" }, ...YIW_SECTIONS].map(({ n, label }) => {
-                const on = n === 0 ? activeSection === "all" : activeSection === n;
+              {YIW_SECTIONS.map(({ n, label }) => {
+                const on = activeSection === n;
                 return (
-                  <button key={n} onClick={() => setActiveSection(n === 0 ? "all" : n)}
+                  <button key={n} onClick={() => setActiveSection(n)}
                     style={{ fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
                       border: `1px solid ${on ? NAVY : "rgba(0,33,71,0.15)"}`,
                       backgroundColor: on ? NAVY : "white", color: on ? "white" : "#6B7280" }}>
@@ -566,45 +545,30 @@ export default function YouthInWorkPage() {
         {show(1) && (
         <section className="space-y-4">
           <SectionHeader title="Work Pathways" blurb="How are participants progressing into work?" />
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 0.4fr) minmax(0, 0.6fr)", gap: 16, alignItems: "stretch" }} className="yiw-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Work Pathway Distribution" subtitle="Where are our youth today?"
               info="The mix of pathways youth follow: wage employment, internships, enterprises, further education, and more.">
               <Donut data={pathwayDist} colors={PATHWAY_COLOR} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
             </Panel>
-            <Panel title="Participant Group Comparison" subtitle="Students · Alumni · Scholars across key metrics"
-              info="Each metric shows the % within that group. Scholars overlap with students and alumni.">
-              <ResponsiveContainer width="100%" height={330}>
-                <BarChart data={participantCompare} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={3} barCategoryGap="22%">
+            <Panel title="Employment Outcomes by Program" subtitle="Employment · Internships · Enterprise across HEMP · HENT · HECO"
+              info="Participant counts for each work outcome, stacked within each program.">
+              <ResponsiveContainer width="100%" height={270}>
+                <BarChart data={byProgram} margin={{ top: 26, right: 12, bottom: 0, left: -12 }} barCategoryGap="40%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="metric" tick={{ fontSize: 9.5, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} />
-                  <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                  <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {[["Students", C_BLUE], ["Alumni", C_GREEN], ["Scholars", C_VIOLET]].map(([k, c]) => (
-                    <Bar key={k} dataKey={k as string} fill={c as string} radius={[3, 3, 0, 0]} barSize={13} />
+                  {(["Employment", "Internships", "Ventures"] as const).map((k, i) => (
+                    <Bar key={k} dataKey={k} name={k === "Ventures" ? "Enterprise" : k} stackId="o" fill={OUTCOME_COLOR[k]} barSize={46} radius={i === 2 ? [4, 4, 0, 0] : undefined}>
+                      {i === 2 && <LabelList dataKey="Total" position="top" fontSize={11} fill={NAVY} fontWeight={700} />}
+                    </Bar>
                   ))}
                 </BarChart>
               </ResponsiveContainer>
             </Panel>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-          <Panel title="Employment Outcomes by Program" subtitle="Employment · Internships · Enterprise across HEMP · HENT · HECO"
-            info="Participant counts for each work outcome, stacked within each program.">
-            <ResponsiveContainer width="100%" height={270}>
-              <BarChart data={byProgram} margin={{ top: 26, right: 12, bottom: 0, left: -12 }} barCategoryGap="40%">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                {(["Employment", "Internships", "Ventures"] as const).map((k, i) => (
-                  <Bar key={k} dataKey={k} name={k === "Ventures" ? "Enterprise" : k} stackId="o" fill={OUTCOME_COLOR[k]} barSize={46} radius={i === 2 ? [4, 4, 0, 0] : undefined}>
-                    {i === 2 && <LabelList dataKey="Total" position="top" fontSize={11} fill={NAVY} fontWeight={700} />}
-                  </Bar>
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
           <Panel title="Employment Pathway Trend" subtitle="How work pathways change over time"
             info="Annual trajectory of each pathway, by recorded year.">
             <ResponsiveContainer width="100%" height={250}>
@@ -629,12 +593,6 @@ export default function YouthInWorkPage() {
         {show(2) && (
         <section className="space-y-4">
           <SectionHeader title="Jobs Created" blurb="How many work opportunities are being created across the ecosystem, and how is it trending?" />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
-            <MiniKpi Icon={Briefcase} label="Primary Jobs" value={fmt(jobs.primary)} />
-            <MiniKpi Icon={Layers} label="Secondary Jobs" value={fmt(jobs.secondary)} />
-            <MiniKpi Icon={Hammer} label="Jobs by Enterprises" value={fmt(jobs.jobsCreated)} />
-            <MiniKpi Icon={Users} label="Youth Employed by Enterprises" value={fmt(jobs.youthEmployed)} />
-          </div>
 
           {/* Primary & secondary jobs + job categories */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
@@ -656,7 +614,7 @@ export default function YouthInWorkPage() {
               </BarChart>
             </ResponsiveContainer>
           </Panel>
-          <Panel title="Job Categories — New · Additional · Improved" subtitle="Nature of the work accessed"
+          <Panel title="Job Categories" subtitle="New · Additional · Improved"
             info="New: first job or re-entry after a break. Additional: a second income source alongside existing work. Improved: better pay, conditions, or advancement.">
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={jobs.jobCategories} margin={{ top: 18, right: 12, bottom: 0, left: -10 }} barCategoryGap="34%">
@@ -682,27 +640,9 @@ export default function YouthInWorkPage() {
 
           {/* Jobs by category + jobs created by program (with legends) */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Jobs by Category" subtitle="Full-time · Part-time · Contract · Internship · Enterprise"
-              info="How work breaks down across employment categories.">
-              <ResponsiveContainer width="100%" height={230}>
-                <BarChart data={jobs.byCategory} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="26%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} />
-                  <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Bar dataKey="value" name="Youth" radius={[4, 4, 0, 0]} barSize={34}>
-                    <LabelList dataKey="value" position="top" fontSize={9.5} fill="#374151" fontWeight={700} />
-                    {jobs.byCategory.map(d => <Cell key={d.name} fill={WORKCAT_COLOR[d.name] || BAND} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 8, justifyContent: "center" }}>
-                {jobs.byCategory.map(d => (
-                  <span key={d.name} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: WORKCAT_COLOR[d.name] || BAND }} />{d.name}
-                  </span>
-                ))}
-              </div>
+            <Panel title="Jobs by Category" subtitle="Full-time · Part-time · Seasonal"
+              info="Distribution of jobs by employment category type.">
+              <Donut data={jobs.byCategory.filter(d => ["Full-time", "Part-time", "Seasonal"].includes(d.name))} colors={WORKCAT_COLOR} total={jobs.byCategory.filter(d => ["Full-time", "Part-time", "Seasonal"].includes(d.name)).reduce((sum, d) => sum + d.value, 0)} totalLabel="Jobs" height={300} legendPercent />
             </Panel>
             <Panel title="Jobs Created by Program" subtitle="Positions attributable to each program's enterprises"
               info="Total jobs created by enterprises, grouped by the founder's program.">
