@@ -7,7 +7,7 @@ export { GENDERS } from "@/types";
 
 export type Institution = "ALX" | "ALU" | "ALCHE" | "Other";
 export type Pillar = "HEMP" | "HENT" | "HECO";
-export type EngagementStatus = "Completed" | "Active" | "In-progress" | "Dropped";
+export type EngagementStatus = "Registered" | "Completed";
 
 export interface OutreachParticipant {
   id: string;
@@ -27,9 +27,9 @@ export const PILLARS: Pillar[] = ["HEMP", "HENT", "HECO"];
 
 /* Interventions grouped by pillar */
 export const INTERVENTIONS_BY_PILLAR: Record<Pillar, string[]> = {
-  HEMP: ["HealthX", "Internships", "Mission"],
-  HENT: ["Masterclasses", "Mentorship", "Hackathons", "Field Visits"],
-  HECO: ["Community Outreach", "STEM Clubs"],
+  HEMP: ["Career Workshops", "Exposure Events", "SIE", "Courses", "Internships"],
+  HENT: ["Ventures", "Venture Funding", "Masterclasses", "Mentorship"],
+  HECO: ["Hackathon", "Study Trips", "Exposure & Networking"],
 };
 export const INTERVENTIONS: string[] = Object.values(INTERVENTIONS_BY_PILLAR).flat();
 
@@ -38,13 +38,13 @@ const PILLAR_OF: Record<string, Pillar> = Object.fromEntries(
     .flatMap(([p, list]) => list.map(i => [i, p]))
 );
 
-export const STATUSES: EngagementStatus[] = ["Completed", "Active", "In-progress", "Dropped"];
+export const STATUSES: EngagementStatus[] = ["Registered", "Completed"];
 
 /* approximate relative weight of each intervention's reach */
 const INTERVENTION_WEIGHT: Record<string, number> = {
-  "HealthX": 3.2, "Masterclasses": 2.6, "Mentorship": 1.6, "Hackathons": 1.4,
-  "Field Visits": 1.2, "Internships": 1.0, "Mission": 2.0,
-  "Community Outreach": 1.8, "STEM Clubs": 1.3,
+  "Career Workshops": 3.2, "Exposure Events": 2.8, "SIE": 1.8, "Courses": 2.4, "Internships": 1.6,
+  "Ventures": 1.4, "Venture Funding": 1.2, "Masterclasses": 2.6, "Mentorship": 1.6,
+  "Hackathon": 1.4, "Study Trips": 1.2, "Exposure & Networking": 1.8,
 };
 
 const YEARS = [2019, 2020, 2021, 2022, 2023, 2024] as const;
@@ -86,16 +86,16 @@ function makeParticipants(): OutreachParticipant[] {
 
     const yearEngaged = pick(YEARS, i * 17 + 6);
 
-    // Status — older engagements more likely completed
+    // Status — Registered or Completed; older engagements more likely completed
     const age = 2024 - yearEngaged;
     const r = sd(i * 29 + 9);
     let status: EngagementStatus;
     if (age >= 2) {
-      status = r < 0.78 ? "Completed" : r < 0.88 ? "Active" : r < 0.95 ? "In-progress" : "Dropped";
+      status = r < 0.75 ? "Completed" : "Registered";
     } else if (age === 1) {
-      status = r < 0.4 ? "Completed" : r < 0.78 ? "Active" : r < 0.94 ? "In-progress" : "Dropped";
+      status = r < 0.50 ? "Completed" : "Registered";
     } else {
-      status = r < 0.62 ? "Active" : r < 0.9 ? "In-progress" : r < 0.96 ? "Completed" : "Dropped";
+      status = r < 0.40 ? "Completed" : "Registered";
     }
 
     out.push({

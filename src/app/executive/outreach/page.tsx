@@ -36,11 +36,6 @@ const REACH_GENDERS: Gender[] = ["Female", "Male"];
 const OA_YEARS = [2022, 2023, 2024, 2025, 2026];
 
 /* Student-population reference data (academic programmes) */
-const POP_SUMMARY = [
-  { name: "All Students", Total: 6482, Female: 3306 },
-  { name: "MCF Scholars", Total: 1643, Female: 1101 },
-  { name: "Fee-Paying", Total: 4839, Female: 2226 },
-];
 const POP_BY_PROGRAM = [
   { name: "BSc Software Eng", Graduated: 820, "Not graduated": 540 },
   { name: "Computer Science", Graduated: 760, "Not graduated": 480 },
@@ -55,8 +50,9 @@ const POP_GENDER_BY_PROGRAM = [
   { name: "International Business & Trade", Female: 540, Male: 500 },
   { name: "Global Challenges", Female: 430, Male: 400 },
 ];
+const ENGAGEMENT_STATUSES = ["Registered", "Completed"] as const;
 const STATUS_COLOR: Record<string, string> = {
-  Completed: "#A81B2D", Active: "#102C5E", "In-progress": "#85B7EB", Dropped: "#C5D2E0",
+  Registered: "#85B7EB", Completed: "#A81B2D",
 };
 
 /* ── helpers ─────────────────────────────────────────── */
@@ -284,7 +280,7 @@ export default function OutreachPage() {
     INTERVENTIONS.map(name => {
       const rows = scope.filter(s => s.intervention === name);
       const rec: Record<string, number | string> = { name, total: rows.length };
-      STATUSES.forEach(st => { rec[st] = rows.filter(s => s.status === st).length; });
+      ENGAGEMENT_STATUSES.forEach(st => { rec[st] = rows.filter(s => s.status === st).length; });
       return rec;
     }).filter(d => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number)),
   [scope]);
@@ -485,27 +481,8 @@ export default function OutreachPage() {
               </BarChart>
             </ResponsiveContainer>
           </Panel>
-          <Panel title="Population Summary" subtitle="Total enrolment by student population"
-            info="Total enrolment and female count by student population.">
-            <ResponsiveContainer width="100%" height={210}>
-              <BarChart data={POP_SUMMARY} margin={{ top: 18, right: 10, bottom: 0, left: -8 }} barGap={6} barCategoryGap="34%">
-                <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                <Bar dataKey="Total" name="Total" fill="#102C5E" barSize={40} radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="Total" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                </Bar>
-                <Bar dataKey="Female" name="Female" fill="#102C5E" barSize={40} radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="Female" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Panel>
-
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Population by Program — Graduation Status" subtitle="Graduated vs current students per programme"
+            <Panel title="Graduation Status" subtitle="Graduated vs current students per programme"
               info="Students per academic programme, split into graduated and current.">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={POP_BY_PROGRAM} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
@@ -520,7 +497,7 @@ export default function OutreachPage() {
               </ResponsiveContainer>
             </Panel>
 
-            <Panel title="Population by Program — Gender Split" subtitle="Female vs male per programme"
+            <Panel title="Gender Split" subtitle="Female vs male per programme"
               info="Female vs male students per academic programme.">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={POP_GENDER_BY_PROGRAM} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
@@ -544,25 +521,25 @@ export default function OutreachPage() {
         <section className="space-y-4">
           <SectionHeader title="Engagement Outcomes" blurb="What happened after people participated." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Engagement Status by Intervention" subtitle="Completed · Active · In-progress · Dropped"
-              info="Completed, active, in-progress and dropped engagements per intervention.">
+            <Panel title="Engagement Status by Intervention" subtitle="Registered → Completed"
+              info="Participants at each stage of engagement: registered (enrolled) or completed the intervention.">
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={byStatus} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
                   <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={140} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {STATUSES.map((st, i) => (
+                  {ENGAGEMENT_STATUSES.map((st, i) => (
                     <Bar key={st} dataKey={st} stackId="s" barSize={15}
                       fill={STATUS_COLOR[st]}
-                      radius={i === STATUSES.length - 1 ? [0, 4, 4, 0] : undefined} />
+                      radius={i === ENGAGEMENT_STATUSES.length - 1 ? [0, 4, 4, 0] : undefined} />
                   ))}
                 </BarChart>
               </ResponsiveContainer>
             </Panel>
 
-            <Panel title="Completion Rate by Program" subtitle="Completed engagements as a share of each pillar"
+            <Panel title="Completion Rate by Pillar" subtitle="Completed engagements as a share of each pillar"
               info="Overall and female completion rate for each program.">
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={completionByProgram} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={6} barCategoryGap="34%">
