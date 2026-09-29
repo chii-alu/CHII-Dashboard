@@ -111,10 +111,10 @@ export default function AfricaMap({
             <ZoomableGroup key={mapKey} zoom={zoom} center={[20, 2]}
               onMoveEnd={(p: { zoom: number }) => setZoom(p.zoom)} minZoom={1} maxZoom={8}>
               <Geographies geography={GEO_URL}>
-                {({ geographies }: { geographies: any[] }) =>
+                {({ geographies }: any) =>
                   geographies
-                    .filter((geo) => AFRICA_ISO.has(Number(geo.id)))
-                    .map((geo) => {
+                    .filter((geo: any) => AFRICA_ISO.has(Number(geo.id)))
+                    .map((geo: any) => {
                       const name = COUNTRY_BY_ISO[Number(geo.id)];
                       const val = name ? (current[name] || 0) : 0;
                       const fill = val > 0 ? getColor(val, maxVal) : "#E5E7EB";
@@ -125,7 +125,7 @@ export default function AfricaMap({
                             default: { outline: "none" },
                             hover: { outline: "none", fill: val > 0 ? getColor(Math.min(val * 1.2, maxVal), maxVal) : "#D1D5DB", cursor: name ? "pointer" : "default" },
                             pressed: { outline: "none" },
-                          }}
+                          } as any}
                           onMouseMove={(e: React.MouseEvent) => { if (name) setTooltip({ name, value: val, x: e.clientX, y: e.clientY }); }}
                           onMouseLeave={() => setTooltip(null)} />
                       );

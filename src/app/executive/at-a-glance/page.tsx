@@ -483,8 +483,8 @@ export default function AtAGlancePage() {
   const femaleShare = Math.round((totalFemale / totalBeneficiaries) * 100);
   const maleShare = 100 - femaleShare;
 
-  const currentlyEnrolled = OUTREACH_PARTICIPANTS.filter(p => p.status === "Active").length;
-  const enrolledFemale = OUTREACH_PARTICIPANTS.filter(p => p.status === "Active" && p.gender === "Female").length;
+  const currentlyEnrolled = OUTREACH_PARTICIPANTS.filter(p => p.status === "Registered").length;
+  const enrolledFemale = OUTREACH_PARTICIPANTS.filter(p => p.status === "Registered" && p.gender === "Female").length;
   const enrolledFemalePct = Math.round((enrolledFemale / currentlyEnrolled) * 100) || 0;
 
   const graduates = OUTREACH_PARTICIPANTS.filter(p => p.status === "Completed").length;

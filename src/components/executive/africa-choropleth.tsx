@@ -175,10 +175,10 @@ export default function AfricaChoropleth() {
           >
             <ZoomableGroup key={mapKey} zoom={zoom} center={[20, 2]} onMoveEnd={(p: { zoom: number }) => setZoom(p.zoom)} minZoom={1} maxZoom={8}>
             <Geographies geography={GEO_URL}>
-              {({ geographies }) =>
+              {({ geographies }: any) =>
                 geographies
-                  .filter(geo => AFRICA_ISO.has(Number(geo.id)))
-                  .map(geo => {
+                  .filter((geo: any) => AFRICA_ISO.has(Number(geo.id)))
+                  .map((geo: any) => {
                     const isoNum   = Number(geo.id);
                     const name     = COUNTRY_BY_ISO[isoNum];
                     const val      = name ? (current[name] || 0) : 0;
@@ -206,7 +206,7 @@ export default function AfricaChoropleth() {
                             cursor: name && inRegion ? "pointer" : "default",
                           },
                           pressed: { outline: "none" },
-                        }}
+                        } as any}
                         onMouseMove={(e) => {
                           if (name && inRegion) {
                             setTooltip({ name, value: val, x: e.clientX, y: e.clientY });
