@@ -262,7 +262,7 @@ function MapContainer({
       <div ref={mapContainer} style={{ width: "100%", height: "100%", borderRadius: 10, border: "1px solid var(--border-subtle)", overflow: "hidden", backgroundColor: "var(--bg-surface-raised)" }} />
 
       {selectedCountry && popupPos && (
-        <div style={{ position: "absolute", top: popupPos.top, left: popupPos.left, backgroundColor: "var(--bg-surface)", borderRadius: 0, padding: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", border: "1px solid var(--border-subtle)", width: 420, zIndex: 10 }}>
+        <div style={{ position: "absolute", top: popupPos.top, left: popupPos.left, backgroundColor: "var(--bg-surface)", borderRadius: 10, padding: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", border: "1px solid var(--border-subtle)", width: 420, zIndex: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <h2 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--brand-secondary)" }}>{selectedCountry.name}</h2>
             <button onClick={() => { setSelectedCountry(null); setPopupPos(null); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "var(--text-tertiary)", padding: 0, width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
@@ -278,8 +278,8 @@ function MapContainer({
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--border-subtle)" }}>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}></th>
-                  <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Youth</th>
-                  <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Wage</th>
+                  <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Youth in Work</th>
+                  <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Wage Employment</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Entrepreneurs</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Further Education</th>
                 </tr>
