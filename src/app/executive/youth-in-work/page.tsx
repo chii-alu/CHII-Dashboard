@@ -364,7 +364,7 @@ export default function YouthInWorkPage() {
     };
     const employed = scope.filter(isEmployed);
     const priorityGroups = [
-      { name: "Women", value: employed.filter(y => y.gender === "Female").length },
+      { name: "Female", value: employed.filter(y => y.gender === "Female").length },
       { name: "Refugees / IDPs", value: employed.filter(y => y.refugee).length },
       { name: "Persons w/ disability", value: employed.filter(y => y.pwd).length },
     ].sort((a, b) => b.value - a.value);
@@ -412,7 +412,7 @@ export default function YouthInWorkPage() {
     });
     const outcomesByPriorityGroup = [
       {
-        name: "Women",
+        name: "Female",
         Employment: employed.filter(y => y.gender === "Female").length,
         Internships: scope.filter(y => y.gender === "Female" && isInternship(y)).length,
         Enterprise: scope.filter(y => y.gender === "Female" && isVenture(y)).length,
@@ -668,8 +668,8 @@ export default function YouthInWorkPage() {
                 </LineChart>
               </ResponsiveContainer>
             </Panel>
-            <Panel title="Youth in Work Trend" subtitle="Participants in work, by year"
-              info="Youth holding a primary or secondary job each year, including total, female, PWD, and refugee participants.">
+            <Panel title="Youth in Work Trend by Inclusion" subtitle="Participants in work, by year"
+              info="Youth holding a primary or secondary job each year, including female, PWD, and refugee participants.">
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={jobs.youthTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
@@ -677,7 +677,6 @@ export default function YouthInWorkPage() {
                   <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="Total" stroke="#102C5E" strokeWidth={2.5} dot={{ r: 3 }} />
                   <Line type="monotone" dataKey="Female" stroke="#479BD6" strokeWidth={2} dot={{ r: 3 }} />
                   <Line type="monotone" dataKey="PWD" stroke="#E0A458" strokeWidth={2} dot={{ r: 3 }} />
                   <Line type="monotone" dataKey="Refugee" stroke="#D45F2C" strokeWidth={2} dot={{ r: 3 }} />

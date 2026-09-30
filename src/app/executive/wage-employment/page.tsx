@@ -146,8 +146,12 @@ export default function WageEmploymentPage() {
     };
   }, [scope, total]);
 
-  const genderData = useMemo(
-    () => (["Female", "Male"] as Gender[]).map((g) => ({ name: g, value: scope.filter((w) => w.gender === g).length })).filter((d) => d.value > 0),
+  const inclusionReachData = useMemo(
+    () => [
+      { name: "Female", value: scope.filter((w) => w.gender === "Female").length },
+      { name: "Refugee", value: scope.filter((w) => w.refugee).length },
+      { name: "PWD", value: scope.filter((w) => w.pwd).length },
+    ].filter((d) => d.value > 0),
     [scope]
   );
 
@@ -326,9 +330,9 @@ export default function WageEmploymentPage() {
             <SectionHeader title="Workforce Profile" blurb="Who is employed?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
               <style>{`@media (max-width: 720px){ .we-two{ grid-template-columns: 1fr !important; } }`}</style>
-              <Panel title="Gender Distribution" subtitle="Female · Male · Non-binary"
-                info="Distribution of employed participants by gender.">
-                <Donut data={genderData} colors={GENDER_COLOR} total={total} totalLabel="Employed" height={340} legendPercent />
+              <Panel title="Inclusion Reach" subtitle="Female · Refugee · PWD"
+                info="Distribution of wage-employed participants from inclusion-focused priority groups.">
+                <Donut data={inclusionReachData} colors={{ Female: "#102C5E", Refugee: "#E0A458", PWD: "#479BD6" }} total={total} totalLabel="Employed" height={340} legendPercent />
               </Panel>
               <Panel title="Contract Type" subtitle="Full-time · Part-time · Seasonal"
                 info="Contract-type split across the employed population.">

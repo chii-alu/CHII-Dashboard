@@ -23,8 +23,8 @@ export interface Venture {
   rating: number;          // 1–5
 }
 
-export const STAGES: Stage[] = ["Idea", "Pre-seed", "Seed", "Early-stage", "Growth", "Scaling", "Mature", "Closed"];
-export const STATUSES: Status[] = ["Pre-seed", "Seed", "Early-stage", "Growth", "Scaling", "Closed", "Non-operational"];
+export const STAGES: Stage[] = ["Idea", "Early-stage", "Growth", "Scaling"];
+export const STATUSES: Status[] = ["Active", "Non-operational", "Closed"];
 export const FUNDING_SOURCES: FundingSource[] = ["Personal / bootstrap", "Grant", "Angel / investor", "Accelerator", "Loan"];
 
 /* pipeline funnel order (descending) */
@@ -58,12 +58,10 @@ function buildVentures(n: number): Venture[] {
       id: i + 1,
       gender: pick<Gender>(r, [["Female", 0.44], ["Male", 0.53], ["Non-binary", 0.03]]),
       stage: pick<Stage>(r, [
-        ["Idea", 0.2], ["Pre-seed", 0.22], ["Seed", 0.18], ["Early-stage", 0.15],
-        ["Growth", 0.1], ["Scaling", 0.06], ["Mature", 0.04], ["Closed", 0.05],
+        ["Idea", 0.25], ["Early-stage", 0.35], ["Growth", 0.25], ["Scaling", 0.15],
       ]),
       status: pick<Status>(r, [
-        ["Pre-seed", 0.24], ["Seed", 0.2], ["Early-stage", 0.18], ["Growth", 0.12],
-        ["Scaling", 0.08], ["Closed", 0.1], ["Non-operational", 0.08],
+        ["Active", 0.75], ["Non-operational", 0.15], ["Closed", 0.1],
       ]),
       fundingSource: pick<FundingSource>(r, [
         ["Personal / bootstrap", 0.42], ["Grant", 0.2], ["Angel / investor", 0.16],
