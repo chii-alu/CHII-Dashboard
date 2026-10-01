@@ -524,7 +524,6 @@ export default function HEMPPage() {
                 info="Active health professions students across 15 countries."
                 Icon={Users}
                 secondaryText={`Strong foundation for HEMP pipeline growth`}
-                programmeText="BSE: 500  BEL: 300  IBT: 40"
               />
               <KPICard
                 label="Countries Reached"

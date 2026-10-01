@@ -326,11 +326,11 @@ export default function ExposureEvents() {
               paceT: 80,
             },
             {
-              label: "Partnerships",
+              label: "Partner Organizations",
               num: 63,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: 100+ | Partner organizations`,
+              sub: `Goal: 100+ | Unique partnerships`,
               tip: "Number of collaborating organizations",
               pace: true,
               paceA: 63,
@@ -484,7 +484,7 @@ export default function ExposureEvents() {
                       <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                       <Tooltip content={<ChartTip />} />
                       <Line type="monotone" dataKey="events" stroke="#479BD6" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Events" />
-                      <Line type="monotone" dataKey="students" stroke="#F97316" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Students" />
+                      <Line type="monotone" dataKey="students" stroke="#F97316" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Participants" />
                       <Line type="monotone" dataKey="goal" stroke="#8B5CF6" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Goal" strokeDasharray="5 5" />
                     </LineChart>
                   </ResponsiveContainer>
@@ -495,7 +495,7 @@ export default function ExposureEvents() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 2, backgroundColor: "#F97316", borderRadius: 1 }} />
-                      <span style={{ fontSize: 10, color: "#6B7280" }}>Students</span>
+                      <span style={{ fontSize: 10, color: "#6B7280" }}>Participants</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 2, backgroundColor: "#8B5CF6", borderRadius: 1 }} />
@@ -628,7 +628,7 @@ export default function ExposureEvents() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Rating Distribution" subtitle="Participant satisfaction scores" info="Average rating 4.0/5" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Satisfaction Score" subtitle="Participant satisfaction scores" info="Average rating 4.0/5" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={ratingDistData} margin={{ top: 6, right: 10, bottom: 0, left: -16 }}>
@@ -649,79 +649,26 @@ export default function ExposureEvents() {
                   </div>
                 </div>
               </Panel>
-              <Panel title="Quality Dimensions" subtitle="Multi-dimensional participant feedback ratings" info="Ratings across relevance, quality and usefulness (0-5 scale)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
-                <ResponsiveContainer width="100%" height={250}>
+              <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={[
-                    { metric: "Relevance", rating: 4.25, color: "#EC4899" },
-                    { metric: "Quality", rating: 4.6, color: "#F97316" },
-                    { metric: "Usefulness", rating: 4.4, color: "#8B5CF6" },
-                  ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                    { metric: "Relevance", rating: 4.25 },
+                    { metric: "Quality", rating: 4.6 },
+                    { metric: "Usefulness", rating: 4.4 },
+                    { metric: "Confidence", rating: 4.2 },
+                    { metric: "NPS (÷2)", rating: 3.9 },
+                  ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} formatter={(v) => typeof v === 'number' ? v.toFixed(2) : v} />
-                    <Bar dataKey="rating" fill="#479BD6" barSize={46} radius={[4, 4, 0, 0]} name="Rating">
-                      <LabelList dataKey="rating" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} offset={5} formatter={(v: number) => v.toFixed(2)} />
+                    <Bar dataKey="rating" fill="#479BD6" barSize={36} radius={[4, 4, 0, 0]} name="Score">
+                      <LabelList dataKey="rating" position="top" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} formatter={(v: number) => v.toFixed(2)} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 <div style={{ display: "flex", justifyContent: "center", gap: 16, fontSize: 10, color: "#6B7280", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, flexWrap: "wrap" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 8, backgroundColor: "#479BD6", borderRadius: 2 }} />Rating (0-5)</span>
-                </div>
-              </Panel>
-
-              <Panel title="Recommendation & Confidence" subtitle="NPS and skill confidence assessment" info="Net Promoter Score (0-10) and confidence level (0-5)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { name: "Confidence", value: 4.2, metric: "confidence" },
-                    { name: "NPS (÷2)", value: 3.9, metric: "nps" },
-                  ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} formatter={(v) => typeof v === 'number' ? v.toFixed(1) : v} />
-                    <Bar dataKey="value" fill="#10B981" barSize={46} radius={[4, 4, 0, 0]} name="Score">
-                      <LabelList dataKey="value" position="top" fontSize={11} fill="#085041" fontWeight={700} offset={5} formatter={(v: number) => v.toFixed(1)} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div style={{ display: "flex", justifyContent: "center", gap: 16, fontSize: 10, color: "#6B7280", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, flexWrap: "wrap" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 8, backgroundColor: "#10B981", borderRadius: 2 }} />Score</span>
-                </div>
-              </Panel>
-
-              <Panel title="Satisfaction Trend" subtitle="Quality metrics progression by event type" info="Average satisfaction ratings tracked across different event formats" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <LineChart data={[
-                      { type: "Tech", relevance: 4.1, quality: 4.0, usefulness: 4.2 },
-                      { type: "Health", relevance: 4.0, quality: 4.3, usefulness: 4.1 },
-                      { type: "Entrepreneurship", relevance: 4.4, quality: 4.5, usefulness: 4.4 },
-                      { type: "Community", relevance: 4.2, quality: 4.4, usefulness: 4.3 },
-                    ]} margin={{ top: 24, right: 14, bottom: 0, left: -12 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                      <XAxis dataKey="type" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
-                      <Tooltip content={<ChartTip />} formatter={(v) => (v as number).toFixed(1)} />
-                      <Line type="monotone" dataKey="relevance" stroke="#EC4899" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Relevance" />
-                      <Line type="monotone" dataKey="quality" stroke="#F97316" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Quality" />
-                      <Line type="monotone" dataKey="usefulness" stroke="#8B5CF6" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Usefulness" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ width: 12, height: 2, backgroundColor: "#EC4899", borderRadius: 1 }} />
-                      <span style={{ fontSize: 10, color: "#6B7280" }}>Relevance</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ width: 12, height: 2, backgroundColor: "#F97316", borderRadius: 1 }} />
-                      <span style={{ fontSize: 10, color: "#6B7280" }}>Quality</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ width: 12, height: 2, backgroundColor: "#8B5CF6", borderRadius: 1 }} />
-                      <span style={{ fontSize: 10, color: "#6B7280" }}>Usefulness</span>
-                    </div>
-                  </div>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 8, backgroundColor: "#479BD6", borderRadius: 2 }} />Score (0-5)</span>
                 </div>
               </Panel>
             </div>

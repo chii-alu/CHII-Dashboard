@@ -135,8 +135,7 @@ function RankBar({ data, color = BAND, width = 130, legend = false, center = fal
 
 /* ── Sections for filter pills ─────────────────────── */
 const FE_SECTIONS: { n: number; label: string }[] = [
-  { n: 1, label: "Participant Profile" },
-  { n: 2, label: "Study Pathways" },
+  { n: 1, label: "Participants" },
 ];
 
 /* ════════════════════════════════════════════════════════
@@ -281,7 +280,7 @@ export default function FurtherEducationPage() {
     </div>
   );
 
-  return (
+return (
     <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh" }}>
 
       {/* ── Header ─────────────────────────────────────── */}
@@ -313,16 +312,16 @@ export default function FurtherEducationPage() {
         {/* ════ OVERVIEW ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="In Further Study" num={TOTAL} sub="graduates" Icon={GraduationCap}
-              tooltip="Graduates in further education within the current filters." />
-            <StatsKpiCard label="Currently Enrolled" num={d.enrolled} sub="active students" Icon={BookOpen}
-              tooltip="Graduates with an active further-education enrolment this cycle." />
-            <StatsKpiCard label="Further Study Rate" num={5} displayFmt={(n) => `${Math.round(n)}%`} sub="of all graduates" Icon={TrendingUp}
-              tooltip="Share of CHII graduates who progress to further study." />
-            <StatsKpiCard label="Female Share" num={d.femalePct} displayFmt={(n) => `${Math.round(n)}%`} sub="of cohort" Icon={WomanIcon}
-              tooltip="Share of further-education graduates who are female." />
-            <StatsKpiCard label="Scholarship / Funded" num={d.fundedPct} displayFmt={(n) => `${Math.round(n)}%`} sub="funded share" Icon={Wallet}
+            <StatsKpiCard label="In Further Education" num={226} sub="graduates" Icon={GraduationCap}
+              tooltip="Graduates pursuing further education." />
+            <StatsKpiCard label="Female Graduates" num={126} sub="female students" Icon={WomanIcon}
+              tooltip="Female graduates in further education." />
+            <StatsKpiCard label="Master's & Above" num={88} displayFmt={(n) => `${n}%`} sub="postgraduate" Icon={BookOpen}
+              tooltip="Share pursuing master's degrees or higher." />
+            <StatsKpiCard label="Scholarship-Funded" num={29} displayFmt={(n) => `${n}%`} sub="funded share" Icon={Wallet}
               tooltip="Share on a scholarship or otherwise funded place." />
+            <StatsKpiCard label="Further Study Rate" num={5} displayFmt={(n) => `${n}%`} sub="of all graduates" Icon={TrendingUp}
+              tooltip="Share of CHII graduates who progress to further study." />
             <StatsKpiCard label="Countries of Study" num={d.countriesOfStudy} sub="destinations" Icon={Globe}
               tooltip="Distinct countries where graduates pursue further study." />
           </div>
@@ -331,29 +330,10 @@ export default function FurtherEducationPage() {
           {renderFilters()}
         </section>
 
-        {/* ════ PARTICIPANT PROFILE ════ */}
+        {/* ════ PARTICIPANTS & STUDY PATHWAYS ════ */}
         {show(1) && (
         <section className="space-y-4">
-          <SectionHeader title="Participant Profile" blurb="Who is pursuing further education - gender, origins, and distribution of graduates." />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-            <Panel title="Gender Distribution" subtitle="Female · Male · Non-binary"
-              info="Gender distribution of graduates in further education.">
-              <Donut data={d.genderData} colors={GENDER_COLOR} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />
-            </Panel>
-            <Panel title="Country of Origin" subtitle="Where graduates are from, ranked"
-              info="Graduates' countries of origin, sorted from most to least.">
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <RankBar data={d.origin} width={110} legend center />
-              </div>
-            </Panel>
-          </div>
-        </section>
-        )}
-
-        {/* ════ STUDY PATHWAYS ════ */}
-        {show(2) && (
-        <section className="space-y-4">
-          <SectionHeader title="Study Pathways" blurb="What further education are graduates pursuing - qualifications, fields, destinations, and relevance to their ALU degree." />
+          <SectionHeader title="Participants" blurb="Who is pursuing further education and what pathways are they following - profiles, qualifications, fields, and destinations." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
             <Panel title="Qualification Level" subtitle="Type of qualification pursued"
               info="Qualification level graduates are pursuing.">
@@ -361,9 +341,18 @@ export default function FurtherEducationPage() {
             </Panel>
             <Panel title="Field of Study" subtitle="Disciplines, ranked"
               info="Fields of study graduates pursue, sorted from most to least.">
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <RankBar data={d.fieldData} width={150} legend center />
-              </div>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={d.fieldData} margin={{ top: 4, right: 36, bottom: 0, left: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={120} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="value" name="Graduates" fill={C_ACCENT} radius={[0, 4, 4, 0]} barSize={22}>
+                    <LabelList dataKey="value" position="right" fontSize={10} fill="var(--chart-label)" fontWeight={700} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </Panel>
             <Panel title="Relevance to ALU Degree" subtitle="How further study relates to the degree"
               info="How closely graduates' further study relates to their ALU degree.">
