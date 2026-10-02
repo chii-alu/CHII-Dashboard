@@ -230,7 +230,7 @@ const RATING_DIST = [
 ];
 
 export default function CareerWorkshopsPage() {
-  const categories = ["Programme Reach", "Quality & Experience", "Partners"];
+  const categories = ["Reach & Engagement", "Quality & Experience", "Partners"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -434,14 +434,14 @@ export default function CareerWorkshopsPage() {
           </div>
         </div>
 
-        {show("Programme Reach") && (
+        {show("Reach & Engagement") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Programme Reach
+                    Reach & Engagement
                   </p>
                   <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Cumulative growth and demographic breakdown</p>
                 </div>
