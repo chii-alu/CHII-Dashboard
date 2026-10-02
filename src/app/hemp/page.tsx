@@ -510,7 +510,7 @@ export default function HEMPPage() {
 
       {/* Stats Cards Section */}
       <div className="max-w-[1600px] mx-auto px-10 py-7">
-        <div style={{ display: "grid", gridTemplateColumns: "270px minmax(0, 1fr) 270px", gap: 24, alignItems: "end", overflowX: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "220px minmax(0, 1fr) 220px", gap: 24, alignItems: "end", overflowX: "hidden" }}>
 
           {/* Left Column: Mission Students */}
           <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
