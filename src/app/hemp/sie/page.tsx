@@ -592,7 +592,7 @@ export default function HEMPSie() {
                   </LineChart>
                 </ResponsiveContainer>
               </Panel>
-              <Panel title="Participants by Discipline" subtitle="Academic background distribution" info="Number of participants from each academic discipline" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Participants by Academic Programmes" subtitle="Academic background distribution" info="Number of participants from each academic programme" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 300 }}>
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={SIE_DISCIPLINES.map(disc => ({

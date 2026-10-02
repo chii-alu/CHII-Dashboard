@@ -134,9 +134,8 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPInternships() {
-  const categories = ["Growth & Outcomes", "Sector Mix", "Quality & Placements"];
+  const categories = ["Growth & Outcomes", "Sector Mix", "Employer Feedback", "Student Feedback"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const [expandedSections, setExpandedSections] = useState({ employer: true, student: true });
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterYear, setFilterYear] = useState("All Years");
@@ -536,44 +535,22 @@ export default function HEMPInternships() {
           </section>
         )}
 
-{show("Quality & Placements") && (
+{show("Employer Feedback") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Quality & Placements
+                    Employer Feedback
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Programme quality and placement outcomes</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Programme quality and employer assessment</p>
                 </div>
               </div>
             </div>
             <div style={{ marginBottom: 32 }} />
-
-<div style={{ marginTop: 40, marginBottom: 28 }}>
-              <button
-                onClick={() => setExpandedSections(prev => ({ ...prev, employer: !prev.employer }))}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  marginBottom: 12
-                }}
-              >
-                <span style={{ width: 2, height: 14, borderRadius: 999, backgroundColor: "#185FA5", flexShrink: 0 }} />
-                <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "#185FA5", lineHeight: 1.2, margin: 0 }}>
-                  Employer Feedback
-                </p>
-                <ChevronDown size={14} color="#185FA5" style={{ marginLeft: 4, transform: expandedSections.employer ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.2s" }} />
-              </button>
-            </div>
-            {expandedSections.employer && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 40 }}>
+            <div style={{
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Student and Partner Feedback" subtitle="Feedback ratings by organization" info="Average feedback scores from students and partner organizations" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
@@ -666,30 +643,23 @@ export default function HEMPInternships() {
                 </ResponsiveContainer>
               </Panel>
             </div>
-            )}
+          </section>
+        )}
 
-            <div style={{ marginBottom: 28, marginTop: 40 }}>
-              <button
-                onClick={() => setExpandedSections(prev => ({ ...prev, student: !prev.student }))}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  marginBottom: 12
-                }}
-              >
-                <span style={{ width: 2, height: 14, borderRadius: 999, backgroundColor: "#1D9E75", flexShrink: 0 }} />
-                <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "#1D9E75", lineHeight: 1.2, margin: 0 }}>
-                  Student Feedback
-                </p>
-                <ChevronDown size={14} color="#1D9E75" style={{ marginLeft: 4, transform: expandedSections.student ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.2s" }} />
-              </button>
+        {show("Student Feedback") && (
+          <section style={{ marginBottom: 48 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
+                    Student Feedback
+                  </p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Student perception and placement outcomes</p>
+                </div>
+              </div>
             </div>
-            {expandedSections.student && (
+            <div style={{ marginBottom: 32 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Internship Placements by Programme" subtitle="Participants who secured internships" info="Students who participated in internships by academic programme" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -799,7 +769,6 @@ export default function HEMPInternships() {
                 </ResponsiveContainer>
               </Panel>
             </div>
-            )}
           </section>
         )}
         <PortalFooter portal="hemp" synced="18 Jun 2026, EAT" />
