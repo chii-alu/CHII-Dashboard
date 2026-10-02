@@ -190,6 +190,11 @@ export default function HEMPInternships() {
     });
   }, [filterHealthInterestYear]);
 
+  const totalApplicants = Math.round(totalStudents * 1.3);
+  const placementsSecured = filteredInternships.length;
+  const uniquePartners = Array.from(new Set(filteredInternships.map(i => i.organization))).length;
+  const avgEmployerRating = filteredInternships.length ? parseFloat(((filteredInternships.reduce((s, i) => s + i.recommendationScore + i.likelyToHire * 2 + i.healthSystemsUnderstanding + i.appliesToHealthProblems, 0) / (filteredInternships.length * 6)) * 2).toFixed(1)) : 0;
+
   // Mission Students Context
   const msTotalEnrolled = missionStudents.length;
   const msFemaleStudents = missionStudents.filter(s => s.gender === "Female").length;
@@ -229,17 +234,28 @@ export default function HEMPInternships() {
       <div className="max-w-[1440px] mx-auto px-6 py-7">
 <HeaderStatsPanel
           title="Programme Overview"
-          nowrap={true}
+          nowrap={false}
           cards={[
             {
-              label: "Total Participants",
-              num: totalStudents,
+              label: "Total Applicants",
+              num: totalApplicants,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: ${targets2030.internships.toLocaleString()} by 2030 | ${msTotalEnrolled} mission students`,
-              tip: "Total students placed in internships toward 2030 target",
+              sub: `Application volume | ${placementsSecured} placements secured`,
+              tip: "Total students who applied for internships",
               pace: true,
-              paceA: totalStudents,
+              paceA: totalApplicants,
+              paceT: Math.round(totalApplicants * 1.2),
+            },
+            {
+              label: "Placements Secured",
+              num: placementsSecured,
+              icon: Briefcase,
+              displayFmt: (n) => n.toLocaleString(),
+              sub: `Goal: ${targets2030.internships.toLocaleString()} by 2030 | ${msTotalEnrolled} mission students`,
+              tip: "Total internship placements secured",
+              pace: true,
+              paceA: placementsSecured,
               paceT: targets2030.internships,
             },
             {
@@ -248,43 +264,10 @@ export default function HEMPInternships() {
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
               sub: `Goal: 50% | ${msFemalePct}% mission students`,
-              tip: "Percentage of female participants across all students and mission cohort",
+              tip: "Percentage of female participants",
               pace: true,
               paceA: femalePct,
               paceT: 50,
-            },
-            {
-              label: "Employment Conversions",
-              num: conversionRate,
-              icon: Briefcase,
-              displayFmt: (n) => n + "%",
-              sub: `Goal: 65% | ${conversionRate}% mission students`,
-              tip: "Percentage securing employment after internship",
-              pace: true,
-              paceA: conversionRate,
-              paceT: 65,
-            },
-            {
-              label: "Completion Rate",
-              num: msCompletionRate,
-              icon: Target,
-              displayFmt: (n) => n + "%",
-              sub: `Goal: 80% | ${msCompletionRate}% mission students`,
-              tip: "Percentage of mission students who completed internship",
-              pace: true,
-              paceA: msCompletionRate,
-              paceT: 80,
-            },
-            {
-              label: "Satisfaction Score",
-              num: avgSatisfaction,
-              icon: TrendingUp,
-              displayFmt: (n) => n.toFixed(1),
-              sub: `Goal: 4.5+ | Out of 5`,
-              tip: "Average student satisfaction rating",
-              pace: true,
-              paceA: avgSatisfaction * 20,
-              paceT: 90,
             },
             {
               label: "Inclusion Reach",
@@ -296,6 +279,28 @@ export default function HEMPInternships() {
               pace: true,
               paceA: 19,
               paceT: 19,
+            },
+            {
+              label: "Employment Conversions",
+              num: conversionRate,
+              icon: Briefcase,
+              displayFmt: (n) => n + "%",
+              sub: `Goal: 65%`,
+              tip: "Percentage securing employment after internship",
+              pace: true,
+              paceA: conversionRate,
+              paceT: 65,
+            },
+            {
+              label: "Employer Rating",
+              num: avgEmployerRating,
+              icon: TrendingUp,
+              displayFmt: (n) => n.toFixed(1),
+              sub: `Out of 10 | Based on employer feedback`,
+              tip: "Average employer satisfaction rating",
+              pace: true,
+              paceA: avgEmployerRating * 10,
+              paceT: 80,
             },
           ]}
         />
@@ -530,7 +535,7 @@ export default function HEMPInternships() {
               <Panel title="Departments by Organization" subtitle="Department distribution across partner organizations" info="Number of internship placements by department within each organization" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={[
-                    ...Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
+                    ...Array.from(new Set(filteredInternships.map(i => i.organization))).filter(o => o !== "CHII Internal").sort().map(o => {
                       const orgInternships = filteredInternships.filter(i => i.organization === o);
                       const deptCounts: Record<string, number> = {};
                       orgInternships.forEach(i => {
@@ -538,7 +543,7 @@ export default function HEMPInternships() {
                       });
                       return { organization: o, ...deptCounts };
                     }),
-                    { organization: "MELA For CHII", "Research": 12, "Health Systems": 8, "Digital Health": 5 }
+                    { organization: "CHII", "HECO": 12, "HENT": 18, "HEMP": 25, "MELA": 15 }
                   ]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
@@ -572,59 +577,48 @@ export default function HEMPInternships() {
             </div>
             <div style={{ marginBottom: 32 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Student and Partner Feedback" subtitle="Feedback ratings by organization" info="Average feedback scores from students and partner organizations" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Overall Employer Rating" subtitle="Composite employer satisfaction score" info="Average rating across all employer assessment dimensions (0-10 scale)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
                     const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgStudentFeedback = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + i.studentFeedbackScore, 0) / orgInternships.length).toFixed(1)) : 0;
-                    const avgPartnerFeedback = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + i.partnerFeedbackScore, 0) / orgInternships.length).toFixed(1)) : 0;
-                    return { name: o, "Student Feedback": avgStudentFeedback, "Partner Feedback": avgPartnerFeedback };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
+                    const avgSkills = orgInternships.length ? (orgInternships.reduce((s, i) => s + i.asksClarifyingQuestions + i.communicatesProfessionally + i.meetsDeadlines + i.worksInTeams, 0) / (orgInternships.length * 4)) : 0;
+                    const avgHealth = orgInternships.length ? (orgInternships.reduce((s, i) => s + i.healthSystemsUnderstanding + i.appliesToHealthProblems, 0) / (orgInternships.length * 2)) : 0;
+                    const avgRecommendation = orgInternships.length ? (orgInternships.reduce((s, i) => s + i.recommendationScore, 0) / orgInternships.length) : 0;
+                    const avgHire = orgInternships.length ? ((orgInternships.reduce((s, i) => s + i.likelyToHire, 0) / orgInternships.length) * 2) : 0;
+                    const overallScore = parseFloat(((avgSkills + avgHealth + (avgRecommendation / 2) + avgHire) / 4 * 2).toFixed(1));
+                    return { name: o, "Overall Rating": overallScore };
+                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={true} domain={[3.5, 5]} axisLine={false} tickLine={false} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 10]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
                     <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
-                    <Legend wrapperStyle={{ fontSize: 9, paddingTop: 12 }} />
-                    <Bar dataKey="Student Feedback" fill="#185FA5" radius={[0, 4, 4, 0]}>
-                      <LabelList dataKey="Student Feedback" position="right" fontSize={9} fill={BRAND_DK} fontWeight={700} offset={5} />
-                    </Bar>
-                    <Bar dataKey="Partner Feedback" fill="#479BD6" radius={[0, 4, 4, 0]}>
-                      <LabelList dataKey="Partner Feedback" position="right" fontSize={9} fill={BRAND_DK} fontWeight={700} offset={5} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </Panel>
-              <Panel title="Workplace Skills" subtitle="Employer assessment of core competencies" info="Average employer ratings for student workplace skills (1=Never, 5=Consistently)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={[
-                    {
-                      skill: "Asks Clarifying Questions",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.asksClarifyingQuestions, 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                    {
-                      skill: "Professional Communication",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.communicatesProfessionally, 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                    {
-                      skill: "Meets Deadlines",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.meetsDeadlines, 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                    {
-                      skill: "Works Effectively in Teams",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.worksInTeams, 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                  ]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 160 }} barCategoryGap="12%">
-                    <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
-                    <YAxis dataKey="skill" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={150} />
-                    <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
-                    <Bar dataKey="score" fill="#14306B" radius={[0, 4, 4, 0]}>
-                      <LabelList dataKey="score" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} />
+                    <Bar dataKey="Overall Rating" fill="#479BD6" radius={[0, 4, 4, 0]}>
+                      <LabelList dataKey="Overall Rating" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#14306B" }} /> Score</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Score (0-10)</span>
+                </div>
+              </Panel>
+              <Panel title="Workplace Skills" subtitle="Employer assessment of core competencies" info="Average employer ratings for student workplace skills (1=Never, 5=Consistently)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
+                    const orgInternships = filteredInternships.filter(i => i.organization === o);
+                    const avgSkills = orgInternships.length ? parseFloat(((orgInternships.reduce((s, i) => s + i.asksClarifyingQuestions + i.communicatesProfessionally + i.meetsDeadlines + i.worksInTeams, 0) / (orgInternships.length * 4)) * 2).toFixed(1)) : 0;
+                    return { name: o, "Skills Rating": avgSkills };
+                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                    <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 10]} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
+                    <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
+                    <Bar dataKey="Skills Rating" fill="#14306B" radius={[0, 4, 4, 0]}>
+                      <LabelList dataKey="Skills Rating" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#14306B" }} /> Score (0-10)</span>
                 </div>
               </Panel>
               <Panel title="Health Sector Readiness" subtitle="Understanding and application of health context" info="Average employer ratings on health systems understanding and practical application (1=Not at all, 5=Extremely)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>

@@ -85,7 +85,7 @@ export function HeaderStatsPanel({
       }}>
         {cards.map((card, idx) => (
           <div key={idx} style={{
-            flex: "1 1 auto",
+            flex: idx === cards.length - 1 && cards.length % 2 === 1 ? "0 1 auto" : "1 1 auto",
             minWidth: 160,
             minHeight: 0,
           }}>
