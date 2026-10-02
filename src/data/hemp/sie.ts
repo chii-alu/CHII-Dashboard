@@ -92,7 +92,7 @@ export interface SieCohort {
 
 export const sieCohorts: SieCohort[] = [
   {
-    id: "SIE01", name: "SIE Pilot Cohort", year: 2024, country: "Rwanda", region: "East Africa",
+    id: "SIE01", name: "Cohort 1", year: 2024, country: "Rwanda", region: "East Africa",
     applied: 64, selected: 24, completedVirtual: 22, travelledInCountry: 20, completedProgramme: 19,
     female: 11,
     siteVisits: 6, partnerOrgs: 5, partnerProjects: 5, reflectionSessions: 8,
@@ -111,7 +111,7 @@ export const sieCohorts: SieCohort[] = [
     healthInterests: { "Digital Health": 5, "Mental Health": 4, "Health Equity, Advocacy and Leadership": 3, "Nutrition": 3, "Disease Prevention and Control": 2, "Maternal and Child Health": 2, "One Health": 1 },
   },
   {
-    id: "SIE02", name: "SIE Cohort II", year: 2025, country: "Rwanda", region: "East Africa",
+    id: "SIE02", name: "Cohort 2", year: 2025, country: "Rwanda", region: "East Africa",
     applied: 98, selected: 32, completedVirtual: 30, travelledInCountry: 28, completedProgramme: 27,
     female: 15,
     siteVisits: 9, partnerOrgs: 7, partnerProjects: 8, reflectionSessions: 12,
@@ -130,7 +130,7 @@ export const sieCohorts: SieCohort[] = [
     healthInterests: { "Mental Health": 6, "Digital Health": 5, "Health Equity, Advocacy and Leadership": 4, "Nutrition": 4, "Disease Prevention and Control": 3, "Maternal and Child Health": 2, "Sexual and Reproductive Health": 2, "One Health": 1 },
   },
   {
-    id: "SIE03", name: "SIE Cohort III - Kenya", year: 2024, country: "Kenya", region: "East Africa",
+    id: "SIE03", name: "Cohort 3", year: 2024, country: "Kenya", region: "East Africa",
     applied: 75, selected: 28, completedVirtual: 26, travelledInCountry: 24, completedProgramme: 22,
     female: 13,
     siteVisits: 7, partnerOrgs: 6, partnerProjects: 6, reflectionSessions: 10,
@@ -149,7 +149,7 @@ export const sieCohorts: SieCohort[] = [
     healthInterests: { "Digital Health": 4, "Health Equity, Advocacy and Leadership": 3, "Mental Health": 3, "Nutrition": 3, "Disease Prevention and Control": 2, "Maternal and Child Health": 2, "One Health": 2 },
   },
   {
-    id: "SIE04", name: "SIE Cohort IV - Ghana", year: 2025, country: "Ghana", region: "West Africa",
+    id: "SIE04", name: "Cohort 4", year: 2025, country: "Ghana", region: "West Africa",
     applied: 82, selected: 30, completedVirtual: 28, travelledInCountry: 26, completedProgramme: 24,
     female: 14,
     siteVisits: 8, partnerOrgs: 6, partnerProjects: 7, reflectionSessions: 11,
