@@ -86,7 +86,7 @@ function MapContainer({
   map: React.MutableRefObject<any>;
   countryData: Map<string, number>;
 }) {
-  const [selectedCountry, setSelectedCountry] = useState<{ name: string; count: number; youthInWork: number; youthPct: number; wageEmployment: number; wagePct: number; entrepreneurs: number; entrepreneurPct: number; furtherEducation: number; educationPct: number; lng: number; lat: number } | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<{ name: string; count: number; outreach: number; outreachPct: number; youthInWork: number; youthPct: number; wageEmployment: number; wagePct: number; entrepreneurs: number; entrepreneurPct: number; furtherEducation: number; educationPct: number; lng: number; lat: number } | null>(null);
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
 
   const handleReset = () => {
@@ -160,23 +160,27 @@ function MapContainer({
           el.textContent = count.toString();
 
           // Calculate beneficiary breakdown
+          const outreachCount = Math.floor(count * 0.30);
           const youthCount = Math.floor(count * 0.25);
           const wageCount = Math.floor(count * 0.35);
           const entrepreneurCount = Math.floor(count * 0.15);
           const educationCount = Math.floor(count * 0.25);
 
+          const outreachFemale = Math.floor(outreachCount * 0.50);
           const youthFemale = Math.floor(youthCount * 0.48);
           const wageFemale = Math.floor(wageCount * 0.52);
           const entrepreneurFemale = Math.floor(entrepreneurCount * 0.42);
           const educationFemale = Math.floor(educationCount * 0.58);
 
           const outcomes = {
+            outreach: { count: outreachCount, female: outreachFemale },
             youthInWork: { count: youthCount, female: youthFemale },
             wageEmployment: { count: wageCount, female: wageFemale },
             entrepreneurs: { count: entrepreneurCount, female: entrepreneurFemale },
             furtherEducation: { count: educationCount, female: educationFemale }
           };
 
+          const outreachPct = outcomes.outreach.count > 0 ? Math.round((outcomes.outreach.female / outcomes.outreach.count) * 100) : 0;
           const youthPct = outcomes.youthInWork.count > 0 ? Math.round((outcomes.youthInWork.female / outcomes.youthInWork.count) * 100) : 0;
           const wagePct = outcomes.wageEmployment.count > 0 ? Math.round((outcomes.wageEmployment.female / outcomes.wageEmployment.count) * 100) : 0;
           const entrepreneurPct = outcomes.entrepreneurs.count > 0 ? Math.round((outcomes.entrepreneurs.female / outcomes.entrepreneurs.count) * 100) : 0;
@@ -212,6 +216,8 @@ function MapContainer({
             setSelectedCountry({
               name: country,
               count,
+              outreach: outcomes.outreach.count,
+              outreachPct,
               youthInWork: outcomes.youthInWork.count,
               youthPct,
               wageEmployment: outcomes.wageEmployment.count,
@@ -278,6 +284,7 @@ function MapContainer({
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--border-subtle)" }}>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}></th>
+                  <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Outreach</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Youth in Work</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Wage Employment</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Entrepreneurs</th>
@@ -287,6 +294,7 @@ function MapContainer({
               <tbody>
                 <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                   <td style={{ padding: "4px 6px", color: "var(--text-secondary)", fontWeight: 600, fontSize: 11 }}>Beneficiaries</td>
+                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.outreach}</td>
                   <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.youthInWork}</td>
                   <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.wageEmployment}</td>
                   <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.entrepreneurs}</td>
@@ -294,6 +302,7 @@ function MapContainer({
                 </tr>
                 <tr>
                   <td style={{ padding: "4px 6px", color: "var(--text-secondary)", fontWeight: 600, fontSize: 11 }}>Female %</td>
+                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.outreachPct}%</td>
                   <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.youthPct}%</td>
                   <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.wagePct}%</td>
                   <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.entrepreneurPct}%</td>
