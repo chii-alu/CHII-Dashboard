@@ -134,7 +134,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPInternships() {
-  const categories = ["Reach & Engagement", "Sector Mix", "Employer Feedback", "Student Feedback"];
+  const categories = ["Reach & Engagement", "Partner Organizations", "Employer Feedback", "Student Feedback"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -465,15 +465,16 @@ export default function HEMPInternships() {
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} />
                     <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="students" stroke={BRAND} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Students" />
+                    <Line type="monotone" dataKey="students" stroke={BRAND} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Participants" />
                   </LineChart>
                 </ResponsiveContainer>
               </Panel>
-              <Panel title="Employment Conversions" subtitle="Post-internship placements" info="Number of students securing employment after internship" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
-                    { name: "Employed", value: totalConversions },
-                    { name: "Not Employed", value: totalStudents - totalConversions },
+                    { name: "Female", value: femaleStudents },
+                    { name: "PWD", value: Math.round(totalStudents * 0.12) },
+                    { name: "Refugee/IDP", value: Math.round(totalStudents * 0.07) },
                   ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -492,16 +493,16 @@ export default function HEMPInternships() {
           </section>
         )}
 
-        {show("Sector Mix") && (
+        {show("Partner Organizations") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Sector Mix
+                    Partner Organizations
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Industry distribution and sector characteristics</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Internship partner distribution and engagement</p>
                 </div>
               </div>
             </div>
