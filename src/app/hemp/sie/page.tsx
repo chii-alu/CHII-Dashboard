@@ -695,102 +695,13 @@ export default function HEMPSie() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel
-                title="Programme Completion Funnel"
-                subtitle="Participation journey through all phases"
-                info="Progression from selected participants through virtual and in-country completion"
-                filterValue={`${filterFunnelYear} / ${filterFunnelCohort}`}
-                onFilterChange={(v) => {
-                  if (v === "reset") {
-                    setFilterFunnelYear("All Years");
-                    setFilterFunnelCohort("All Cohorts");
-                  }
-                }}
-                filterContent={
-                  <div style={{ marginBottom: -6 }}>
-                    <div style={{ marginBottom: 12 }}>
-                      <p style={{ fontSize: 10, fontWeight: 700, color: BRAND_DK, margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>Year</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {["All Years", ...years.map(String)].map(opt => {
-                          const isSelected = filterFunnelYear === opt;
-                          return (
-                            <button
-                              key={opt}
-                              onClick={() => setFilterFunnelYear(opt)}
-                              style={{
-                                fontSize: 10,
-                                fontWeight: isSelected ? 700 : 500,
-                                padding: "5px 10px",
-                                borderRadius: 6,
-                                border: `1px solid ${isSelected ? BRAND : LIGHT_BORDER}`,
-                                backgroundColor: isSelected ? BRAND : "white",
-                                color: isSelected ? "white" : BRAND_DK,
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                              }}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 10, fontWeight: 700, color: BRAND_DK, margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>Cohort</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {["All Cohorts", ...cohortNames].map(opt => {
-                          const isSelected = filterFunnelCohort === opt;
-                          return (
-                            <button
-                              key={opt}
-                              onClick={() => setFilterFunnelCohort(opt)}
-                              style={{
-                                fontSize: 10,
-                                fontWeight: isSelected ? 700 : 500,
-                                padding: "5px 10px",
-                                borderRadius: 6,
-                                border: `1px solid ${isSelected ? BRAND : LIGHT_BORDER}`,
-                                backgroundColor: isSelected ? BRAND : "white",
-                                color: isSelected ? "white" : BRAND_DK,
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                              }}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                }
-              >
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 300 }}>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={[
-                      { stage: "Selected", participants: funnelFilteredCohorts.reduce((s, c) => s + c.selected, 0) },
-                      { stage: "Completed Virtual", participants: funnelFilteredCohorts.reduce((s, c) => s + c.completedVirtual, 0) },
-                      { stage: "Travelled In-Country", participants: funnelFilteredCohorts.reduce((s, c) => s + c.travelledInCountry, 0) },
-                      { stage: "Full Completion", participants: funnelFilteredCohorts.reduce((s, c) => s + c.completedProgramme, 0) },
-                    ]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 130 }} barCategoryGap="12%">
-                      <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                      <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                      <YAxis dataKey="stage" type="category" width={120} tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                      <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
-                      <Legend wrapperStyle={{ fontSize: 10 }} />
-                      <Bar dataKey="participants" fill={BRAND} radius={[0, 4, 4, 0]} name="Participants">
-                        <LabelList dataKey="participants" position="right" offset={5} fontSize={11} fill={BRAND_DK} fontWeight={700} />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Panel>
-              <Panel title="Quality Ratings" subtitle="Programme content assessment (1-5 scale)" info="Average ratings for relevance, quality, and usefulness" filterOptions={["All Years", ...years.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
+              <Panel title="Quality Ratings & Career Clarity" subtitle="Programme assessment and career outcome (1-5 scale)" info="Average ratings for relevance, quality, usefulness, and career direction clarity" filterOptions={["All Years", ...years.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { metric: "Relevance", rating: avgRelevanceFiltered },
                     { metric: "Quality", rating: avgQualityFiltered },
                     { metric: "Usefulness", rating: avgUsefulnessFiltered },
+                    { metric: "Career Clarity", rating: filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.careerClarityPct, 0) / filteredCohorts.length / 20).toFixed(2)) : 0 },
                   ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -802,7 +713,7 @@ export default function HEMPSie() {
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#7FA5D6" }} /> Rating</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#7FA5D6" }} /> Rating (0-5 scale)</span>
                 </div>
               </Panel>
               <Panel title="Skill Confidence & NPS" subtitle="Learning confidence and recommendation likelihood" info="5-point confidence scale and 0-10 Net Promoter Score" filterOptions={["All Years", ...years.map(String)]} filterValue={filterConfidenceYear} onFilterChange={setFilterConfidenceYear}>
@@ -822,67 +733,6 @@ export default function HEMPSie() {
                 </ResponsiveContainer>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Score</span>
-                </div>
-              </Panel>
-              <Panel title="Full Programme Completion Rate" subtitle="% who completed both virtual and in-person phases" info="Participants who successfully completed the full immersion experience" filterOptions={["All Years", ...years.map(String)]} filterValue={filterCompletionYear} onFilterChange={setFilterCompletionYear}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={filteredCohortsForCompletion.map(c => ({
-                    name: c.name.substring(0, 18),
-                    completion: c.completionFullProgramme,
-                  }))} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} angle={-15} height={80} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 100]} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} formatter={(v) => `${v}%`} />
-                    <Bar dataKey="completion" fill="#A8BFD6" barSize={46} radius={[4, 4, 0, 0]} name="Completion %">
-                      <LabelList dataKey="completion" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} offset={5} formatter={(v: any) => `${v}%`} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#A8BFD6" }} /> Completion %</span>
-                </div>
-              </Panel>
-              <Panel title="Career Direction Clarity" subtitle="% who gained clarity on career direction" info="Percentage of participants who reported having clear direction for next career steps" filterOptions={["All Years", ...years.map(String)]} filterValue={filterClarityYear} onFilterChange={setFilterClarityYear}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={filteredCohortsForClarity.map(c => ({
-                    name: c.name.substring(0, 18),
-                    clarity: c.careerClarityPct,
-                  }))} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} angle={-15} height={80} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 100]} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} formatter={(v) => `${v}%`} />
-                    <Bar dataKey="clarity" fill="#1D9E75" barSize={46} radius={[4, 4, 0, 0]} name="Clarity %">
-                      <LabelList dataKey="clarity" position="top" fontSize={11} fill="#085041" fontWeight={700} offset={5} formatter={(v: any) => `${v}%`} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#1D9E75" }} /> Clarity %</span>
-                </div>
-              </Panel>
-              <Panel title="NPS Distribution" subtitle="Promoters, Passives, Detractors breakdown" info="Net Promoter Score distribution across participant response categories (Promoters: 9-10, Passives: 7-8, Detractors: 0-6)" filterOptions={["All Years", ...years.map(String)]} filterValue={filterNPSDistYear} onFilterChange={setFilterNPSDistYear}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={filteredCohortsForNPSDist.map(c => ({
-                    name: c.name.substring(0, 18),
-                    Promoters: c.npsPromoters,
-                    Passives: c.npsPassives,
-                    Detractors: c.npsDetractors,
-                  }))} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%" barGap={0}>
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} angle={-15} height={80} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 100]} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} formatter={(v) => `${v}%`} />
-                    <Bar dataKey="Promoters" stackId="a" fill="#0F6E56" radius={[4, 4, 0, 0]} maxBarSize={36} />
-                    <Bar dataKey="Passives" stackId="a" fill="#7F77DD" radius={[0, 0, 0, 0]} maxBarSize={36} />
-                    <Bar dataKey="Detractors" stackId="a" fill="#D45F2C" radius={[0, 4, 4, 0]} maxBarSize={36} />
-                  </BarChart>
-                </ResponsiveContainer>
-                <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#0F6E56" }} /> Promoters</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#7F77DD" }} /> Passives</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#D45F2C" }} /> Detractors</span>
                 </div>
               </Panel>
             </div>
