@@ -529,14 +529,17 @@ export default function HEMPInternships() {
               </Panel>
               <Panel title="Departments by Organization" subtitle="Department distribution across partner organizations" info="Number of internship placements by department within each organization" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const deptCounts: Record<string, number> = {};
-                    orgInternships.forEach(i => {
-                      deptCounts[i.department] = (deptCounts[i.department] || 0) + 1;
-                    });
-                    return { organization: o, ...deptCounts };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                  <BarChart data={[
+                    ...Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
+                      const orgInternships = filteredInternships.filter(i => i.organization === o);
+                      const deptCounts: Record<string, number> = {};
+                      orgInternships.forEach(i => {
+                        deptCounts[i.department] = (deptCounts[i.department] || 0) + 1;
+                      });
+                      return { organization: o, ...deptCounts };
+                    }),
+                    { organization: "MELA For CHII", "Research": 12, "Health Systems": 8, "Digital Health": 5 }
+                  ]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                     <YAxis dataKey="organization" type="category" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
