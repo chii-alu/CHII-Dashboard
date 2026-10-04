@@ -246,7 +246,7 @@ export default function HEMPCourses() {
       <div className="max-w-[1440px] mx-auto px-6 py-7">
         <HeaderStatsPanel
           title="Programme Overview"
-          nowrap={true}
+          nowrap={false}
           cards={[
             {
               label: "Total Enrolled",

@@ -420,7 +420,7 @@ export default function HEMPSie() {
               paceT: 19,
             },
             {
-              label: "Overall Performance Score",
+              label: "NPS Score",
               num: overallPerformanceScore,
               icon: TrendingUp,
               displayFmt: (n) => n.toFixed(1),
