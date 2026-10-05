@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface UseDashboardDataResult<T> {
   data: T | null;
@@ -16,6 +16,9 @@ export function useDashboardData<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Memoize the fetch function to prevent unnecessary re-renders
+  const memoizedFetchFn = useCallback(fetchFn, dependencies);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -23,7 +26,7 @@ export function useDashboardData<T>(
       try {
         setLoading(true);
         setError(null);
-        const result = await fetchFn();
+        const result = await memoizedFetchFn();
         if (isMounted) {
           setData(result);
         }
@@ -43,7 +46,7 @@ export function useDashboardData<T>(
     return () => {
       isMounted = false;
     };
-  }, dependencies);
+  }, [memoizedFetchFn]);
 
   return { data, loading, error };
 }

@@ -427,3 +427,43 @@ export async function getLastSync() {
     throw error;
   }
 }
+
+// ============================================================================
+// EXEC OUTREACH: Get Outreach section data directly
+// ============================================================================
+export async function getOutreachData() {
+  try {
+    const { data, error } = await supabase
+      .from('v_metric_values')
+      .select('metric, value, segment')
+      .eq('dashboard', 'EXEC')
+      .eq('section', 'Outreach')
+      .order('metric');
+
+    if (error) throw error;
+
+    // Transform to headline format
+    const metricsMap = new Map<string, { value: number; segments: Map<string, number> }>();
+
+    data?.forEach(row => {
+      if (!metricsMap.has(row.metric)) {
+        metricsMap.set(row.metric, { value: 0, segments: new Map() });
+      }
+      const metric = metricsMap.get(row.metric)!;
+      metric.segments.set(row.segment, row.value);
+
+      // Get total (segment='all')
+      if (row.segment === 'all') {
+        metric.value = row.value;
+      }
+    });
+
+    return Array.from(metricsMap.entries()).map(([name, data]) => ({
+      metric: name,
+      value: data.value,
+    }));
+  } catch (error) {
+    console.error('Error fetching Outreach data:', error);
+    throw error;
+  }
+}

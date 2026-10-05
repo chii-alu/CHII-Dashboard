@@ -253,8 +253,10 @@ function MapContainer() {
     const initMap = async () => {
       await initMapboxToken();
 
+      if (!mapContainer.current) return;
+
       map.current = new mapboxgl.Map({
-        container: mapContainer.current!,
+        container: mapContainer.current,
         style: "mapbox://styles/mapbox/dark-v11",
         center: [20, 3],
         zoom: 2.6,
@@ -648,7 +650,7 @@ export default function HEMPPage() {
                     progressLabel={`${Math.round((careerWorkshopsCount / 1500) * 100)}%`}
                     info="Exposure events and workshop participation toward 2030 target."
                     Icon={BookOpen}
-                    href="/hemp/career-development"
+                    href="/hemp/career-workshops"
                     secondaryText={pace.status}
                     secondaryTextColor={pace.color}
                   />

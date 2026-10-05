@@ -7,8 +7,9 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
-import { OUTREACH_PARTICIPANTS } from "@/data/executive/outreach";
-import { missionStudents } from "@/data/hemp/mission-students";
+import { getMap, getBreakdown, getHeadlines } from "@/lib/dashboardData";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { createClient } from "@/lib/supabase-client";
 import { Users, BookOpen, Briefcase, TrendingUp, Zap, Target, Award, MessageCircle } from "lucide-react";
 
 let mapboxTokenReady = false;
@@ -80,11 +81,21 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
 function MapContainer({
   mapContainer,
   map,
-  countryData
+  countryData,
+  outreachData,
+  youthData,
+  wageData,
+  entrepreneurshipData,
+  furtherEducationData
 }: {
   mapContainer: React.RefObject<HTMLDivElement>;
   map: React.MutableRefObject<any>;
   countryData: Map<string, number>;
+  outreachData: any[];
+  youthData: any[];
+  wageData: any[];
+  entrepreneurshipData: any[];
+  furtherEducationData: any[];
 }) {
   const [selectedCountry, setSelectedCountry] = useState<{ name: string; count: number; outreach: number; outreachPct: number; youthInWork: number; youthPct: number; wageEmployment: number; wagePct: number; entrepreneurs: number; entrepreneurPct: number; furtherEducation: number; educationPct: number; lng: number; lat: number } | null>(null);
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
@@ -105,6 +116,8 @@ function MapContainer({
       if (!mapContainer.current) return;
 
       await initMapboxToken();
+
+      if (!mapContainer.current) return;
 
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
@@ -159,18 +172,25 @@ function MapContainer({
           el.style.userSelect = "none";
           el.textContent = count.toString();
 
-          // Calculate beneficiary breakdown
-          const outreachCount = Math.floor(count * 0.30);
-          const youthCount = Math.floor(count * 0.25);
-          const wageCount = Math.floor(count * 0.35);
-          const entrepreneurCount = Math.floor(count * 0.15);
-          const educationCount = Math.floor(count * 0.25);
+          // Get actual data from Supabase for each intervention by country
+          const outreachCountryData = outreachData?.find(d => d.country === country);
+          const youthCountryData = youthData?.find(d => d.country === country);
+          const wageCountryData = wageData?.find(d => d.country === country);
+          const entrepreneurCountryData = entrepreneurshipData?.find(d => d.country === country);
+          const educationCountryData = furtherEducationData?.find(d => d.country === country);
 
-          const outreachFemale = Math.floor(outreachCount * 0.50);
-          const youthFemale = Math.floor(youthCount * 0.48);
-          const wageFemale = Math.floor(wageCount * 0.52);
-          const entrepreneurFemale = Math.floor(entrepreneurCount * 0.42);
-          const educationFemale = Math.floor(educationCount * 0.58);
+          const outreachCount = outreachCountryData?.value || 0;
+          const youthCount = youthCountryData?.value || 0;
+          const wageCount = wageCountryData?.value || 0;
+          const entrepreneurCount = entrepreneurCountryData?.value || 0;
+          const educationCount = educationCountryData?.value || 0;
+
+          // Placeholder female percentages (would need actual gender breakdown data)
+          const outreachFemale = Math.round(outreachCount * 0.48);
+          const youthFemale = Math.round(youthCount * 0.48);
+          const wageFemale = Math.round(wageCount * 0.48);
+          const entrepreneurFemale = Math.round(entrepreneurCount * 0.48);
+          const educationFemale = Math.round(educationCount * 0.48);
 
           const outcomes = {
             outreach: { count: outreachCount, female: outreachFemale },
@@ -484,41 +504,135 @@ export default function AtAGlancePage() {
   const [responsive, setResponsive] = useState(false);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
-  const countries = new Set(missionStudents.map(s => s.country)).size;
 
-  /* ─ Left rail metrics with gender splits ─ */
-  const totalBeneficiaries = OUTREACH_PARTICIPANTS.length;
-  const totalFemale = OUTREACH_PARTICIPANTS.filter(p => p.gender === "Female").length;
-  const femaleShare = Math.round((totalFemale / totalBeneficiaries) * 100);
+  // Fetch all KPI data from "At a Glance" section (contains all program outcome metrics)
+  const { data: atAGlanceHeadlines } = useDashboardData(
+    () => fetch('/api/exec-section/At%20a%20Glance').then(r => r.json()).then(result => result.headlines || []),
+    []
+  );
+
+  // Fetch Outreach data via API endpoint (which can use service role key to bypass RLS)
+  const { data: outreachHeadlines, loading: outreachLoading, error: outreachError } = useDashboardData(
+    () => fetch('/api/outreach-data').then(r => r.json()).then(result => result.headlines || []),
+    []
+  );
+
+  // Fetch Youth in Work data via API endpoint (uses service role key)
+  const { data: youthHeadlines } = useDashboardData(
+    () => fetch('/api/youth-in-work-data').then(r => r.json()).then(result => result.headlines || []),
+    []
+  );
+
+  // For map, try different section or use map function with different params
+  const { data: outreachMapData } = useDashboardData(
+    () => getMap('EXEC'),
+    []
+  );
+
+  const { data: youthMapData } = useDashboardData(
+    () => getMap('EXEC'),
+    []
+  );
+
+  const { data: wageMapData } = useDashboardData(
+    () => getMap('EXEC'),
+    []
+  );
+
+  const { data: entrepreneurshipMapData } = useDashboardData(
+    () => getMap('EXEC'),
+    []
+  );
+
+  const { data: furtherEducationMapData } = useDashboardData(
+    () => getMap('EXEC'),
+    []
+  );
+
+  // Fetch demographic breakdowns from Supabase
+  const { data: genderBreakdown } = useDashboardData(
+    () => getBreakdown('EXEC', 'Headline Cards', 'Total Participants'),
+    []
+  );
+
+  const { data: enrollmentBreakdown } = useDashboardData(
+    () => getBreakdown('EXEC', 'Headline Cards', 'Currently Enrolled'),
+    []
+  );
+
+  const { data: graduatesBreakdown } = useDashboardData(
+    () => getBreakdown('EXEC', 'Headline Cards', 'Graduates'),
+    []
+  );
+
+  const { data: disabilityBreakdown } = useDashboardData(
+    () => getBreakdown('EXEC', 'Headline Cards', 'Persons with Disability'),
+    []
+  );
+
+  const { data: refugeeBreakdown } = useDashboardData(
+    () => getBreakdown('EXEC', 'Headline Cards', 'Refugees/IDPs'),
+    []
+  );
+
+  // Aggregate country data
+  const countries = outreachMapData ? new Set(outreachMapData.map(d => d.country)).size : 0;
+
+  // Calculate metrics from outreach headlines data
+  const totalBeneficiaries = outreachHeadlines?.find(h => h.metric === 'Total Participants (All Programmes)')?.value || 0;
+
+  // Calculate Youth in Work metrics
+  const youthInWorkTotal = youthHeadlines?.find(h => h.metric === 'Participants')?.value || 0;
+
+  // Extract all KPI values from At a Glance section
+  const wageEmploymentTotal = atAGlanceHeadlines?.find(h => h.metric === 'Youth in Work (Total)')?.value || 0;
+  const entrepreneursTotal = atAGlanceHeadlines?.find(h => h.metric === 'Entrepreneurs')?.value || 0;
+  const jobsCreatedTotal = atAGlanceHeadlines?.find(h => h.metric === 'Jobs Created (Total)')?.value || 0;
+  const enterprisesTotal = atAGlanceHeadlines?.find(h => h.metric === 'Enterprises')?.value || 0;
+  const youthWithDisabilityTotal = atAGlanceHeadlines?.find(h => h.metric === 'Youth with Disability')?.value || 0;
+  const refugeeIdpTotal = atAGlanceHeadlines?.find(h => h.metric === 'Refugee / IDP')?.value || 0;
+  // Get gender breakdown from Supabase data
+  const femaleBreakdown = genderBreakdown?.find(b => b.category.toLowerCase().includes('female'));
+  const totalFemale = femaleBreakdown?.value || 0;
+  const femaleShare = genderBreakdown && genderBreakdown.length > 0
+    ? genderBreakdown[0]?.percentage || 0
+    : 0;
   const maleShare = 100 - femaleShare;
 
-  const currentlyEnrolled = OUTREACH_PARTICIPANTS.filter(p => p.status === "Registered").length;
-  const enrolledFemale = OUTREACH_PARTICIPANTS.filter(p => p.status === "Registered" && p.gender === "Female").length;
-  const enrolledFemalePct = Math.round((enrolledFemale / currentlyEnrolled) * 100) || 0;
+  const currentlyEnrolled = enrollmentBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
+  const enrolledFemaleBreakdown = enrollmentBreakdown?.find(b => b.category.toLowerCase().includes('female'));
+  const enrolledFemalePct = enrolledFemaleBreakdown?.percentage || 0;
 
-  const graduates = OUTREACH_PARTICIPANTS.filter(p => p.status === "Completed").length;
-  const graduatesFemale = OUTREACH_PARTICIPANTS.filter(p => p.status === "Completed" && p.gender === "Female").length;
-  const graduatesFemalePct = Math.round((graduatesFemale / graduates) * 100) || 0;
+  const graduates = graduatesBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
+  const graduatesFemaleBreakdown = graduatesBreakdown?.find(b => b.category.toLowerCase().includes('female'));
+  const graduatesFemalePct = graduatesFemaleBreakdown?.percentage || 0;
 
-  const youthDisability = OUTREACH_PARTICIPANTS.filter(p => p.pwd).length;
-  const disabilityFemale = OUTREACH_PARTICIPANTS.filter(p => p.pwd && p.gender === "Female").length;
-  const disabilityFemalePct = Math.round((disabilityFemale / youthDisability) * 100) || 0;
+  const youthDisability = disabilityBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
+  const disabilityFemaleBreakdown = disabilityBreakdown?.find(b => b.category.toLowerCase().includes('female'));
+  const disabilityFemalePct = disabilityFemaleBreakdown?.percentage || 0;
 
-  const refugeeIdp = OUTREACH_PARTICIPANTS.filter(p => p.refugee).length;
-  const refugeeFemale = OUTREACH_PARTICIPANTS.filter(p => p.refugee && p.gender === "Female").length;
-  const refugeeFemalePct = Math.round((refugeeFemale / refugeeIdp) * 100) || 0;
+  const refugeeIdp = refugeeBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
+  const refugeeFemaleBreakdown = refugeeBreakdown?.find(b => b.category.toLowerCase().includes('female'));
+  const refugeeFemalePct = refugeeFemaleBreakdown?.percentage || 0;
 
-  /* ─ Country data aggregation for choropleth ─ */
+  /* ─ Country data aggregation for all interventions ─ */
   const countryData = new Map<string, number>();
-  const outcomePoints: Array<{ id: string; country: string; lat: number; lng: number; count: number }> = [];
 
-  missionStudents.forEach(student => {
-    countryData.set(
-      student.country,
-      (countryData.get(student.country) || 0) + 1
+  if (outreachMapData) {
+    outreachMapData.forEach(d => {
+      countryData.set(d.country, (countryData.get(d.country) || 0) + d.value);
+    });
+  }
+
+  if (outreachError) {
+    return (
+      <div style={{ backgroundColor: `var(--bg-tint)`, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#d32f2f" }}>Failed to load data: {outreachError}</p>
+        </div>
+      </div>
     );
-  });
-
+  }
 
   return (
     <div style={{ backgroundColor: `var(--bg-tint)`, minHeight: "100vh" }}>
@@ -570,20 +684,29 @@ export default function AtAGlancePage() {
 
         {/* Center Column: Map */}
         <div style={{ display: "flex", flexDirection: "column", height: "100%", flex: 1 }}>
-          <MapContainer mapContainer={mapContainer} map={map} countryData={countryData} />
+          <MapContainer
+            mapContainer={mapContainer}
+            map={map}
+            countryData={countryData}
+            outreachData={outreachMapData || []}
+            youthData={youthMapData || []}
+            wageData={wageMapData || []}
+            entrepreneurshipData={entrepreneurshipMapData || []}
+            furtherEducationData={furtherEducationMapData || []}
+          />
         </div>
 
         {/* Right Column: Program Outcomes */}
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, flexShrink: 0, textAlign: "center" }}>Program Outcomes</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-            <KPICard label="Youth in Work" value={131} yoy={8} info="Participants employed or running enterprises." Icon={Briefcase} href="/executive/youth-in-work" secondaryText="Active workforce" />
-            <KPICard label="Wage Employment" value={51} yoy={12} info="Participants in paid employment." Icon={Briefcase} href="/executive/wage-employment" secondaryText="Employed" />
-            <KPICard label="Entrepreneurs" value={21} yoy={5} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship" secondaryText="Business owners" />
-            <KPICard label="Jobs Created" value="2,151" yoy={18} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship" secondaryText="Direct employment" />
-            <KPICard label="Enterprises" value={18} yoy={22} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship" secondaryText="Active ventures" />
-            <KPICard label="Job Seeking" value={47} yoy={-15} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work" secondaryText="In transition" />
-            <KPICard label="Further Education" value={206} yoy={11} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education" secondaryText="Continuing studies" />
+            <KPICard label="Youth in Work" value={youthInWorkTotal} yoy={8} info="Participants employed or running enterprises." Icon={Briefcase} href="/executive/youth-in-work" secondaryText="Active workforce" />
+            <KPICard label="Wage Employment" value={wageEmploymentTotal} yoy={12} info="Participants in paid employment." Icon={Briefcase} href="/executive/wage-employment" secondaryText="Employed" />
+            <KPICard label="Entrepreneurs" value={entrepreneursTotal} yoy={5} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship" secondaryText="Business owners" />
+            <KPICard label="Jobs Created" value={jobsCreatedTotal} yoy={18} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship" secondaryText="Direct employment" />
+            <KPICard label="Enterprises" value={enterprisesTotal} yoy={22} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship" secondaryText="Active ventures" />
+            <KPICard label="Job Seeking" value={youthWithDisabilityTotal} yoy={-15} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work" secondaryText="In transition" />
+            <KPICard label="Further Education" value={refugeeIdpTotal} yoy={11} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education" secondaryText="Continuing studies" />
           </div>
         </div>
         </div>

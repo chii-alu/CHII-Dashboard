@@ -226,94 +226,104 @@ export default function HEMPSie() {
   const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
 
   const filteredCohortsForPlacement = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterPlacementYear !== "All Years" && c.year !== parseInt(filterPlacementYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterPlacementYear, filterCountry, filterRegion]);
+  }, [filterPlacementYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForPartner = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterPartnerYear !== "All Years" && c.year !== parseInt(filterPartnerYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterPartnerYear, filterCountry, filterRegion]);
+  }, [filterPartnerYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForQuality = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterQualityYear !== "All Years" && c.year !== parseInt(filterQualityYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterQualityYear, filterCountry, filterRegion]);
+  }, [filterQualityYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForConfidence = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterConfidenceYear !== "All Years" && c.year !== parseInt(filterConfidenceYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterConfidenceYear, filterCountry, filterRegion]);
+  }, [filterConfidenceYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForCompletion = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterCompletionYear !== "All Years" && c.year !== parseInt(filterCompletionYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterCompletionYear, filterCountry, filterRegion]);
+  }, [filterCompletionYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForClarity = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterClarityYear !== "All Years" && c.year !== parseInt(filterClarityYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterClarityYear, filterCountry, filterRegion]);
+  }, [filterClarityYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForNPSDist = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterNPSDistYear !== "All Years" && c.year !== parseInt(filterNPSDistYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterNPSDistYear, filterCountry, filterRegion]);
+  }, [filterNPSDistYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForPerfScore = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterPerfScoreYear !== "All Years" && c.year !== parseInt(filterPerfScoreYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterPerfScoreYear, filterCountry, filterRegion]);
+  }, [filterPerfScoreYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForPerfTrend = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterPerfTrendYear !== "All Years" && c.year !== parseInt(filterPerfTrendYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterPerfTrendYear, filterCountry, filterRegion]);
+  }, [filterPerfTrendYear, filterCountry, filterRegion, sieCohorts]);
 
   const filteredCohortsForHealthInterest = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterHealthInterestYear !== "All Years" && c.year !== parseInt(filterHealthInterestYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterHealthInterestYear, filterCountry, filterRegion]);
+  }, [filterHealthInterestYear, filterCountry, filterRegion, sieCohorts]);
 
   const avgRelevance = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.relevance, 0) / filteredCohorts.length).toFixed(1)) : 0;
   const avgQuality = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.quality, 0) / filteredCohorts.length).toFixed(1)) : 0;
@@ -336,12 +346,13 @@ export default function HEMPSie() {
   const overallPerformanceScore = parseFloat(((avgSatisfaction + (femalePct / 10) + (19 / 10) + (totalEmploymentLeads ? 5 : 3)) / 4 * 2).toFixed(1));
 
   const funnelFilteredCohorts = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterFunnelYear !== "All Years" && c.year !== parseInt(filterFunnelYear)) return false;
       if (filterFunnelCohort !== "All Cohorts" && c.name !== filterFunnelCohort) return false;
       return true;
     });
-  }, [filterFunnelYear, filterFunnelCohort]);
+  }, [filterFunnelYear, filterFunnelCohort, sieCohorts]);
 
   const cohortNames = useMemo(() =>
     sieCohorts ? Array.from(new Set(sieCohorts.map(c => c.name))).sort() : [],

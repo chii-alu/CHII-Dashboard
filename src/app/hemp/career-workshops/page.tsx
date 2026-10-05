@@ -287,17 +287,6 @@ export default function CareerWorkshopsPage() {
     );
   }
 
-  if (!headlineData || headlineData.length === 0) {
-    return (
-      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 16, color: "#666" }}>No data available for Career Workshops</p>
-          <p style={{ fontSize: 14, color: "#999", marginTop: 8 }}>Data for this section is not yet available in the database.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh" }}>
       <PortalNav portal="hemp" />
