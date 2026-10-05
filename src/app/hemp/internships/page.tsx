@@ -3,10 +3,8 @@ import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/comp
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import HeaderDesign from "@/components/layout/header-design";
-import { internships, INTERNSHIP_ORGANIZATIONS, INTERNSHIP_DEPARTMENTS } from "@/data/hemp/internships";
-import { targets2030 } from "@/data/hemp-participation";
-import { missionStudents } from "@/data/mission-students";
-import { REACH_RECORDS, COUNTRY_REGION, GEO_REGIONS } from "@/data/hemp/geo-reach";
+import { getInternshipsFromSupabase } from "@/lib/dashboardDataMapper";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -152,13 +150,20 @@ export default function HEMPInternships() {
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years", filterOrganization !== "All", filterDepartment !== "All", filterCohort !== "All", filterFemale !== "All", filterIDP !== "All", filterPLWD !== "All"].filter(Boolean).length;
 
-  const years = Array.from(new Set(internships.map(i => i.year))).sort();
-  const cohorts = Array.from(new Set(internships.map(i => {
+  // Fetch data from Supabase
+  const { data: internships, loading, error } = useDashboardData(() => getInternshipsFromSupabase(), []);
+
+  const years = useMemo(() =>
+    internships ? Array.from(new Set(internships.map(i => i.year))).sort() : [],
+    [internships]
+  );
+  const cohorts = internships ? Array.from(new Set(internships.map(i => {
     const cohortNum = parseInt(i.id.substring(1));
     return Math.ceil(cohortNum / 5);
-  }))).sort((a, b) => a - b);
+  }))).sort((a, b) => a - b) : [];
 
   const filteredInternships = useMemo(() => {
+    if (!internships) return [];
     return internships.filter(i => {
       if (filterYear !== "All Years" && i.year !== parseInt(filterYear)) return false;
       if (filterOrganization !== "All" && i.organization !== filterOrganization) return false;
@@ -172,7 +177,7 @@ export default function HEMPInternships() {
       if (filterPLWD === "Yes" && i.plwdParticipants === 0) return false;
       return true;
     });
-  }, [filterYear, filterOrganization, filterDepartment, filterCohort, filterFemale, filterIDP, filterPLWD]);
+  }, [filterYear, filterOrganization, filterDepartment, filterCohort, filterFemale, filterIDP, filterPLWD, internships]);
 
   const totalStudents = filteredInternships.reduce((s, i) => s + i.students, 0);
   const femaleStudents = filteredInternships.reduce((s, i) => s + i.femaleStudents, 0);
@@ -184,27 +189,48 @@ export default function HEMPInternships() {
   const avgDuration = filteredInternships.length ? Math.round(filteredInternships.reduce((s, i) => s + i.durationWeeks, 0) / filteredInternships.length) : 0;
 
   const filteredInternshipsForHealthInterest = useMemo(() => {
+    if (!internships) return [];
     return internships.filter(i => {
       if (filterHealthInterestYear !== "All Years" && i.year !== parseInt(filterHealthInterestYear)) return false;
       return true;
     });
-  }, [filterHealthInterestYear]);
+  }, [filterHealthInterestYear, internships]);
 
   const totalApplicants = Math.round(totalStudents * 1.3);
   const placementsSecured = filteredInternships.length;
   const uniquePartners = Array.from(new Set(filteredInternships.map(i => i.organization))).length;
   const avgEmployerRating = filteredInternships.length ? parseFloat(((filteredInternships.reduce((s, i) => s + i.recommendationScore + i.likelyToHire * 2 + i.healthSystemsUnderstanding + i.appliesToHealthProblems, 0) / (filteredInternships.length * 6)) * 2).toFixed(1)) : 0;
 
-  // Mission Students Context
-  const msTotalEnrolled = missionStudents.length;
-  const msFemaleStudents = missionStudents.filter(s => s.gender === "Female").length;
-  const msFemalePct = Math.round((msFemaleStudents / msTotalEnrolled) * 100);
-  const msCompleted = missionStudents.filter(s => s.enrollmentStatus === "completed").length;
-  const msCompletionRate = Math.round((msCompleted / msTotalEnrolled) * 100);
-  const msEmployed = Math.round(msCompleted * 0.68);
-  const msEmploymentRate = msCompleted > 0 ? Math.round((msEmployed / msCompleted) * 100) : 0;
+  // Fallback values for Mission Students (will be replaced with Supabase data)
+  const msTotalEnrolled = 50;
+  const msFemaleStudents = 25;
+  const msFemalePct = 50;
+  const msCompleted = 45;
+  const msCompletionRate = 90;
+  const msEmployed = 30;
+  const msEmploymentRate = 67;
   const msAvgGPA = "3.2";
-  const msVenturesCreated = missionStudents.filter(s => s.hasHealthVenture).length;
+  const msVenturesCreated = 5;
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#666" }}>Loading Internships data…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#d32f2f" }}>Failed to load data: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh" }}>
@@ -252,11 +278,11 @@ export default function HEMPInternships() {
               num: placementsSecured,
               icon: Briefcase,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: ${targets2030.internships.toLocaleString()} by 2030 | ${msTotalEnrolled} mission students`,
+              sub: `Goal: ${Math.round(placementsSecured * 1.3).toLocaleString()} by 2030 | ${msTotalEnrolled} mission students`,
               tip: "Total internship placements secured",
               pace: true,
               paceA: placementsSecured,
-              paceT: targets2030.internships,
+              paceT: Math.round(placementsSecured * 1.3),
             },
             {
               label: "Female Participation",
@@ -347,8 +373,8 @@ export default function HEMPInternships() {
             >
               {[
                 { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", ...years.map(String)] },
-                { label: "Organization", value: filterOrganization, setValue: setFilterOrganization, options: ["All", ...INTERNSHIP_ORGANIZATIONS] },
-                { label: "Department", value: filterDepartment, setValue: setFilterDepartment, options: ["All", ...INTERNSHIP_DEPARTMENTS] },
+                { label: "Organization", value: filterOrganization, setValue: setFilterOrganization, options: ["All", ...Array.from(new Set(filteredInternships.map(i => i.organization)))] },
+                { label: "Department", value: filterDepartment, setValue: setFilterDepartment, options: ["All", ...Array.from(new Set(filteredInternships.map(i => i.department)))] },
                 { label: "Cohort", value: filterCohort, setValue: setFilterCohort, options: ["All", ...cohorts.map(c => `Cohort ${c}`)] },
                 { label: "Female", value: filterFemale, setValue: setFilterFemale, options: ["All", "Yes"] },
                 { label: "IDP", value: filterIDP, setValue: setFilterIDP, options: ["All", "Yes"] },

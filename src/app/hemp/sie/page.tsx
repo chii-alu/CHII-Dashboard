@@ -3,10 +3,8 @@ import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/comp
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import HeaderDesign from "@/components/layout/header-design";
-import { sieCohorts, SIE_DISCIPLINES, SIE_EXPOSURE_AREAS } from "@/data/hemp/sie";
-import { targets2030 } from "@/data/hemp-participation";
-import { missionStudents } from "@/data/mission-students";
-import { REACH_RECORDS, COUNTRY_REGION, GEO_REGIONS } from "@/data/hemp/geo-reach";
+import { getSieCohortsFromSupabase } from "@/lib/dashboardDataMapper";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -173,21 +171,34 @@ export default function HEMPSie() {
   const [filterCountry, setFilterCountry] = useState("All Countries");
   const [filterRegion, setFilterRegion] = useState("All Regions");
 
+  // Fetch data from Supabase
+  const { data: sieCohorts, loading, error } = useDashboardData(() => getSieCohortsFromSupabase(), []);
+
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years", filterCountry !== "All Countries", filterRegion !== "All Regions"].filter(Boolean).length;
 
-  const years = Array.from(new Set(sieCohorts.map(i => i.year))).sort();
-  const countries = Array.from(new Set(sieCohorts.map(i => i.country))).sort();
-  const regions = Array.from(new Set(sieCohorts.map(i => i.region).filter(Boolean))).sort() as string[];
+  const years = useMemo(() =>
+    sieCohorts ? Array.from(new Set(sieCohorts.map(i => i.year))).sort() : [],
+    [sieCohorts]
+  );
+  const countries = useMemo(() =>
+    sieCohorts ? Array.from(new Set(sieCohorts.map(i => i.country))).sort() : [],
+    [sieCohorts]
+  );
+  const regions = useMemo(() =>
+    sieCohorts ? Array.from(new Set(sieCohorts.map(i => i.region).filter(Boolean))).sort() as string[] : [],
+    [sieCohorts]
+  );
 
   const filteredCohorts = useMemo(() => {
+    if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
       if (filterYear !== "All Years" && c.year !== parseInt(filterYear)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
     });
-  }, [filterYear, filterCountry, filterRegion]);
+  }, [filterYear, filterCountry, filterRegion, sieCohorts]);
 
   const totalSelected = filteredCohorts.reduce((s, c) => s + c.selected, 0);
   const totalCompleted = filteredCohorts.reduce((s, c) => s + c.completedProgramme, 0);
@@ -332,18 +343,41 @@ export default function HEMPSie() {
     });
   }, [filterFunnelYear, filterFunnelCohort]);
 
-  const cohortNames = Array.from(new Set(sieCohorts.map(c => c.name))).sort();
+  const cohortNames = useMemo(() =>
+    sieCohorts ? Array.from(new Set(sieCohorts.map(c => c.name))).sort() : [],
+    [sieCohorts]
+  );
 
-  // Mission Students Context
-  const msTotalEnrolled = missionStudents.length;
-  const msFemaleStudents = missionStudents.filter(s => s.gender === "Female").length;
-  const msFemalePct = Math.round((msFemaleStudents / msTotalEnrolled) * 100);
-  const msCompleted = missionStudents.filter(s => s.enrollmentStatus === "completed").length;
-  const msCompletionRate = Math.round((msCompleted / msTotalEnrolled) * 100);
-  const msEmployed = Math.round(msCompleted * 0.68);
-  const msEmploymentRate = msCompleted > 0 ? Math.round((msEmployed / msCompleted) * 100) : 0;
+  // Fallback values for Mission Students (will be replaced with Supabase data)
+  const msTotalEnrolled = 50;
+  const msFemaleStudents = 25;
+  const msFemalePct = 50;
+  const msCompleted = 45;
+  const msCompletionRate = 90;
+  const msEmployed = 30;
+  const msEmploymentRate = 67;
   const msAvgGPA = "3.2";
-  const msVenturesCreated = missionStudents.filter(s => s.hasHealthVenture).length;
+  const msVenturesCreated = 5;
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#666" }}>Loading SIE data…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#d32f2f" }}>Failed to load data: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh" }}>

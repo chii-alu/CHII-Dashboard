@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const token = process.env.MAPBOX_TOKEN;
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   console.log("[API] Mapbox token request - token exists:", !!token);
 
   if (!token) {
-    console.error("[API] MAPBOX_TOKEN environment variable is not set");
+    console.error("[API] NEXT_PUBLIC_MAPBOX_TOKEN environment variable is not set");
     return NextResponse.json(
-      { error: "Mapbox token not configured", details: "MAPBOX_TOKEN env var missing" },
+      { error: "Mapbox token not configured", details: "NEXT_PUBLIC_MAPBOX_TOKENenv var missing" },
       { status: 500 }
     );
   }

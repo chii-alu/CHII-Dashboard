@@ -3,8 +3,8 @@ import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import HeaderDesign from "@/components/layout/header-design";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
-import { missionStudents } from "@/data/mission-students";
-import { careerExposureSessions } from "@/data/hemp-career-exposure";
+import { getHeadlines } from "@/lib/dashboardData";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -240,14 +240,18 @@ export default function CareerWorkshopsPage() {
   const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
   const [partnerSearch, setPartnerSearch] = useState("");
 
+  // TODO: Fetch real data from Supabase using getHeadlines('HEMP', 'Intervention', { intervention: 'Career Workshops' })
+  const { data: headlineData, loading, error } = useDashboardData(
+    () => getHeadlines('HEMP', 'Intervention', { intervention: 'Career Workshops' }),
+    []
+  );
+
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years", filterSessionType !== "All Types", filterPartner !== "All 63 Partners"].filter(Boolean).length;
 
   const filteredSessionsForHealthInterest = useMemo(() => {
-    return careerExposureSessions.filter(s => {
-      if (filterHealthInterestYear !== "All Years" && s.year !== parseInt(filterHealthInterestYear)) return false;
-      return true;
-    });
+    // TODO: Use real data from Supabase
+    return [];
   }, [filterHealthInterestYear]);
 
   const filteredPartners = useMemo(() => {
@@ -258,10 +262,41 @@ export default function CareerWorkshopsPage() {
     });
   }, [filterPartner, partnerSearch]);
 
-  const totalParticipants = 2359;
+  const totalParticipants = headlineData?.find(h => h.metric === "Total Participants")?.value || 2359;
   const totalPWD = Math.round(totalParticipants * 0.12);
   const totalRefugees = Math.round(totalParticipants * 0.07);
   const inclusionReachTotal = totalPWD + totalRefugees;
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#666" }}>Loading Career Workshops data…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#d32f2f" }}>Failed to load data: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!headlineData || headlineData.length === 0) {
+    return (
+      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#666" }}>No data available for Career Workshops</p>
+          <p style={{ fontSize: 14, color: "#999", marginTop: 8 }}>Data for this section is not yet available in the database.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh" }}>

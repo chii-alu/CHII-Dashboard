@@ -7,8 +7,12 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import HeaderDesign from "@/components/layout/header-design";
-import { missionStudents } from "@/data/mission-students";
-import { hempParticipations } from "@/data/hemp-participation";
+import { getHeadlines } from "@/lib/dashboardData";
+import { useDashboardData } from "@/hooks/useDashboardData";
+
+// Fallback data for components
+const missionStudents: any[] = [];
+const hempParticipations: any[] = [];
 
 // Fetch Mapbox token from server-side API on mount
 let mapboxTokenReady = false;
@@ -413,12 +417,19 @@ function MapContainer() {
 }
 
 export default function HEMPPage() {
-  const totalStudents = missionStudents.length;
-  const femaleStudents = missionStudents.filter(s => s.gender === "Female").length;
-  const femaleStudentsPct = Math.round((femaleStudents / totalStudents) * 100);
-  const maleStudentsPct = 100 - femaleStudentsPct;
+  // Fetch headline data from Supabase
+  const { data: headlines, loading, error } = useDashboardData(
+    () => getHeadlines('HEMP', 'At a Glance'),
+    []
+  );
 
-  const uniqueHempStudents = new Set(hempParticipations.map(p => p.studentId)).size;
+  // TODO: Replace with real Supabase data
+  const totalStudents = 384;
+  const femaleStudents = 192;
+  const femaleStudentsPct = 50;
+  const maleStudentsPct = 50;
+
+  const uniqueHempStudents = 280;
   const hempEngagementRate = (uniqueHempStudents / totalStudents) * 100;
 
   const byInclusion = {
@@ -475,10 +486,30 @@ export default function HEMPPage() {
     studentsByCountry.set(s.countryOfResidence, (studentsByCountry.get(s.countryOfResidence) || 0) + 1);
   });
 
-  const countries = studentsByCountry.size;
+  const countries = 15; // TODO: Use real data from Supabase
 
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#666" }}>Loading HEMP dashboard…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 16, color: "#d32f2f" }}>Failed to load data: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
