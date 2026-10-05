@@ -304,17 +304,6 @@ export default function HEMPCourses() {
               paceT: 100,
             },
             {
-              label: "Satisfaction",
-              num: avgSatisfaction,
-              icon: TrendingUp,
-              displayFmt: (n) => n.toFixed(1),
-              sub: `Out of 5`,
-              tip: "Average participant satisfaction rating",
-              pace: true,
-              paceA: avgSatisfaction * 20,
-              paceT: 100,
-            },
-            {
               label: "Inclusion Reach",
               num: 19,
               icon: Users,
@@ -429,11 +418,12 @@ export default function HEMPCourses() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#D17A86" }} /> September</span>
                 </div>
               </Panel>
-              <Panel title="Gender Distribution" subtitle="Female and male participation" info="Gender diversity across enrolled students" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Inclusion Reach" subtitle="Students with disabilities, refugee background, and female participation" info="Breakdown of inclusion reach across participant groups" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Female", value: femaleStudents },
-                    { name: "Male", value: totalEnrolled - femaleStudents },
+                    { name: "PWD", value: totalPWD },
+                    { name: "Refugee", value: totalRefugees },
                   ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -447,33 +437,6 @@ export default function HEMPCourses() {
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Count</span>
                 </div>
-              </Panel>
-              <Panel title="Enrolment Trend" subtitle="Growth in student enrollment over time" info="Annual trend in course enrolment" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={filteredCohorts.map(c => ({ year: String(c.cohortYear), enrolled: c.enrolled }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="enrolled" stroke={BRAND} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Enrolled" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Panel>
-              <Panel title="Completion Rate Trend" subtitle="Percentage of students completing the course over time" info="Annual completion rate trend" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={filteredCohorts.map(c => ({
-                    year: String(c.cohortYear),
-                    rate: c.enrolled ? Math.round((c.completed / c.enrolled) * 100) : 0
-                  }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="rate" stroke="#479BD6" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Completion %" />
-                  </LineChart>
-                </ResponsiveContainer>
               </Panel>
             </div>
           </section>
