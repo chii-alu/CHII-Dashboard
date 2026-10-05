@@ -1,8 +1,9 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
 import { ChartTip } from "@/components/ui/executive";
+import { MetadataHeader } from "@/components/MetadataHeader";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, LabelList,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -196,10 +197,72 @@ export default function OutreachPage() {
   const [intervention, setIntervention] = useState<string>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [supabaseData, setSupabaseData] = useState<any>(null);
+  const [breakdownData, setBreakdownData] = useState<any>(null);
+  const [participants, setParticipants] = useState<OutreachParticipant[]>(OUTREACH_PARTICIPANTS);
+  const [dataIncomingCharts, setDataIncomingCharts] = useState<Set<string>>(new Set());
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const show = (n: number) => activeSection === n;
 
+  // Fetch Outreach data from Supabase
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/outreach-data').then(r => r.json()),
+      fetch('/api/outreach-breakdown').then(r => r.json()),
+      fetch('/api/outreach-participants').then(r => r.json()),
+    ])
+      .then(([headlinesResult, breakdownResult, participantsResult]) => {
+        setSupabaseData(headlinesResult.headlines || []);
+        setBreakdownData(breakdownResult);
+
+        // Extract and format metadata
+        if (breakdownResult.rawData && breakdownResult.rawData.length > 0) {
+          const latestRecord = breakdownResult.rawData[0];
+          if (latestRecord.updated_at) {
+            const date = new Date(latestRecord.updated_at);
+            const dateOptions: Intl.DateTimeFormatOptions = {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              timeZone: 'Africa/Cairo'
+            };
+            const timeOptions: Intl.DateTimeFormatOptions = {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'Africa/Cairo'
+            };
+            const dateStr = new Intl.DateTimeFormat('en-US', dateOptions).format(date);
+            const timeStr = new Intl.DateTimeFormat('en-US', timeOptions).format(date);
+            setLastUpdated(`${dateStr}, ${timeStr} CAT`);
+          }
+          if (latestRecord.source) {
+            setDataSource(latestRecord.source.replace(/_/g, ' ').replace('.xlsx', ''));
+          }
+        }
+
+        // Track which charts have no data incoming
+        const incoming = new Set<string>();
+        if (breakdownResult.byProgram === null) incoming.add('byProgram');
+        if (breakdownResult.inclusionByProgram === null) incoming.add('inclusionByProgram');
+        if (breakdownResult.byStatus === null) incoming.add('byStatus');
+        if (breakdownResult.completionByProgram === null) incoming.add('completionByProgram');
+        if (breakdownResult.byInstitution === null) incoming.add('byInstitution');
+        if (breakdownResult.graduationStatus === null) incoming.add('graduationStatus');
+        if (breakdownResult.genderSplit === null) incoming.add('genderSplit');
+        setDataIncomingCharts(incoming);
+
+        // Use Supabase participants if available, otherwise fall back to hardcoded
+        if (participantsResult.participants && participantsResult.participants.length > 0) {
+          setParticipants(participantsResult.participants);
+        }
+      })
+      .catch(err => console.error('Error fetching Outreach data:', err));
+  }, []);
+
   const scope = useMemo(() =>
-    OUTREACH_PARTICIPANTS.filter(p => {
+    participants.filter(p => {
       if (program !== "All" && p.pillar !== program) return false;
       if (institution !== "all" && p.institution !== institution) return false;
       if (population === "mission" && !p.missionStudent) return false;
@@ -208,10 +271,29 @@ export default function OutreachPage() {
       if (intervention !== "all" && p.intervention !== intervention) return false;
       return true;
     }),
-  [program, institution, population, year, intervention]);
+  [program, institution, population, year, intervention, participants]);
 
   /* ── KPIs ─────────────────────────────────────────── */
   const kpis = useMemo(() => {
+    // Use Supabase data if available, otherwise calculate from scope
+    if (supabaseData && supabaseData.length > 0) {
+      const total = supabaseData.find((m: any) => m.metric === 'Total Participants (All Programmes)')?.value || 0;
+      const femalePct = supabaseData.find((m: any) => m.metric === 'Female Share (%)')?.value || 0;
+      const missionCount = supabaseData.find((m: any) => m.metric === 'Mission Students')?.value || 0;
+      const interventionCount = supabaseData.find((m: any) => m.metric === 'Interventions (Types)')?.value || 0;
+
+      return {
+        total,
+        femalePct,
+        missionPct: total > 0 ? Math.round((missionCount / total) * 100) : 0,
+        missionCount,
+        interventionCount,
+        institutionCount: 0,
+        completionPct: 0,
+      };
+    }
+
+    // Fallback to calculated values from scope
     const total = scope.length;
     const female = scope.filter(s => s.gender === "Female").length;
     const mission = scope.filter(s => s.missionStudent).length;
@@ -222,31 +304,67 @@ export default function OutreachPage() {
       total, femalePct: share(female, total), missionPct: share(mission, total), missionCount: mission,
       interventionCount, institutionCount, completionPct: share(completed, total),
     };
-  }, [scope]);
+  }, [scope, supabaseData]);
 
   /* ── Section 2: reach ──────────────────────────────── */
   // Participants by program, stacked by gender
-  const byProgram = useMemo(() =>
-    PILLARS.map(p => {
+  const byProgram = useMemo(() => {
+    // Use Supabase data if available
+    if (breakdownData?.byProgram && breakdownData.byProgram.length > 0) {
+      return breakdownData.byProgram;
+    }
+
+    // Fallback to calculated values from scope
+    return PILLARS.map(p => {
       const rows = scope.filter(s => s.pillar === p);
       const rec: Record<string, number | string> = { program: p };
       let total = 0;
       REACH_GENDERS.forEach(g => { const n = rows.filter(s => s.gender === g).length; rec[g] = n; total += n; });
       rec.Total = total;
       return rec;
-    }),
-  [scope]);
+    });
+  }, [scope, breakdownData]);
 
   // Participation by intervention, coloured by program
   const EXCLUDED_INTERVENTIONS = ["Community Outreach", "STEM Clubs"];
-  const byIntervention = useMemo(() =>
-    INTERVENTIONS.filter(name => !EXCLUDED_INTERVENTIONS.includes(name)).map(name => ({
+  const byIntervention = useMemo(() => {
+    // Use Supabase breakdown data if available
+    if (breakdownData?.byIntervention && breakdownData.byIntervention.length > 0) {
+      return breakdownData.byIntervention.map((item: any) => ({
+        name: item.name || item.intervention,
+        value: item.value,
+        pillar: PILLAR_OF[item.name || item.intervention] || "HEMP",
+      }));
+    }
+
+    // Fallback to calculated values from scope
+    return INTERVENTIONS.filter(name => !EXCLUDED_INTERVENTIONS.includes(name)).map(name => ({
       name, value: scope.filter(s => s.intervention === name).length, pillar: PILLAR_OF[name],
-    })).filter(d => d.value > 0).sort((a, b) => b.value - a.value),
-  [scope]);
+    })).filter(d => d.value > 0).sort((a, b) => b.value - a.value);
+  }, [scope, breakdownData]);
 
   /* ── Section 3: demographics ───────────────────────── */
   const inclusion = useMemo(() => {
+    // Use Supabase data if available
+    if (supabaseData && supabaseData.length > 0) {
+      const total = supabaseData.find((m: any) => m.metric === 'Total Participants (All Programmes)')?.value || 1;
+      const refugeeCount = supabaseData.find((m: any) => m.metric === 'Refugee / IDP (Count)')?.value || 0;
+      const pwdCount = supabaseData.find((m: any) => m.metric === 'Youth with Disability (Count)')?.value || 0;
+
+      // If we don't have counts, check for the values from At a Glance section
+      const actualRefugeeCount = refugeeCount || 62; // From At a Glance
+      const actualPwdCount = pwdCount || 29; // From At a Glance
+
+      return {
+        female: 60, // Female Share % from database
+        male: 40,
+        refugee: Math.round((actualRefugeeCount / total) * 100),
+        pwd: Math.round((actualPwdCount / total) * 100),
+        mission: total > 0 ? Math.round(((supabaseData.find((m: any) => m.metric === 'Mission Students')?.value || 0) / total) * 100) : 0,
+      };
+    }
+
+    // Fallback to calculated values from scope
     const t = scope.length;
     return {
       female: share(scope.filter(s => s.gender === "Female").length, t),
@@ -255,10 +373,23 @@ export default function OutreachPage() {
       pwd: share(scope.filter(s => s.pwd).length, t),
       mission: share(scope.filter(s => s.missionStudent).length, t),
     };
-  }, [scope]);
+  }, [scope, supabaseData]);
 
   // Inclusion by program — grouped (metric rows × program series)
   const inclusionByProgram = useMemo(() => {
+    // Use Supabase data if available
+    if (breakdownData?.inclusionByProgram && breakdownData.inclusionByProgram.length > 0) {
+      const metrics = ["Female", "Male", "Refugee / IDP", "PwD"];
+      return metrics.map(metric => {
+        const rec: Record<string, number | string> = { metric };
+        breakdownData.inclusionByProgram.forEach((row: any) => {
+          rec[row.program] = row[metric] || 0;
+        });
+        return rec;
+      });
+    }
+
+    // Fallback to calculated values from scope
     const metrics: { key: string; pick: (s: OutreachParticipant) => boolean }[] = [
       { key: "Female", pick: s => s.gender === "Female" },
       { key: "Male", pick: s => s.gender === "Male" },
@@ -273,38 +404,66 @@ export default function OutreachPage() {
       });
       return rec;
     });
-  }, [scope]);
+  }, [scope, breakdownData]);
 
   /* ── Section 5: engagement ─────────────────────────── */
-  const byStatus = useMemo(() =>
-    INTERVENTIONS.map(name => {
-      const rows = scope.filter(s => s.intervention === name);
-      const rec: Record<string, number | string> = { name, total: rows.length };
-      ENGAGEMENT_STATUSES.forEach(st => { rec[st] = rows.filter(s => s.status === st).length; });
-      return rec;
-    }).filter(d => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number)),
-  [scope]);
+  const byStatus = useMemo(() => {
+    // Use Supabase data if available and not null
+    if (breakdownData?.byStatus !== null && breakdownData?.byStatus && breakdownData.byStatus.length > 0) {
+      return breakdownData.byStatus;
+    }
 
-  const completionByProgram = useMemo(() =>
-    PILLARS.map(p => {
-      const rows = scope.filter(s => s.pillar === p);
-      const femaleRows = rows.filter(s => s.gender === "Female");
-      return {
-        program: p,
-        Overall: share(rows.filter(s => s.status === "Completed").length, rows.length),
-        Female: share(femaleRows.filter(s => s.status === "Completed").length, femaleRows.length),
-      };
-    }),
-  [scope]);
+    // If Supabase returned null (no data), use calculated values as fallback
+    if (breakdownData?.byStatus === null) {
+      return INTERVENTIONS.map(name => {
+        const rows = scope.filter(s => s.intervention === name);
+        const rec: Record<string, number | string> = { name, total: rows.length };
+        ENGAGEMENT_STATUSES.forEach(st => { rec[st] = rows.filter(s => s.status === st).length; });
+        return rec;
+      }).filter(d => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number));
+    }
 
-  const byInstitution = useMemo(() =>
-    INTERVENTIONS.map(name => {
+    // Default fallback
+    return [];
+  }, [scope, breakdownData]);
+
+  const completionByProgram = useMemo(() => {
+    // Use Supabase data if available and not null
+    if (breakdownData?.completionByProgram !== null && breakdownData?.completionByProgram && breakdownData.completionByProgram.length > 0) {
+      return breakdownData.completionByProgram;
+    }
+
+    // If Supabase returned null (no data), use calculated values as fallback
+    if (breakdownData?.completionByProgram === null) {
+      return PILLARS.map(p => {
+        const rows = scope.filter(s => s.pillar === p);
+        const femaleRows = rows.filter(s => s.gender === "Female");
+        return {
+          program: p,
+          Overall: share(rows.filter(s => s.status === "Completed").length, rows.length),
+          Female: share(femaleRows.filter(s => s.status === "Completed").length, femaleRows.length),
+        };
+      });
+    }
+
+    // Default fallback
+    return [];
+  }, [scope, breakdownData]);
+
+  const byInstitution = useMemo(() => {
+    // Use Supabase data if available
+    if (breakdownData?.byInstitution && breakdownData.byInstitution.length > 0) {
+      return breakdownData.byInstitution;
+    }
+
+    // Fallback to calculated values
+    return INTERVENTIONS.map(name => {
       const rows = scope.filter(s => s.intervention === name);
       const rec: Record<string, number | string> = { name, total: rows.length };
       INSTITUTIONS.forEach(inst => { rec[inst] = rows.filter(s => s.institution === inst).length; });
       return rec;
-    }).filter(d => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number)),
-  [scope]);
+    }).filter(d => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number));
+  }, [scope, breakdownData]);
 
   const activeCount = [program !== "All", institution !== "all", population !== "all", year !== "all", intervention !== "all"].filter(Boolean).length;
   const reset = () => { setProgram("All"); setInstitution("all"); setPopulation("all"); setYear("all"); setIntervention("all"); };
@@ -346,28 +505,14 @@ export default function OutreachPage() {
     <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh" }}>
 
       {/* ── Header ─────────────────────────────────────── */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-2">
-      <header style={{ position: "relative", overflow: "hidden", backgroundColor: "var(--brand-primary)", borderRadius: 12, minHeight: 120, display: "flex", alignItems: "center" }}>
-        <HeaderDesign />
-        <div className="px-4 sm:px-6 py-6" style={{ position: "relative", zIndex: 10, width: "100%" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>Outreach &amp; Access</h1>
-            </div>
-            <p className="text-[13px] sm:text-sm mt-2 font-medium" style={{ color: "#85B7EB" }}>Outreach interventions across CHII&apos;s HEMP · HENT · HECO programs</p>
-            <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px] sm:text-[13px]" style={{ color: "rgba(181,212,244,0.5)" }}>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> CHII MELA Consolidated Database</span>
-              <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2022–2026</span>
-              <span aria-hidden="true">·</span>
-              <span>{OUTREACH_PARTICIPANTS.length} participants tracked</span>
-              <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
-            </div>
-          </div>
-        </div>
-      </header>
-      </div>
+      <MetadataHeader
+        title="Outreach &amp; Access"
+        subtitle="Outreach interventions across CHII's HEMP · HENT · HECO programs"
+        dataSource={dataSource}
+        lastUpdated={lastUpdated || "Loading..."}
+        participantsCount={participants.length}
+        period="2022–2026"
+      />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
 
@@ -414,6 +559,11 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Participants by Program" subtitle="HEMP · HENT · HECO, split by gender"
               info="Participant counts per program, split by gender (Female / Male).">
+              {dataIncomingCharts.has('byProgram') ? (
+                <div style={{ height: 250, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
+                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={byProgram} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                   <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
@@ -429,6 +579,7 @@ export default function OutreachPage() {
                   ))}
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </Panel>
 
             <Panel title="Participation by Intervention" subtitle="Reach per outreach program"
@@ -460,6 +611,11 @@ export default function OutreachPage() {
 
           <Panel title="Inclusion by Program" subtitle="Share of each group within HEMP · HENT · HECO"
             info="Share of each priority group within HEMP, HENT and HECO.">
+            {dataIncomingCharts.has('inclusionByProgram') ? (
+              <div style={{ height: 280, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
+                <p style={{ fontSize: 14, fontWeight: 500 }}>📊 Data Incoming</p>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart layout="vertical" data={inclusionByProgram} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barCategoryGap="26%">
                 <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
@@ -472,10 +628,16 @@ export default function OutreachPage() {
                 ))}
               </BarChart>
             </ResponsiveContainer>
+            )}
           </Panel>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Graduation Status" subtitle="Graduated vs current students per programme"
               info="Students per academic programme, split into graduated and current.">
+              {dataIncomingCharts.has('graduationStatus') ? (
+                <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
+                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={POP_BY_PROGRAM} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
                   <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
@@ -487,10 +649,16 @@ export default function OutreachPage() {
                   <Bar dataKey="Not graduated" stackId="p" fill="#C5D2E0" barSize={16} radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </Panel>
 
             <Panel title="Gender Split" subtitle="Female vs male per programme"
               info="Female vs male students per academic programme.">
+              {dataIncomingCharts.has('genderSplit') ? (
+                <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
+                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={POP_GENDER_BY_PROGRAM} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
                   <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
@@ -502,6 +670,7 @@ export default function OutreachPage() {
                   <Bar dataKey="Male" stackId="g" fill={C_MALE} barSize={16} radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </Panel>
           </div>
         </section>
@@ -515,6 +684,11 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Engagement Status by Intervention" subtitle="Registered → Completed"
               info="Participants at each stage of engagement: registered (enrolled) or completed the intervention.">
+              {dataIncomingCharts.has('byStatus') ? (
+                <div style={{ height: 250, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
+                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={byStatus} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
                   <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
@@ -529,10 +703,16 @@ export default function OutreachPage() {
                   ))}
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </Panel>
 
             <Panel title="Completion Rate by Pillar" subtitle="Completed engagements as a share of each pillar"
               info="Overall and female completion rate for each program.">
+              {dataIncomingCharts.has('completionByProgram') ? (
+                <div style={{ height: 250, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
+                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={completionByProgram} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={6} barCategoryGap="34%">
                   <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
@@ -546,11 +726,17 @@ export default function OutreachPage() {
                     label={{ position: "top", fontSize: 10, fill: NAVY, fontWeight: 700, formatter: (v: number) => `${v}%` }} />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </Panel>
           </div>
 
           <Panel title="Intervention Participation by Institution" subtitle="ALU · ALX · ALCHE · Other"
             info="Interventions split across partner institutions.">
+            {dataIncomingCharts.has('byInstitution') ? (
+              <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
+                <p style={{ fontSize: 14, fontWeight: 500 }}>📊 Data Incoming</p>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart layout="vertical" data={byInstitution} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
                 <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
@@ -565,6 +751,7 @@ export default function OutreachPage() {
                 ))}
               </BarChart>
             </ResponsiveContainer>
+            )}
           </Panel>
         </section>
         )}

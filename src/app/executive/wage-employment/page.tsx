@@ -1,7 +1,8 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
 import { ChartTip } from "@/components/ui/executive";
-import { useState, useMemo } from "react";
+import { MetadataHeader } from "@/components/MetadataHeader";
+import { useState, useMemo, useEffect } from "react";
 import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList,
@@ -120,8 +121,14 @@ export default function WageEmploymentPage() {
   const [year, setYear] = useState<"all" | number>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
 
   const show = (n: number) => activeSection === n;
+
+  useEffect(() => {
+    setLastUpdated("Data available");
+  }, []);
 
   const scope = useMemo(
     () => WORKERS.filter((w) => (year !== "all" ? w.year === year : true)),
@@ -243,26 +250,13 @@ export default function WageEmploymentPage() {
 
   return (
     <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh" }}>
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-2">
-        <header style={{ position: "relative", overflow: "hidden", backgroundColor: "var(--brand-primary)", borderRadius: 12, minHeight: 120, display: "flex", alignItems: "center" }}>
-          <HeaderDesign />
-          <div className="px-4 sm:px-6 py-6" style={{ position: "relative", zIndex: 10, width: "100%" }}>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>Wage Employment</h1>
-              </div>
-              <p className="text-[13px] sm:text-sm mt-2 font-medium" style={{ color: "#85B7EB" }}>CHII Employment Outcomes, Trends, Performance, and Work Quality</p>
-              <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px] sm:text-[13px]" style={{ color: "rgba(181,212,244,0.5)" }}>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> CHII MELA Consolidated Database</span>
-                <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2025-2030</span>
-                <span aria-hidden="true">·</span>
-                <span>{WORKERS.length} placements tracked</span>
-              </div>
-            </div>
-          </div>
-        </header>
-      </div>
+      <MetadataHeader
+        title="Wage Employment"
+        subtitle="CHII Employment Outcomes, Trends, Performance, and Work Quality"
+        dataSource={dataSource}
+        lastUpdated={lastUpdated || "Loading..."}
+        period="2025-2030"
+      />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
         <section className="space-y-4">

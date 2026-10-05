@@ -31,6 +31,7 @@ export async function GET() {
       .select("*")
       .eq("dashboard", "EXEC")
       .eq("section", "Outreach")
+      .is("year", null)
       .order("metric");
 
     if (error) {

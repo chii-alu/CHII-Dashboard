@@ -34,6 +34,7 @@ export async function GET(
       .select("*")
       .eq("dashboard", "EXEC")
       .eq("section", section)
+      .is("year", null)
       .order("metric");
 
     if (error) {
@@ -46,24 +47,9 @@ export async function GET(
 
     console.log(`[API] ${section} data rows:`, data?.length || 0);
 
-    // Transform to headline format - take first value for each metric with segment='all'
-    const metricsMap = new Map<string, number>();
-    data?.forEach((row: any) => {
-      if (row.segment === "all" && !metricsMap.has(row.metric)) {
-        metricsMap.set(row.metric, row.value);
-      }
-    });
-
-    // If we got multiple rows, take the first one for each metric (handles duplicate rows)
-    const seenMetrics = new Set<string>();
-    const headlines = Array.from(data || [])
-      .filter((row: any) => {
-        if (row.segment !== "all" || seenMetrics.has(row.metric)) {
-          return false;
-        }
-        seenMetrics.add(row.metric);
-        return true;
-      })
+    // Transform to headline format - filter for segment='all'
+    const headlines = (data || [])
+      .filter((row: any) => row.segment === "all")
       .map((row: any) => ({
         metric: row.metric,
         value: row.value,

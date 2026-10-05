@@ -7,6 +7,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
+import { MetadataHeader } from "@/components/MetadataHeader";
 import { getMap, getBreakdown, getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createClient } from "@/lib/supabase-client";
@@ -502,6 +503,8 @@ function KPICard({
 
 export default function AtAGlancePage() {
   const [responsive, setResponsive] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
 
@@ -555,6 +558,39 @@ export default function AtAGlancePage() {
     []
   );
 
+  // Fetch metadata from Outreach API
+  useEffect(() => {
+    fetch('/api/outreach-breakdown')
+      .then(r => r.json())
+      .then(result => {
+        if (result.rawData && result.rawData.length > 0) {
+          const latestRecord = result.rawData[0];
+          if (latestRecord.updated_at) {
+            const date = new Date(latestRecord.updated_at);
+            const dateOptions: Intl.DateTimeFormatOptions = {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              timeZone: 'Africa/Cairo'
+            };
+            const timeOptions: Intl.DateTimeFormatOptions = {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'Africa/Cairo'
+            };
+            const dateStr = new Intl.DateTimeFormat('en-US', dateOptions).format(date);
+            const timeStr = new Intl.DateTimeFormat('en-US', timeOptions).format(date);
+            setLastUpdated(`${dateStr}, ${timeStr} CAT`);
+          }
+          if (latestRecord.source) {
+            setDataSource(latestRecord.source.replace(/_/g, ' ').replace('.xlsx', ''));
+          }
+        }
+      })
+      .catch(err => console.error('Error fetching metadata:', err));
+  }, []);
+
   const { data: enrollmentBreakdown } = useDashboardData(
     () => getBreakdown('EXEC', 'Headline Cards', 'Currently Enrolled'),
     []
@@ -585,12 +621,12 @@ export default function AtAGlancePage() {
   const youthInWorkTotal = youthHeadlines?.find(h => h.metric === 'Participants')?.value || 0;
 
   // Extract all KPI values from At a Glance section
-  const wageEmploymentTotal = atAGlanceHeadlines?.find(h => h.metric === 'Youth in Work (Total)')?.value || 0;
+  const wageEmploymentTotal = atAGlanceHeadlines?.find(h => h.metric === 'Wage Employment')?.value || 0;
   const entrepreneursTotal = atAGlanceHeadlines?.find(h => h.metric === 'Entrepreneurs')?.value || 0;
   const jobsCreatedTotal = atAGlanceHeadlines?.find(h => h.metric === 'Jobs Created (Total)')?.value || 0;
   const enterprisesTotal = atAGlanceHeadlines?.find(h => h.metric === 'Enterprises')?.value || 0;
-  const youthWithDisabilityTotal = atAGlanceHeadlines?.find(h => h.metric === 'Youth with Disability')?.value || 0;
-  const refugeeIdpTotal = atAGlanceHeadlines?.find(h => h.metric === 'Refugee / IDP')?.value || 0;
+  const jobSeekingTotal = atAGlanceHeadlines?.find(h => h.metric === 'Job Seeking')?.value || 0;
+  const furtherEducationTotal = atAGlanceHeadlines?.find(h => h.metric === 'Further Education')?.value || 0;
   // Get gender breakdown from Supabase data
   const femaleBreakdown = genderBreakdown?.find(b => b.category.toLowerCase().includes('female'));
   const totalFemale = femaleBreakdown?.value || 0;
@@ -638,30 +674,13 @@ export default function AtAGlancePage() {
     <div style={{ backgroundColor: `var(--bg-tint)`, minHeight: "100vh" }}>
 
       {/* ── Header ─────────────────────────────────────── */}
-      <div className="max-w-[1600px] mx-auto px-10 pt-2">
-      <header style={{ position: "relative", overflow: "hidden", backgroundColor: "var(--brand-primary)", borderRadius: 12, minHeight: 120, display: "flex", alignItems: "center" }}>
-        <HeaderDesign />
-        <div className="px-4 sm:px-6 py-6" style={{ position: "relative", zIndex: 10, width: "100%" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>At a Glance</h1>
-            </div>
-            <p className="text-[13px] mt-2 font-medium" style={{ color: "rgba(215,225,245,0.8)" }}>
-              Where CHII is reaching, across HEMP, HENT &amp; HECO programs
-            </p>
-            <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> CHII MELA Consolidated Database</span>
-              <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2022–2026</span>
-              <span aria-hidden="true">·</span>
-              <span>{countries} countries active</span>
-              <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
-            </div>
-          </div>
-        </div>
-      </header>
-      </div>
+      <MetadataHeader
+        title="At a Glance"
+        subtitle="Where CHII is reaching, across HEMP, HENT &amp; HECO programs"
+        dataSource={dataSource}
+        lastUpdated={lastUpdated || "Loading..."}
+        period="2022–2026"
+      />
 
       {/* ── Stats Cards Section ─────────────────────────── */}
       <div className="max-w-[1600px] mx-auto px-10 py-7">
@@ -677,8 +696,8 @@ export default function AtAGlancePage() {
             <KPICard label="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={100 - refugeeFemalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach" />
             <KPICard label="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={100 - enrolledFemalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach" />
             <KPICard label="Graduates" value={graduates} femalePct={graduatesFemalePct} malePct={100 - graduatesFemalePct} info="Participants who completed outreach programs." Icon={Award} href="/executive/outreach" />
-            <KPICard label="CSAT Score" value="4.2/5" info="Customer satisfaction rating for programs." Icon={MessageCircle} href="/executive/outreach" secondaryText="n = 240 respondents" />
-            <KPICard label="Employer Rating" value="4.6/5" info="Employer satisfaction with graduate preparedness." Icon={Award} href="/executive/outreach" secondaryText="n = 156 respondents" />
+            <KPICard label="CSAT Score" value={0} info="Customer satisfaction rating for programs." Icon={MessageCircle} href="/executive/outreach" />
+            <KPICard label="Employer Rating" value={0} info="Employer satisfaction with graduate preparedness." Icon={Award} href="/executive/outreach" />
           </div>
         </div>
 
@@ -705,8 +724,8 @@ export default function AtAGlancePage() {
             <KPICard label="Entrepreneurs" value={entrepreneursTotal} yoy={5} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship" secondaryText="Business owners" />
             <KPICard label="Jobs Created" value={jobsCreatedTotal} yoy={18} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship" secondaryText="Direct employment" />
             <KPICard label="Enterprises" value={enterprisesTotal} yoy={22} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship" secondaryText="Active ventures" />
-            <KPICard label="Job Seeking" value={youthWithDisabilityTotal} yoy={-15} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work" secondaryText="In transition" />
-            <KPICard label="Further Education" value={refugeeIdpTotal} yoy={11} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education" secondaryText="Continuing studies" />
+            <KPICard label="Job Seeking" value={jobSeekingTotal} yoy={-15} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work" secondaryText="In transition" />
+            <KPICard label="Further Education" value={furtherEducationTotal} yoy={11} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education" secondaryText="Continuing studies" />
           </div>
         </div>
         </div>
