@@ -32,6 +32,9 @@ export interface GHCohort {
   certified: number;          // completed AND passed the assessment
   avgScore: number;           // mean assessment score, %
   satisfaction: number;       // out of 5
+  quality: number;            // out of 5
+  learningOutcomes: number;   // out of 5
+  relevance: number;          // out of 5
   /** Enrolment by the student's home academic programme */
   byProgramme: Record<GHProgramme, number>;
   /** Completion rate per module, % — reveals where learners drop off */
@@ -46,7 +49,7 @@ export const ghCohorts: GHCohort[] = [
   {
     id: "GH2022", cohortYear: 2022,
     enrolled: 34, female: 18, completed: 26, certified: 22,
-    avgScore: 71, satisfaction: 4.0,
+    avgScore: 71, satisfaction: 4.0, quality: 3.9, learningOutcomes: 3.8, relevance: 3.9,
     byProgramme: {
       "Business & Entrepreneurship": 12, "Computer Science": 7, "Engineering": 5,
       "Social Sciences": 6, "International Business & Trade": 4,
@@ -61,7 +64,7 @@ export const ghCohorts: GHCohort[] = [
   {
     id: "GH2023", cohortYear: 2023,
     enrolled: 48, female: 25, completed: 39, certified: 34,
-    avgScore: 74, satisfaction: 4.2,
+    avgScore: 74, satisfaction: 4.2, quality: 4.1, learningOutcomes: 4.0, relevance: 4.1,
     byProgramme: {
       "Business & Entrepreneurship": 16, "Computer Science": 10, "Engineering": 7,
       "Social Sciences": 9, "International Business & Trade": 6,
@@ -76,7 +79,7 @@ export const ghCohorts: GHCohort[] = [
   {
     id: "GH2024", cohortYear: 2024,
     enrolled: 61, female: 33, completed: 51, certified: 45,
-    avgScore: 77, satisfaction: 4.4,
+    avgScore: 77, satisfaction: 4.4, quality: 4.3, learningOutcomes: 4.2, relevance: 4.3,
     byProgramme: {
       "Business & Entrepreneurship": 20, "Computer Science": 13, "Engineering": 9,
       "Social Sciences": 11, "International Business & Trade": 8,
@@ -91,7 +94,7 @@ export const ghCohorts: GHCohort[] = [
   {
     id: "GH2025", cohortYear: 2025,
     enrolled: 72, female: 39, completed: 62, certified: 55,
-    avgScore: 79, satisfaction: 4.5,
+    avgScore: 79, satisfaction: 4.5, quality: 4.4, learningOutcomes: 4.3, relevance: 4.4,
     byProgramme: {
       "Business & Entrepreneurship": 24, "Computer Science": 16, "Engineering": 10,
       "Social Sciences": 13, "International Business & Trade": 9,
@@ -106,7 +109,7 @@ export const ghCohorts: GHCohort[] = [
   {
     id: "GH2026", cohortYear: 2026,
     enrolled: 58, female: 32, completed: 44, certified: 38,
-    avgScore: 78, satisfaction: 4.5,
+    avgScore: 78, satisfaction: 4.5, quality: 4.4, learningOutcomes: 4.3, relevance: 4.4,
     byProgramme: {
       "Business & Entrepreneurship": 19, "Computer Science": 13, "Engineering": 8,
       "Social Sciences": 11, "International Business & Trade": 7,

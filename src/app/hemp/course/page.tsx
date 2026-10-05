@@ -135,7 +135,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPCourses() {
-  const categories = ["Enrolment & Outcomes", "Academic Performance", "Progression Pathways"];
+  const categories = ["Enrolment & Outcomes", "Academic Performance", "Outcomes"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -492,38 +492,48 @@ export default function HEMPCourses() {
           </section>
         )}
 
-        {show("Progression Pathways") && (
+        {show("Outcomes") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Progression Pathways
+                    Outcomes
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Next steps after course completion — ventures, research, and internships</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Programme quality, satisfaction, learning outcomes and career progression</p>
                 </div>
               </div>
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Progression to Ventures" subtitle="Students who started ventures" info="Number of students who progressed to venture creation" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
+              <Panel title="Learning Outcomes & Relevance" subtitle="Course impact and quality metrics (1-5)" info="Average relevance, quality and satisfaction ratings" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={filteredCohorts.map(c => ({
-                    name: String(c.cohortYear),
-                    ventures: c.progressedToVenture,
-                  }))} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                  <BarChart data={[
+                    {
+                      metric: "Relevance",
+                      value: parseFloat((filteredCohorts.reduce((s, c) => s + c.relevance, 0) / (filteredCohorts.length || 1)).toFixed(1))
+                    },
+                    {
+                      metric: "Quality",
+                      value: parseFloat((filteredCohorts.reduce((s, c) => s + c.quality, 0) / (filteredCohorts.length || 1)).toFixed(1))
+                    },
+                    {
+                      metric: "Satisfaction",
+                      value: parseFloat((filteredCohorts.reduce((s, c) => s + c.satisfaction, 0) / (filteredCohorts.length || 1)).toFixed(1))
+                    },
+                  ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
-                    <Bar dataKey="ventures" fill={BRAND} barSize={46} radius={[4, 4, 0, 0]} name="Ventures">
-                      <LabelList dataKey="ventures" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
+                    <Bar dataKey="value" fill="#479BD6" barSize={46} radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: BRAND }} /> Ventures</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Average Score</span>
                 </div>
               </Panel>
               <Panel title="Overall Progression" subtitle="Students advancing to next steps" info="Total students progressing to ventures, research, and internships" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
