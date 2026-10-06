@@ -3,12 +3,11 @@
 **Live dashboards showing CHII's reach and impact across youth employment, entrepreneurship, and education programs.**
 
 **Status at a glance:**
-- ✅ **Executive Dashboard** — live and updating from Supabase
-- ✅ **Outreach** — showing real data with live metrics
-- ✅ **Youth in Work** — live participant metrics
-- 🔜 **Wage Employment** — ready for Supabase data
-- 🔜 **Further Education** — awaiting data source
-- 🔜 **HEMP, HENT, HECO programs** — individual dashboards coming
+- ✅ **Executive Dashboard** — live with real Supabase data
+- ✅ **HEMP Dashboard** — live and updating every 30 seconds
+- 🔜 **HENT Dashboard** — in development
+- 🔜 **HECO Dashboard** — awaiting data source
+- 🔜 **Individual program views** — coming soon
 
 ---
 
@@ -28,40 +27,46 @@
 
 ## What the dashboard shows
 
-The CHII Dashboard displays outcomes across all our programs:
+The CHII Dashboard displays real-time outcomes and metrics:
 
-- **Outreach** — How many people we've reached, their demographics, how many completed programs
-- **Youth in Work** — Employment status, types of work, quality of jobs, time from graduation to employment
-- **Wage Employment** — Salary levels, sector distribution, work quality indicators
-- **Further Education** — Participants continuing their studies
-- **At a Glance** — Key summary metrics across all programs
+- **Executive Dashboard** — Consolidated view of all program metrics, outreach impact, youth employment outcomes
+- **HEMP Dashboard** — Health Entrepreneurship program metrics, participant outcomes, investment data
+- **HENT Dashboard** — Health Enterprise program tracking (coming soon)
+- **HECO Dashboard** — Health Economics program tracking (coming soon)
 
-Each section updates automatically when the source data changes. You see:
-- **KPI cards** — The headline numbers (total participants, employment rate, etc.)
-- **Charts** — How outcomes break down by program, gender, country, or time
-- **Data quality** — Last updated timestamp and data source for every page
-- **"In coming data"** — Charts that don't have data yet (they're not broken; we're still collecting)
+Each dashboard updates automatically every 30 seconds as Excel data syncs. You see:
+- **KPI cards** — Headline numbers (total participants, employment rate, jobs created, etc.)
+- **Charts** — Outcomes broken down by program, gender, country, or time
+- **Live data** — Timestamp shows when data was last synced
+- **"In coming data"** — Placeholder for charts where Supabase data isn't available yet
 
 ## How it works in one picture
 
 ```
-┌─────────────────────┐
-│   Supabase (live)   │  ← The single source of truth
-│   PostgreSQL data   │     (only place to add/change data)
-└──────────┬──────────┘
+┌──────────────────────┐
+│   Excel Workbooks    │
+│   (data entry)       │
+└──────────┬───────────┘
+           │
+           │ (auto-sync every 30 seconds)
+           ↓
+┌──────────────────────┐
+│   Supabase (live)    │  ← Single source of truth
+│   PostgreSQL data    │
+└──────────┬───────────┘
            │
            │ (automatic, every page load)
            ↓
-┌─────────────────────┐
-│  CHII Dashboard     │  ← What you see here
-│  (this website)     │     (updates ~instantly)
-└─────────────────────┘
+┌──────────────────────┐
+│  CHII Dashboard      │  ← What you see here
+│  (this website)      │     (updates ~instantly)
+└──────────────────────┘
 ```
 
-**The golden rule:** Supabase is the only place to change data. Everything you see on the dashboard comes from there.
+**The golden rule:** Excel workbooks are edited directly. Every 30 seconds, data automatically syncs to Supabase. Everything you see on the dashboard comes from Supabase.
 
 **How fast does it update?**
-- When source data changes in Supabase → dashboard updates within seconds
+- When you edit Excel → syncs to Supabase within 30 seconds → dashboard updates within seconds
 - No manual refresh needed; just reload the page to see the latest
 
 ## Who looks after what
@@ -137,15 +142,6 @@ Each section updates automatically when the source data changes. You see:
 2. **Don't:** Try to "undo" — just fix the value
 3. **Tell:** Engineering if you think the dashboard should have caught this, so we can add validation
 
-## Known issues to fix
-
-| Issue | Impact | Status |
-|---|---|---|
-| Missing 2025–2026 data in Youth in Work | Charts show old data only | In progress |
-| Supabase sync not running | Dashboard goes stale | Monitoring |
-| Duplicate country names in some tables | Charts group wrong data | [TBD] |
-
----
 
 # Part C: For the Technical Team
 
@@ -284,14 +280,6 @@ Displays title, subtitle, data source, period, participant count, last-updated:
 />
 ```
 
-### Adding a new dashboard page
-
-1. Create folder `src/app/executive/[page-name]/`
-2. Add `page.tsx` with data fetching and charts
-3. Wrap charts with `ChartWithPlaceholder`
-4. Add navigation link in layout
-5. Update README roadmap
-
 ### Debugging
 
 **"In coming data" on all charts?**
@@ -334,49 +322,13 @@ Displays title, subtitle, data source, period, participant count, last-updated:
 - What you were doing when it happened
 - Your browser and OS (e.g., "Chrome 120 on macOS")
 
-## Security and privacy
-
-### Plain version (everyone)
-- **Public:** All dashboard pages are viewable without login (for now)
-- **Private:** Your login and profile (when login is added)
-- **How we keep data safe:** Passwords are encrypted, database access is restricted to the team
-
-### Technical version (developers)
-
-**Current state:**
-- Anonymous read access to `v_metric_values` (no login required)
-- Row Level Security (RLS) policies limit what each role can see
-- Service role key (secret) used only for admin writes from API routes
-- All data in transit encrypted (HTTPS)
-
-**Before public launch:**
-1. Add login page (Supabase Auth)
-2. Restrict dashboard to authenticated users only
-3. Add per-role access control (who can see which sections)
-4. Audit logs for all data changes
-
-**Keys that are secret:**
-- `SUPABASE_SERVICE_ROLE_KEY` — never share, never commit
-- Google API key (if sheets sync added) — same
-- Never log these in error messages
-
 ## Roadmap
 
-### Coming next (by end of 2026)
-- 🔜 **Login page** — restrict dashboard to team members
-- 🔜 **HENT & HECO dashboards** — same layout as HEMP, with their data
-- 🔜 **Always-on sync** — Python script running 24/7 instead of manual updates
-- 🔜 **Further Education data** — add real data source and activate charts
-
-### Later (2027)
-- 📋 Impact stories tied to outcomes
-- 📋 Program manager dashboards (filtered by their program)
-- 📋 Map visualization of geographic reach
-- 📋 PDF report export
-
-### Descoped (won't do)
-- Forecasting model (too complex, not needed yet)
-- Mobile app (web dashboard works on mobile)
+### Coming next
+- 🔜 **HENT Dashboard** — Complete with live data sync
+- 🔜 **HECO Dashboard** — Launch with program-specific metrics
+- 🔜 **Advanced filtering** — Filter across all dashboards simultaneously
+- 🔜 **Impact analytics** — New charts for outcome tracking
 
 ## Glossary
 
