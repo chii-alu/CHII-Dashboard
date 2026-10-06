@@ -2,6 +2,7 @@
 import { FilterSelect } from "@/components/ui/executive";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { useState, useMemo, useEffect } from "react";
 import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
@@ -258,19 +259,21 @@ export default function WageEmploymentPage() {
               </Panel>
               <Panel title="Employer Type & Working Arrangement" subtitle="Employer type, broken down by on-site · hybrid · remote"
                 info="Each employer type split by working arrangement.">
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart layout="vertical" data={orgByArr} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
-                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.06)" />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={110} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} />
-                    {ARRANGEMENTS.map((a, i) => (
-                      <Bar key={a} dataKey={a} stackId="ar" fill={ARR_COLOR[a]} barSize={18}
-                        radius={i === ARRANGEMENTS.length - 1 ? [0, 4, 4, 0] : undefined} />
-                    ))}
-                  </BarChart>
-                </ResponsiveContainer>
+                <ChartWithPlaceholder data={orgByArr} height={260}>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart layout="vertical" data={orgByArr || []} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
+                      <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.06)" />
+                      <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={110} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                      <Legend wrapperStyle={{ fontSize: 10 }} />
+                      {orgByArr && ARRANGEMENTS.map((a, i) => (
+                        <Bar key={a} dataKey={a} stackId="ar" fill={ARR_COLOR[a]} barSize={18}
+                          radius={i === ARRANGEMENTS.length - 1 ? [0, 4, 4, 0] : undefined} />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Time to Employment after Graduation" subtitle="When graduates found employment"
                 info="Distribution of time between graduation and first employment.">
