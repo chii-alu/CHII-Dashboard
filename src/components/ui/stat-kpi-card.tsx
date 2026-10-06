@@ -20,7 +20,7 @@ function useCountUp(target: number, duration = 1000): number {
 
 interface Props {
   label: string;
-  num: number;
+  num: number | null;
   displayFmt?: (n: number) => string;
   sub: string;
   fill?: string;
@@ -50,7 +50,7 @@ export default function StatsKpiCard({
   pct,
   bench,
 }: Props) {
-  const animated = useCountUp(num);
+  const animated = useCountUp(num ?? 0);
   const [showTip, setShowTip] = useState(false);
   const hasTarget = pct !== undefined && bench !== undefined;
 
@@ -121,8 +121,8 @@ export default function StatsKpiCard({
       {/* Animated number + Icon */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
         <Icon size={22} style={{ color: lbl, flexShrink: 0, opacity: 0.8 }} />
-        <p style={{ fontSize: 24, fontWeight: 700, color: numColor, lineHeight: 1 }}>
-          {displayFmt(animated)}
+        <p style={{ fontSize: 24, fontWeight: 700, color: num === null ? "#9CA3AF" : numColor, lineHeight: 1 }}>
+          {num === null ? "In coming data" : displayFmt(animated)}
         </p>
       </div>
 

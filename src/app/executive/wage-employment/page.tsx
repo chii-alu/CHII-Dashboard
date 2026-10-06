@@ -131,28 +131,17 @@ export default function WageEmploymentPage() {
     setLastUpdated("Data available");
   }, []);
 
-  const scope = useMemo(
-    () => WORKERS.filter((w) => (year !== "all" ? w.year === year : true)),
-    [year]
-  );
-
-  const total = scope.length;
-
   const kpis = useMemo(() => {
-    const female = scope.filter((w) => w.gender === "Female").length;
-    const decent = scope.filter((w) => w.decentWork).length;
-    const tech = scope.filter((w) => w.inTech).length;
-    const medMonths = median(scope.map((w) => w.timeToEmployment));
-    const medSalary = scope.length > 0 ? Math.round(median(scope.map((w) => w.salaryUSD))) : 0;
+    // No Supabase data for Wage Employment yet - return null values
     return {
-      female,
-      femalePct: share(female, total),
-      decentPct: share(decent, total),
-      techPct: share(tech, total),
-      medMonths: Math.round(medMonths),
-      medSalary,
+      female: null,
+      femalePct: null,
+      decentPct: null,
+      techPct: null,
+      medMonths: null,
+      medSalary: null,
     };
-  }, [scope, total]);
+  }, []);
 
   // No actual Supabase breakdown data - return nulls for charts
   const inclusionReachData = null;
@@ -186,7 +175,7 @@ export default function WageEmploymentPage() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="Wage Employed" num={total} sub="participants in work" Icon={Briefcase}
+            <StatsKpiCard label="Wage Employed" num={null} sub="participants in work" Icon={Briefcase}
               tooltip="Total CHII participants currently in wage employment within the active filters." />
             <StatsKpiCard label="Female Wage Employed" num={kpis.female} sub={`${kpis.femalePct}% of employed`} Icon={WomanIcon}
               tooltip="Number and share of female participants in wage employment." />
