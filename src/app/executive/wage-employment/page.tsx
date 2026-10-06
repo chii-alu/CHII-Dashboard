@@ -375,8 +375,8 @@ export default function WageEmploymentPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
               <Panel title="Household Impact" subtitle="Reported impact areas, ranked"
                 info="How wage employment improved participants' households, sorted from most to least reported.">
-                <ResponsiveContainer width="100%" height={Math.max(220, quality.household.length * 40)}>
-                  <BarChart layout="vertical" data={quality.household} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                <ResponsiveContainer width="100%" height={Math.max(220, (quality.household?.length || 0) * 40)}>
+                  <BarChart layout="vertical" data={quality.household || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={200} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
