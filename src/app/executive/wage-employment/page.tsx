@@ -153,97 +153,21 @@ export default function WageEmploymentPage() {
     };
   }, [scope, total]);
 
-  const inclusionReachData = useMemo(
-    () => [
-      { name: "Female", value: scope.filter((w) => w.gender === "Female").length },
-      { name: "Refugee", value: scope.filter((w) => w.refugee).length },
-      { name: "PWD", value: scope.filter((w) => w.pwd).length },
-    ].filter((d) => d.value > 0),
-    [scope]
-  );
+  // No actual Supabase breakdown data - return nulls for charts
+  const inclusionReachData = null;
+  const empTypeData = null;
+  const orgByArr = null;
+  const trends = null;
+  const sectorData = null;
+  const programOutcomes = useMemo(() => ({ rateData: null, typeData: null, count: 0 }), []);
 
-  const empTypeData = useMemo(
-    () => EMPLOYMENT_TYPES.map((e) => ({ name: e, value: scope.filter((w) => w.employmentType === e).length })).filter((d) => d.value > 0),
-    [scope]
-  );
-
-  const orgByArr = useMemo(() => {
-    return ORG_TYPES.map((o) => {
-      const rows = scope.filter((w) => w.orgType === o);
-      const rec: Record<string, number | string> = { name: o, total: rows.length };
-      ARRANGEMENTS.forEach((a) => {
-        rec[a] = rows.filter((w) => w.arrangement === a).length;
-      });
-      return rec;
-    }).filter((d) => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number));
-  }, [scope]);
-
-  const trends = useMemo(() => {
-    const TREND_YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
-    return TREND_YEARS.map((yr) => {
-      const rows = scope.filter((w) => w.year === yr);
-      const fem = rows.filter((w) => w.gender === "Female");
-      const pwd = rows.filter((w) => w.pwd);
-      const refugee = rows.filter((w) => w.refugee);
-      const placed = rows.filter((w) => w.timeToEmployment <= 12);
-      const placedFem = fem.filter((w) => w.timeToEmployment <= 12);
-      return {
-        year: yr,
-        Total: rows.length,
-        Female: fem.length,
-        PWD: pwd.length,
-        "Refugee/IDP": refugee.length,
-        "12mo%": share(placed.length, rows.length),
-      };
-    });
-  }, [scope]);
-
-  const sectorData = useMemo(
-    () => SECTORS.map((s) => ({ name: s, value: scope.filter((w) => w.sector === s).length })).filter((d) => d.value > 0).sort((a, b) => b.value - a.value),
-    [scope]
-  );
-
-  const programOutcomes = useMemo(() => {
-    const rows = PROGRAMS.map((meta) => {
-      const ps = scope.filter((w) => w.program === meta.name);
-      return {
-        name: meta.name,
-        employmentRate: meta.employmentRate,
-        decent: share(ps.filter((w) => w.decentWork).length, ps.length),
-        placement: share(ps.filter((w) => w.timeToEmployment <= 12).length, ps.length),
-        avgIncome: ps.length ? Math.round(ps.reduce((s, w) => s + w.salaryUSD, 0) / ps.length) : 0,
-        typeMix: Object.fromEntries(EMPLOYMENT_TYPES.map((t) => [t, ps.filter((w) => w.employmentType === t).length])),
-      };
-    });
-    const rateData = [...rows].map((p) => ({ name: p.name, value: p.employmentRate }));
-    const typeData = [...rows].map((p) => ({ name: p.name, ...p.typeMix }));
-    return { rateData, typeData, count: rows.length };
-  }, [scope]);
-
-  const quality = useMemo(() => {
-    const indicators = [
-      { name: "Reliable income", value: 71 },
-      { name: "Good reputation", value: 89 },
-      { name: "Respected at work", value: 91 },
-      { name: "Sense of purpose", value: 90 },
-    ];
-    const accessing = scope.filter((w) => w.decentWork).length;
-    const household = [
-      { name: "Financial stability", value: 184 },
-      { name: "Family education", value: 156 },
-      { name: "Healthcare access", value: 131 },
-      { name: "Household well-being", value: 118 },
-      { name: "Support to extended family", value: 94 },
-    ].sort((a, b) => b.value - a.value);
-    const contribution = [
-      { name: "Strongly agree", value: 148 },
-      { name: "Agree", value: 172 },
-      { name: "Neutral", value: 61 },
-      { name: "Disagree", value: 24 },
-      { name: "Strongly disagree", value: 9 },
-    ];
-    return { indicators, accessing, household, contribution };
-  }, [scope]);
+  // No actual Supabase data for quality indicators
+  const quality = useMemo(() => ({
+    indicators: null,
+    accessing: 0,
+    household: null,
+    contribution: null,
+  }), []);
 
   const activeCount = year !== "all" ? 1 : 0;
   const reset = () => setYear("all");

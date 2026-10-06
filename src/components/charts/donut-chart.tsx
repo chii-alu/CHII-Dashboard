@@ -266,6 +266,26 @@ export function DonutRing({
     );
   };
 
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    return (
+      <div style={{
+        height,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#9CA3AF"
+      }}>
+        <p style={{
+          fontSize: 14,
+          fontWeight: 400,
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        }}>
+          In coming data
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div style={{ position: "relative" }}>

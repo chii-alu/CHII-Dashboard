@@ -2,6 +2,7 @@
 import { FilterSelect } from "@/components/ui/executive";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -296,13 +297,6 @@ export default function FurtherEducationPage() {
         lastUpdated={lastUpdated || "Loading..."}
         period="2022–2026"
       />
-              <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
-            </div>
-          </div>
-        </div>
-      </header>
-      </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
 

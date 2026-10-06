@@ -2,6 +2,7 @@
 import { FilterSelect } from "@/components/ui/executive";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -200,7 +201,6 @@ export default function OutreachPage() {
   const [supabaseData, setSupabaseData] = useState<any>(null);
   const [breakdownData, setBreakdownData] = useState<any>(null);
   const [participants, setParticipants] = useState<OutreachParticipant[]>(OUTREACH_PARTICIPANTS);
-  const [dataIncomingCharts, setDataIncomingCharts] = useState<Set<string>>(new Set());
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const show = (n: number) => activeSection === n;
@@ -242,16 +242,6 @@ export default function OutreachPage() {
           }
         }
 
-        // Track which charts have no data incoming
-        const incoming = new Set<string>();
-        if (breakdownResult.byProgram === null) incoming.add('byProgram');
-        if (breakdownResult.inclusionByProgram === null) incoming.add('inclusionByProgram');
-        if (breakdownResult.byStatus === null) incoming.add('byStatus');
-        if (breakdownResult.completionByProgram === null) incoming.add('completionByProgram');
-        if (breakdownResult.byInstitution === null) incoming.add('byInstitution');
-        if (breakdownResult.graduationStatus === null) incoming.add('graduationStatus');
-        if (breakdownResult.genderSplit === null) incoming.add('genderSplit');
-        setDataIncomingCharts(incoming);
 
         // Use Supabase participants if available, otherwise fall back to hardcoded
         if (participantsResult.participants && participantsResult.participants.length > 0) {
@@ -313,17 +303,9 @@ export default function OutreachPage() {
     if (breakdownData?.byProgram && breakdownData.byProgram.length > 0) {
       return breakdownData.byProgram;
     }
-
-    // Fallback to calculated values from scope
-    return PILLARS.map(p => {
-      const rows = scope.filter(s => s.pillar === p);
-      const rec: Record<string, number | string> = { program: p };
-      let total = 0;
-      REACH_GENDERS.forEach(g => { const n = rows.filter(s => s.gender === g).length; rec[g] = n; total += n; });
-      rec.Total = total;
-      return rec;
-    });
-  }, [scope, breakdownData]);
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
 
   // Participation by intervention, coloured by program
   const EXCLUDED_INTERVENTIONS = ["Community Outreach", "STEM Clubs"];
@@ -336,12 +318,9 @@ export default function OutreachPage() {
         pillar: PILLAR_OF[item.name || item.intervention] || "HEMP",
       }));
     }
-
-    // Fallback to calculated values from scope
-    return INTERVENTIONS.filter(name => !EXCLUDED_INTERVENTIONS.includes(name)).map(name => ({
-      name, value: scope.filter(s => s.intervention === name).length, pillar: PILLAR_OF[name],
-    })).filter(d => d.value > 0).sort((a, b) => b.value - a.value);
-  }, [scope, breakdownData]);
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
 
   /* ── Section 3: demographics ───────────────────────── */
   const inclusion = useMemo(() => {
@@ -363,17 +342,9 @@ export default function OutreachPage() {
         mission: total > 0 ? Math.round(((supabaseData.find((m: any) => m.metric === 'Mission Students')?.value || 0) / total) * 100) : 0,
       };
     }
-
-    // Fallback to calculated values from scope
-    const t = scope.length;
-    return {
-      female: share(scope.filter(s => s.gender === "Female").length, t),
-      male: share(scope.filter(s => s.gender === "Male").length, t),
-      refugee: share(scope.filter(s => s.refugee).length, t),
-      pwd: share(scope.filter(s => s.pwd).length, t),
-      mission: share(scope.filter(s => s.missionStudent).length, t),
-    };
-  }, [scope, supabaseData]);
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [supabaseData]);
 
   // Inclusion by program — grouped (metric rows × program series)
   const inclusionByProgram = useMemo(() => {
@@ -388,23 +359,9 @@ export default function OutreachPage() {
         return rec;
       });
     }
-
-    // Fallback to calculated values from scope
-    const metrics: { key: string; pick: (s: OutreachParticipant) => boolean }[] = [
-      { key: "Female", pick: s => s.gender === "Female" },
-      { key: "Male", pick: s => s.gender === "Male" },
-      { key: "Refugee / IDP", pick: s => s.refugee },
-      { key: "PwD", pick: s => s.pwd },
-    ];
-    return metrics.map(m => {
-      const rec: Record<string, number | string> = { metric: m.key };
-      PILLARS.forEach(p => {
-        const rows = scope.filter(s => s.pillar === p);
-        rec[p] = share(rows.filter(m.pick).length, rows.length);
-      });
-      return rec;
-    });
-  }, [scope, breakdownData]);
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
 
   /* ── Section 5: engagement ─────────────────────────── */
   const byStatus = useMemo(() => {
@@ -412,58 +369,45 @@ export default function OutreachPage() {
     if (breakdownData?.byStatus !== null && breakdownData?.byStatus && breakdownData.byStatus.length > 0) {
       return breakdownData.byStatus;
     }
-
-    // If Supabase returned null (no data), use calculated values as fallback
-    if (breakdownData?.byStatus === null) {
-      return INTERVENTIONS.map(name => {
-        const rows = scope.filter(s => s.intervention === name);
-        const rec: Record<string, number | string> = { name, total: rows.length };
-        ENGAGEMENT_STATUSES.forEach(st => { rec[st] = rows.filter(s => s.status === st).length; });
-        return rec;
-      }).filter(d => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number));
-    }
-
-    // Default fallback
-    return [];
-  }, [scope, breakdownData]);
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
 
   const completionByProgram = useMemo(() => {
     // Use Supabase data if available and not null
     if (breakdownData?.completionByProgram !== null && breakdownData?.completionByProgram && breakdownData.completionByProgram.length > 0) {
       return breakdownData.completionByProgram;
     }
-
-    // If Supabase returned null (no data), use calculated values as fallback
-    if (breakdownData?.completionByProgram === null) {
-      return PILLARS.map(p => {
-        const rows = scope.filter(s => s.pillar === p);
-        const femaleRows = rows.filter(s => s.gender === "Female");
-        return {
-          program: p,
-          Overall: share(rows.filter(s => s.status === "Completed").length, rows.length),
-          Female: share(femaleRows.filter(s => s.status === "Completed").length, femaleRows.length),
-        };
-      });
-    }
-
-    // Default fallback
-    return [];
-  }, [scope, breakdownData]);
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
 
   const byInstitution = useMemo(() => {
     // Use Supabase data if available
     if (breakdownData?.byInstitution && breakdownData.byInstitution.length > 0) {
       return breakdownData.byInstitution;
     }
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
 
-    // Fallback to calculated values
-    return INTERVENTIONS.map(name => {
-      const rows = scope.filter(s => s.intervention === name);
-      const rec: Record<string, number | string> = { name, total: rows.length };
-      INSTITUTIONS.forEach(inst => { rec[inst] = rows.filter(s => s.institution === inst).length; });
-      return rec;
-    }).filter(d => (d.total as number) > 0).sort((a, b) => (b.total as number) - (a.total as number));
-  }, [scope, breakdownData]);
+  // Graduation status by program
+  const graduationStatus = useMemo(() => {
+    if (breakdownData?.graduationStatus && breakdownData.graduationStatus.length > 0) {
+      return breakdownData.graduationStatus;
+    }
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
+
+  // Gender split by program
+  const genderSplit = useMemo(() => {
+    if (breakdownData?.genderSplit && breakdownData.genderSplit.length > 0) {
+      return breakdownData.genderSplit;
+    }
+    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
+    return null;
+  }, [breakdownData]);
 
   const activeCount = [program !== "All", institution !== "all", population !== "all", year !== "all", intervention !== "all"].filter(Boolean).length;
   const reset = () => { setProgram("All"); setInstitution("all"); setPopulation("all"); setYear("all"); setIntervention("all"); };
@@ -527,10 +471,10 @@ export default function OutreachPage() {
               tooltip="Number of participants who are also mission (degree) students." />
             <StatsKpiCard label="Female Share" num={kpis.femalePct} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={WomanIcon}
               tooltip="Share of female participants across outreach interventions in scope." />
-            <StatsKpiCard label="Refugee / IDP" num={inclusion.refugee} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={Shield}
-              tooltip="Share of participants who are refugees or internally displaced persons." />
-            <StatsKpiCard label="Persons w/ Disability" num={inclusion.pwd} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={Accessibility}
-              tooltip="Share of participants who are persons with disability." />
+            {inclusion && <StatsKpiCard label="Refugee / IDP" num={inclusion.refugee} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={Shield}
+              tooltip="Share of participants who are refugees or internally displaced persons." />}
+            {inclusion && <StatsKpiCard label="Persons w/ Disability" num={inclusion.pwd} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={Accessibility}
+              tooltip="Share of participants who are persons with disability." />}
           </div>
 
           {/* Section pills (left) + compact filters dropdown (right) */}
@@ -559,45 +503,43 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Participants by Program" subtitle="HEMP · HENT · HECO, split by gender"
               info="Participant counts per program, split by gender (Female / Male).">
-              {dataIncomingCharts.has('byProgram') ? (
-                <div style={{ height: 250, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
-                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
-                </div>
-              ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={byProgram} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                  <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
-                  <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {REACH_GENDERS.map((g, i) => (
-                    <Bar key={g} dataKey={g} stackId="g" fill={GENDER_COLOR[g]} barSize={46}
-                      radius={i === REACH_GENDERS.length - 1 ? [4, 4, 0, 0] : undefined}>
-                      {i === REACH_GENDERS.length - 1 && <LabelList dataKey="Total" position="top" fontSize={11} fill={NAVY} fontWeight={700} />}
-                    </Bar>
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-              )}
+              <ChartWithPlaceholder data={byProgram} height={250}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={byProgram} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                    <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
+                    <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    {REACH_GENDERS.map((g, i) => (
+                      <Bar key={g} dataKey={g} stackId="g" fill={GENDER_COLOR[g]} barSize={46}
+                        radius={i === REACH_GENDERS.length - 1 ? [4, 4, 0, 0] : undefined}>
+                        {i === REACH_GENDERS.length - 1 && <LabelList dataKey="Total" position="top" fontSize={11} fill={NAVY} fontWeight={700} />}
+                      </Bar>
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartWithPlaceholder>
             </Panel>
 
             <Panel title="Participation by Intervention" subtitle="Reach per outreach program"
               info="Reach per outreach intervention.">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={byIntervention} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
-                  <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Bar dataKey="value" name="Participants" radius={[0, 4, 4, 0]}
-                    label={{ position: "right", fontSize: 10, fill: "#374151", fontWeight: 700 }}>
-                    {byIntervention.map((d) => (
-                      <Cell key={d.name} fill={PILLAR_COLOR[d.pillar]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <ChartWithPlaceholder data={byIntervention} height={250}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart layout="vertical" data={byIntervention} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
+                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Bar dataKey="value" name="Participants" radius={[0, 4, 4, 0]}
+                      label={{ position: "right", fontSize: 10, fill: "#374151", fontWeight: 700 }}>
+                      {byIntervention && byIntervention.map((d) => (
+                        <Cell key={d.name} fill={PILLAR_COLOR[d.pillar]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div style={{ display: "flex", gap: 14, marginTop: 4, justifyContent: "center" }}>
                 {PILLARS.map(p => (
                   <span key={p} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
@@ -611,66 +553,54 @@ export default function OutreachPage() {
 
           <Panel title="Inclusion by Program" subtitle="Share of each group within HEMP · HENT · HECO"
             info="Share of each priority group within HEMP, HENT and HECO.">
-            {dataIncomingCharts.has('inclusionByProgram') ? (
-              <div style={{ height: 280, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
-                <p style={{ fontSize: 14, fontWeight: 500 }}>📊 Data Incoming</p>
-              </div>
-            ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart layout="vertical" data={inclusionByProgram} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barCategoryGap="26%">
-                <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                <XAxis type="number" domain={[0, 100]} tickCount={6} tick={{ fontSize: 9, fill: "#9CA3AF" }} tickFormatter={(v: number) => `${v}%`} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="metric" tick={{ fontSize: 10, fill: "#374151" }} width={92} axisLine={false} tickLine={false} />
-                <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                {PILLARS.map(p => (
-                  <Bar key={p} dataKey={p} fill={PILLAR_COLOR[p]} barSize={11} radius={[0, 3, 3, 0]} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-            )}
+            <ChartWithPlaceholder data={inclusionByProgram} height={280}>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart layout="vertical" data={inclusionByProgram} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barCategoryGap="26%">
+                  <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
+                  <XAxis type="number" domain={[0, 100]} tickCount={6} tick={{ fontSize: 9, fill: "#9CA3AF" }} tickFormatter={(v: number) => `${v}%`} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="metric" tick={{ fontSize: 10, fill: "#374151" }} width={92} axisLine={false} tickLine={false} />
+                  <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  {PILLARS.map(p => (
+                    <Bar key={p} dataKey={p} fill={PILLAR_COLOR[p]} barSize={11} radius={[0, 3, 3, 0]} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartWithPlaceholder>
           </Panel>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Graduation Status" subtitle="Graduated vs current students per programme"
               info="Students per academic programme, split into graduated and current.">
-              {dataIncomingCharts.has('graduationStatus') ? (
-                <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
-                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
-                </div>
-              ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart layout="vertical" data={POP_BY_PROGRAM} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
-                  <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                  <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Graduated" stackId="p" fill="#A81B2D" barSize={16} />
-                  <Bar dataKey="Not graduated" stackId="p" fill="#C5D2E0" barSize={16} radius={[0, 3, 3, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-              )}
+              <ChartWithPlaceholder data={graduationStatus} height={300}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart layout="vertical" data={graduationStatus} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
+                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
+                    <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar dataKey="Graduated" stackId="p" fill="#A81B2D" barSize={16} />
+                    <Bar dataKey="Not graduated" stackId="p" fill="#C5D2E0" barSize={16} radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartWithPlaceholder>
             </Panel>
 
             <Panel title="Gender Split" subtitle="Female vs male per programme"
               info="Female vs male students per academic programme.">
-              {dataIncomingCharts.has('genderSplit') ? (
-                <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
-                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
-                </div>
-              ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart layout="vertical" data={POP_GENDER_BY_PROGRAM} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
-                  <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                  <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Female" stackId="g" fill={C_FEMALE} barSize={16} />
-                  <Bar dataKey="Male" stackId="g" fill={C_MALE} barSize={16} radius={[0, 3, 3, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-              )}
+              <ChartWithPlaceholder data={genderSplit} height={300}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart layout="vertical" data={genderSplit} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
+                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
+                    <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar dataKey="Female" stackId="g" fill={C_FEMALE} barSize={16} />
+                    <Bar dataKey="Male" stackId="g" fill={C_MALE} barSize={16} radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartWithPlaceholder>
             </Panel>
           </div>
         </section>
@@ -684,74 +614,62 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Engagement Status by Intervention" subtitle="Registered → Completed"
               info="Participants at each stage of engagement: registered (enrolled) or completed the intervention.">
-              {dataIncomingCharts.has('byStatus') ? (
-                <div style={{ height: 250, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
-                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
-                </div>
-              ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={byStatus} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
-                  <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={140} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {ENGAGEMENT_STATUSES.map((st, i) => (
-                    <Bar key={st} dataKey={st} stackId="s" barSize={15}
-                      fill={STATUS_COLOR[st]}
-                      radius={i === ENGAGEMENT_STATUSES.length - 1 ? [0, 4, 4, 0] : undefined} />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-              )}
+              <ChartWithPlaceholder data={byStatus} height={250}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart layout="vertical" data={byStatus} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
+                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={140} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    {ENGAGEMENT_STATUSES.map((st, i) => (
+                      <Bar key={st} dataKey={st} stackId="s" barSize={15}
+                        fill={STATUS_COLOR[st]}
+                        radius={i === ENGAGEMENT_STATUSES.length - 1 ? [0, 4, 4, 0] : undefined} />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartWithPlaceholder>
             </Panel>
 
             <Panel title="Completion Rate by Pillar" subtitle="Completed engagements as a share of each pillar"
               info="Overall and female completion rate for each program.">
-              {dataIncomingCharts.has('completionByProgram') ? (
-                <div style={{ height: 250, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
-                  <p style={{ fontSize: 14, fontWeight: 400, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>In Coming data</p>
-                </div>
-              ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={completionByProgram} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={6} barCategoryGap="34%">
-                  <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
-                  <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "#9CA3AF" }} tickFormatter={(v: number) => `${v}%`} axisLine={false} tickLine={false} />
-                  <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Overall" name="Overall" fill="#102C5E" barSize={26} radius={[4, 4, 0, 0]}
-                    label={{ position: "top", fontSize: 10, fill: NAVY, fontWeight: 700, formatter: (v: number) => `${v}%` }} />
-                  <Bar dataKey="Female" name="Female" fill="#102C5E" barSize={26} radius={[4, 4, 0, 0]}
-                    label={{ position: "top", fontSize: 10, fill: NAVY, fontWeight: 700, formatter: (v: number) => `${v}%` }} />
-                </BarChart>
-              </ResponsiveContainer>
-              )}
+              <ChartWithPlaceholder data={completionByProgram} height={250}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={completionByProgram} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={6} barCategoryGap="34%">
+                    <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
+                    <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "#9CA3AF" }} tickFormatter={(v: number) => `${v}%`} axisLine={false} tickLine={false} />
+                    <Tooltip content={<PctTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar dataKey="Overall" name="Overall" fill="#102C5E" barSize={26} radius={[4, 4, 0, 0]}
+                      label={{ position: "top", fontSize: 10, fill: NAVY, fontWeight: 700, formatter: (v: number) => `${v}%` }} />
+                    <Bar dataKey="Female" name="Female" fill="#102C5E" barSize={26} radius={[4, 4, 0, 0]}
+                      label={{ position: "top", fontSize: 10, fill: NAVY, fontWeight: 700, formatter: (v: number) => `${v}%` }} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartWithPlaceholder>
             </Panel>
           </div>
 
           <Panel title="Intervention Participation by Institution" subtitle="ALU · ALX · ALCHE · Other"
             info="Interventions split across partner institutions.">
-            {dataIncomingCharts.has('byInstitution') ? (
-              <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF" }}>
-                <p style={{ fontSize: 14, fontWeight: 500 }}>📊 Data Incoming</p>
-              </div>
-            ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart layout="vertical" data={byInstitution} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
-                <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                {INSTITUTIONS.map((inst, i) => (
-                  <Bar key={inst} dataKey={inst} stackId="i" barSize={15}
-                    fill={["#102C5E", "#479BD6", "#D17A86", "#E0A458"][i]}
-                    radius={i === INSTITUTIONS.length - 1 ? [0, 4, 4, 0] : undefined} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-            )}
+            <ChartWithPlaceholder data={byInstitution} height={260}>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart layout="vertical" data={byInstitution} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
+                  <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  {INSTITUTIONS.map((inst, i) => (
+                    <Bar key={inst} dataKey={inst} stackId="i" barSize={15}
+                      fill={["#102C5E", "#479BD6", "#D17A86", "#E0A458"][i]}
+                      radius={i === INSTITUTIONS.length - 1 ? [0, 4, 4, 0] : undefined} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartWithPlaceholder>
           </Panel>
         </section>
         )}
