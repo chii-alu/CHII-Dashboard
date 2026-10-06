@@ -243,32 +243,57 @@ export default function YouthInWorkPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
+  const [youthData, setYouthData] = useState<any[]>([]);
   const show = (n: number) => activeSection === n;
 
-  // Fetch metadata
+  // Fetch Youth in Work data from Supabase
   useEffect(() => {
-    fetch('/api/youth-in-work-data')
+    fetch('/api/youth-in-work-participants')
       .then(r => r.json())
       .then(result => {
-        if (result.rawRowCount > 0) {
-          setLastUpdated("Data available");
+        if (result.participants && result.participants.length > 0) {
+          setYouthData(result.participants);
+          if (result.rawData && result.rawData.length > 0) {
+            const latestRecord = result.rawData[0];
+            if (latestRecord.updated_at) {
+              const date = new Date(latestRecord.updated_at);
+              const dateOptions: Intl.DateTimeFormatOptions = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'Africa/Cairo'
+              };
+              const timeOptions: Intl.DateTimeFormatOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                timeZone: 'Africa/Cairo'
+              };
+              const dateStr = new Intl.DateTimeFormat('en-US', dateOptions).format(date);
+              const timeStr = new Intl.DateTimeFormat('en-US', timeOptions).format(date);
+              setLastUpdated(`${dateStr}, ${timeStr} CAT`);
+            }
+            if (latestRecord.source) {
+              setDataSource(latestRecord.source.replace(/_/g, ' ').replace('.xlsx', ''));
+            }
+          }
         }
       })
-      .catch(err => console.error('Error fetching metadata:', err));
+      .catch(err => console.error('Error fetching Youth in Work data:', err));
   }, []);
 
   const scope = useMemo(() =>
-    YOUTH.filter(y => {
+    youthData.filter(y => {
       if (year !== "all" && y.year !== year) return false;
       if (program !== "all" && y.program !== program) return false;
-      if (ptype !== "all" && y.participantType !== ptype) return false;
+      if (ptype !== "all" && (y.participantType !== ptype && y.program !== ptype)) return false;
       if (gender !== "all" && y.gender !== gender) return false;
       if (country !== "all" && y.country !== country) return false;
       if (cohort !== "all" && y.cohort !== cohort) return false;
       if (pathway !== "all" && y.pathway !== pathway) return false;
       return true;
     }),
-  [year, program, ptype, gender, country, cohort, pathway]);
+  [youthData, year, program, ptype, gender, country, cohort, pathway]);
 
   /* ── Executive snapshot KPIs ───────────────────────── */
   const kpis = useMemo(() => {
