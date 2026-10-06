@@ -266,24 +266,20 @@ export default function WageEmploymentPage() {
               </Panel>
               <Panel title="Time to Employment after Graduation" subtitle="When graduates found employment"
                 info="Distribution of time between graduation and first employment.">
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={[
-                    { name: "Before Graduation", value: 45 },
-                    { name: "Less than 3 months", value: 78 },
-                    { name: "3-6 months", value: 62 },
-                    { name: "6-12 months", value: 38 },
-                    { name: "12+ months", value: 25 },
-                  ]} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="26%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
-                    <Bar dataKey="value" name="Graduates" fill={C_TOTAL} radius={[4, 4, 0, 0]} barSize={48}>
-                      <LabelList dataKey="value" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <ChartWithPlaceholder data={null} height={260}>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={[]} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="26%">
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: 10 }} />
+                      <Bar dataKey="value" name="Graduates" fill={C_TOTAL} radius={[4, 4, 0, 0]} barSize={48}>
+                        <LabelList dataKey="value" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
@@ -295,8 +291,9 @@ export default function WageEmploymentPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
               <Panel title="Yearly Wage Jobs Trend" subtitle="Total · Female · PWD · Refugee/IDP"
                 info="Employment numbers across demographic groups over time.">
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={trends} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
+                <ChartWithPlaceholder data={trends} height={280}>
+                  <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={trends || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#374151" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -306,19 +303,22 @@ export default function WageEmploymentPage() {
                     <Line type="monotone" dataKey="PWD" stroke="#102C5E" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="Refugee/IDP" stroke="#E0A458" strokeWidth={2} dot={false} />
                   </LineChart>
-                </ResponsiveContainer>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="12-Month Placement Rate" subtitle="% employed within 12 months of graduation"
                 info="Trend in quick employment placement outcomes.">
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={trends} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
+                <ChartWithPlaceholder data={trends} height={280}>
+                  <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={trends || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#374151" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Line type="monotone" dataKey="12mo%" stroke={C_TOTAL} strokeWidth={2} dot={false} />
                   </LineChart>
-                </ResponsiveContainer>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
@@ -330,8 +330,9 @@ export default function WageEmploymentPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
               <Panel title="Employment Rate by Program" subtitle="Program employment rates"
                 info="Employment rate for each program.">
+                <ChartWithPlaceholder data={programOutcomes.rateData} height={260}>
                 <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={programOutcomes.rateData} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
+                  <BarChart data={programOutcomes.rateData || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -341,11 +342,13 @@ export default function WageEmploymentPage() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Employment Type by Program" subtitle="Contract type distribution per program"
                 info="How employment types vary across programs.">
+                <ChartWithPlaceholder data={programOutcomes.typeData} height={260}>
                 <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={programOutcomes.typeData} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
+                  <BarChart data={programOutcomes.typeData || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -356,6 +359,7 @@ export default function WageEmploymentPage() {
                     ))}
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
