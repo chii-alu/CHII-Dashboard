@@ -23,7 +23,7 @@ export async function GET() {
     }
 
     // Get unique section names
-    const uniqueSections = [...new Set(sections?.map((row: any) => row.section) || [])];
+    const uniqueSections = Array.from(new Set(sections?.map((row: any) => row.section) || []));
 
     // For each section, get the metrics and sample data
     const sectionsData = await Promise.all(
