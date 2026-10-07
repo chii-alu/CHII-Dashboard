@@ -44,7 +44,7 @@ export async function GET() {
     console.log("[API] Youth in Work data rows:", data?.length || 0);
 
     // Show all available metrics
-    const uniqueMetrics = [...new Set(data?.map((row: any) => row.metric) || [])];
+    const uniqueMetrics = Array.from(new Set(data?.map((row: any) => row.metric) || []));
     console.log("[API] Available metrics:", uniqueMetrics);
 
     // Transform to headline format
