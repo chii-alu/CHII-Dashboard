@@ -615,18 +615,18 @@ export default function AtAGlancePage() {
   const countries = outreachMapData ? new Set(outreachMapData.map(d => d.country)).size : 0;
 
   // Calculate metrics from outreach headlines data
-  const totalBeneficiaries = outreachHeadlines?.find(h => h.metric === 'Total Participants (All Programmes)')?.value || 0;
+  const totalBeneficiaries = outreachHeadlines?.find((h: any) => h.metric === 'Total Participants (All Programmes)')?.value || 0;
 
   // Calculate Youth in Work metrics
-  const youthInWorkTotal = youthHeadlines?.find(h => h.metric === 'Participants')?.value || 0;
+  const youthInWorkTotal = youthHeadlines?.find((h: any) => h.metric === 'Participants')?.value || 0;
 
   // Extract all KPI values from At a Glance section
-  const wageEmploymentTotal = atAGlanceHeadlines?.find(h => h.metric === 'Wage Employment')?.value || 0;
-  const entrepreneursTotal = atAGlanceHeadlines?.find(h => h.metric === 'Entrepreneurs')?.value || 0;
-  const jobsCreatedTotal = atAGlanceHeadlines?.find(h => h.metric === 'Jobs Created (Total)')?.value || 0;
-  const enterprisesTotal = atAGlanceHeadlines?.find(h => h.metric === 'Enterprises')?.value || 0;
-  const jobSeekingTotal = atAGlanceHeadlines?.find(h => h.metric === 'Job Seeking')?.value || 0;
-  const furtherEducationTotal = atAGlanceHeadlines?.find(h => h.metric === 'Further Education')?.value || 0;
+  const wageEmploymentTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Wage Employment')?.value || 0;
+  const entrepreneursTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Entrepreneurs')?.value || 0;
+  const jobsCreatedTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Jobs Created (Total)')?.value || 0;
+  const enterprisesTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Enterprises')?.value || 0;
+  const jobSeekingTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Job Seeking')?.value || 0;
+  const furtherEducationTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Further Education')?.value || 0;
   // Get gender breakdown from Supabase data
   const femaleBreakdown = genderBreakdown?.find(b => b.category.toLowerCase().includes('female'));
   const totalFemale = femaleBreakdown?.value || 0;
