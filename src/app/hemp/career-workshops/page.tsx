@@ -476,12 +476,12 @@ export default function CareerWorkshopsPage() {
               <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Career workshop participants by health interest" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterHealthInterestYear} onFilterChange={setFilterHealthInterestYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={filteredSessionsForHealthInterest.length ? Object.entries(filteredSessionsForHealthInterest.reduce((acc: Record<string, number>, s) => {
-                      Object.entries(s.healthInterests).forEach(([area, count]) => {
+                    <BarChart data={filteredSessionsForHealthInterest.length ? Object.entries(filteredSessionsForHealthInterest.reduce((acc: Record<string, number>, s: any) => {
+                      Object.entries(s.healthInterests || {}).forEach(([area, count]: any) => {
                         acc[area] = (acc[area] || 0) + count;
                       });
                       return acc;
-                    }, {})).map(([area, count]) => ({ area, count })).sort((a, b) => b.count - a.count) : []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                    }, {})).map(([area, count]: any) => ({ area, count })).sort((a, b: any) => b.count - a.count) : []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="area" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={130} />
