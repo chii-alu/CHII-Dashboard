@@ -631,7 +631,7 @@ export default function HEMPInternships() {
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
                     const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgSkills = orgInternships.length ? parseFloat(((orgInternships.reduce((s, i) => s + i.asksClarifyingQuestions + i.communicatesProfessionally + i.meetsDeadlines + i.worksInTeams, 0) / (orgInternships.length * 4)) * 2).toFixed(1)) : 0;
+                    const avgSkills = orgInternships.length ? parseFloat(((orgInternships.reduce((s, i) => s + (i.asksClarifyingQuestions || 0) + (i.communicatesProfessionally || 0) + (i.meetsDeadlines || 0) + (i.worksInTeams || 0), 0) / (orgInternships.length * 4)) * 2).toFixed(1)) : 0;
                     return { name: o, "Skills Rating": avgSkills };
                   })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
