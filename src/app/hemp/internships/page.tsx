@@ -707,23 +707,23 @@ export default function HEMPInternships() {
                   <BarChart data={[
                     {
                       dimension: "Relevance to Career Goals",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.relevanceToCareer, 0) / filteredInternships.length).toFixed(2)) : 0
+                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.relevanceToCareer || 0), 0) / filteredInternships.length).toFixed(2)) : 0
                     },
                     {
                       dimension: "Overall Quality",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.overallQuality, 0) / filteredInternships.length).toFixed(2)) : 0
+                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.overallQuality || 0), 0) / filteredInternships.length).toFixed(2)) : 0
                     },
                     {
                       dimension: "Clarity of Role & Responsibilities",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.clarityOfRole, 0) / filteredInternships.length).toFixed(2)) : 0
+                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.clarityOfRole || 0), 0) / filteredInternships.length).toFixed(2)) : 0
                     },
                     {
                       dimension: "Support & Supervision",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.supportSupervision, 0) / filteredInternships.length).toFixed(2)) : 0
+                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.supportSupervision || 0), 0) / filteredInternships.length).toFixed(2)) : 0
                     },
                     {
                       dimension: "Usefulness",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + i.skillApplicationToRealWorld, 0) / filteredInternships.length).toFixed(2)) : 0
+                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.skillApplicationToRealWorld || 0), 0) / filteredInternships.length).toFixed(2)) : 0
                     },
                   ]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 190 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />

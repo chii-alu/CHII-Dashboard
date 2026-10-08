@@ -250,6 +250,11 @@ export interface Internship {
   communicatesProfessionally?: number;
   meetsDeadlines?: number;
   worksInTeams?: number;
+  relevanceToCareer?: number;
+  overallQuality?: number;
+  clarityOfRole?: number;
+  supportSupervision?: number;
+  skillApplicationToRealWorld?: number;
 }
 
 export async function getInternshipsFromSupabase(): Promise<Internship[]> {
