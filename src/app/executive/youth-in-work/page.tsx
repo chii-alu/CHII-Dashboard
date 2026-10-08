@@ -481,7 +481,7 @@ export default function YouthInWorkPage() {
               info="Participant counts for each work outcome, stacked within each program.">
               <ChartWithPlaceholder data={byProgram} height={270}>
                 <ResponsiveContainer width="100%" height={270}>
-                  <BarChart data={byProgram} margin={{ top: 26, right: 12, bottom: 0, left: -12 }} barCategoryGap="40%">
+                  <BarChart data={byProgram || []} margin={{ top: 26, right: 12, bottom: 0, left: -12 }} barCategoryGap="40%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
