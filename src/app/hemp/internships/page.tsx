@@ -743,7 +743,7 @@ export default function HEMPInternships() {
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
                     const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const totalPlacements = orgInternships.reduce((s, i) => s + i.placementsAfterInternship, 0);
+                    const totalPlacements = orgInternships.reduce((s, i) => s + (i.placementsAfterInternship || 0), 0);
                     const totalStudents = orgInternships.reduce((s, i) => s + i.students, 0);
                     const placementRate = totalStudents ? Math.round((totalPlacements / totalStudents) * 100) : 0;
                     return { name: o, "Placements": totalPlacements, "Placement %": placementRate };
@@ -786,7 +786,7 @@ export default function HEMPInternships() {
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
                     const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgRecommendation = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + i.internRecommendationScore, 0) / orgInternships.length).toFixed(1)) : 0;
+                    const avgRecommendation = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + (i.internRecommendationScore || 0), 0) / orgInternships.length).toFixed(1)) : 0;
                     return { name: o, "Recommendation": avgRecommendation };
                   })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
