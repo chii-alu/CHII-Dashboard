@@ -473,13 +473,13 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Work Pathway Distribution" subtitle="Where are our youth today?"
               info="The mix of pathways youth follow: wage employment, internships, enterprises, further education, and more.">
-              <ChartWithPlaceholder data={pathwayDist} height={300}>
+              <ChartWithPlaceholder data={pathwayDist || []} height={300}>
                 <Donut data={pathwayDist || []} colors={PATHWAY_COLOR} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
               </ChartWithPlaceholder>
             </Panel>
             <Panel title="Employment Outcomes by Program" subtitle="Employment · Internships · Enterprise across HEMP · HENT · HECO"
               info="Participant counts for each work outcome, stacked within each program.">
-              <ChartWithPlaceholder data={byProgram} height={270}>
+              <ChartWithPlaceholder data={byProgram || []} height={270}>
                 <ResponsiveContainer width="100%" height={270}>
                   <BarChart data={byProgram || []} margin={{ top: 26, right: 12, bottom: 0, left: -12 }} barCategoryGap="40%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -500,9 +500,9 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
           <Panel title="Employment Pathway Trend" subtitle="How work pathways change over time"
             info="Annual trajectory of each pathway, by recorded year.">
-            <ChartWithPlaceholder data={pathwayTrend} height={250}>
+            <ChartWithPlaceholder data={pathwayTrend || []} height={250}>
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={pathwayTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+                <LineChart data={pathwayTrend || []} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
                   <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />

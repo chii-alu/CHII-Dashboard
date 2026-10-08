@@ -122,7 +122,7 @@ function Panel({ title, subtitle, info, children }: {
 function RankBar({ data, color = BAND, width = 130, legend = false, center = false }: { data: { name: string; value: number }[]; color?: string; width?: number; legend?: boolean; center?: boolean }) {
   return (
     <ResponsiveContainer width="100%" height={Math.max(220, data.length * 32) + (legend ? 24 : 0)}>
-      <BarChart layout="vertical" data={data} margin={{ top: 4, right: 16, bottom: 0, left: width }}>
+      <BarChart layout="vertical" data={data || []} margin={{ top: 4, right: 16, bottom: 0, left: width }}>
         <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
         <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={width} axisLine={false} tickLine={false} />
         <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />

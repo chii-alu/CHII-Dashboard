@@ -503,9 +503,9 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Participants by Program" subtitle="HEMP · HENT · HECO, split by gender"
               info="Participant counts per program, split by gender (Female / Male).">
-              <ChartWithPlaceholder data={byProgram} height={250}>
+              <ChartWithPlaceholder data={byProgram || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={byProgram} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                  <BarChart data={byProgram || []} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
                     <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
@@ -524,9 +524,9 @@ export default function OutreachPage() {
 
             <Panel title="Participation by Intervention" subtitle="Reach per outreach program"
               info="Reach per outreach intervention.">
-              <ChartWithPlaceholder data={byIntervention} height={250}>
+              <ChartWithPlaceholder data={byIntervention || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart layout="vertical" data={byIntervention} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
+                  <BarChart layout="vertical" data={byIntervention || []} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
                     <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
@@ -553,7 +553,7 @@ export default function OutreachPage() {
 
           <Panel title="Inclusion by Program" subtitle="Share of each group within HEMP · HENT · HECO"
             info="Share of each priority group within HEMP, HENT and HECO.">
-            <ChartWithPlaceholder data={inclusionByProgram} height={280}>
+            <ChartWithPlaceholder data={inclusionByProgram || []} height={280}>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart layout="vertical" data={inclusionByProgram || []} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barCategoryGap="26%">
                   <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
@@ -571,9 +571,9 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Graduation Status" subtitle="Graduated vs current students per programme"
               info="Students per academic programme, split into graduated and current.">
-              <ChartWithPlaceholder data={graduationStatus} height={300}>
+              <ChartWithPlaceholder data={graduationStatus || []} height={300}>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart layout="vertical" data={graduationStatus} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
+                  <BarChart layout="vertical" data={graduationStatus || []} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
                     <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
                     <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
@@ -588,9 +588,9 @@ export default function OutreachPage() {
 
             <Panel title="Gender Split" subtitle="Female vs male per programme"
               info="Female vs male students per academic programme.">
-              <ChartWithPlaceholder data={genderSplit} height={300}>
+              <ChartWithPlaceholder data={genderSplit || []} height={300}>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart layout="vertical" data={genderSplit} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
+                  <BarChart layout="vertical" data={genderSplit || []} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
                     <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
                     <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
@@ -614,9 +614,9 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Engagement Status by Intervention" subtitle="Registered → Completed"
               info="Participants at each stage of engagement: registered (enrolled) or completed the intervention.">
-              <ChartWithPlaceholder data={byStatus} height={250}>
+              <ChartWithPlaceholder data={byStatus || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart layout="vertical" data={byStatus} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
+                  <BarChart layout="vertical" data={byStatus || []} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
                     <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={140} axisLine={false} tickLine={false} />
@@ -634,9 +634,9 @@ export default function OutreachPage() {
 
             <Panel title="Completion Rate by Pillar" subtitle="Completed engagements as a share of each pillar"
               info="Overall and female completion rate for each program.">
-              <ChartWithPlaceholder data={completionByProgram} height={250}>
+              <ChartWithPlaceholder data={completionByProgram || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={completionByProgram} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={6} barCategoryGap="34%">
+                  <BarChart data={completionByProgram || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barGap={6} barCategoryGap="34%">
                     <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
                     <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "#9CA3AF" }} tickFormatter={(v: number) => `${v}%`} axisLine={false} tickLine={false} />
@@ -654,9 +654,9 @@ export default function OutreachPage() {
 
           <Panel title="Intervention Participation by Institution" subtitle="ALU · ALX · ALCHE · Other"
             info="Interventions split across partner institutions.">
-            <ChartWithPlaceholder data={byInstitution} height={260}>
+            <ChartWithPlaceholder data={byInstitution || []} height={260}>
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart layout="vertical" data={byInstitution} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
+                <BarChart layout="vertical" data={byInstitution || []} margin={{ top: 4, right: 12, bottom: 0, left: 8 }}>
                   <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />

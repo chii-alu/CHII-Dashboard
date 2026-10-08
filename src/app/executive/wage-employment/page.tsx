@@ -248,7 +248,7 @@ export default function WageEmploymentPage() {
               </Panel>
               <Panel title="Employer Type & Working Arrangement" subtitle="Employer type, broken down by on-site · hybrid · remote"
                 info="Each employer type split by working arrangement.">
-                <ChartWithPlaceholder data={orgByArr} height={260}>
+                <ChartWithPlaceholder data={orgByArr || []} height={260}>
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart layout="vertical" data={orgByArr || []} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
                       <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.06)" />
@@ -266,7 +266,7 @@ export default function WageEmploymentPage() {
               </Panel>
               <Panel title="Time to Employment after Graduation" subtitle="When graduates found employment"
                 info="Distribution of time between graduation and first employment.">
-                <ChartWithPlaceholder data={null} height={260}>
+                <ChartWithPlaceholder data={null || []} height={260}>
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart data={[]} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="26%">
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -291,7 +291,7 @@ export default function WageEmploymentPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
               <Panel title="Yearly Wage Jobs Trend" subtitle="Total · Female · PWD · Refugee/IDP"
                 info="Employment numbers across demographic groups over time.">
-                <ChartWithPlaceholder data={trends} height={280}>
+                <ChartWithPlaceholder data={trends || []} height={280}>
                   <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={trends || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -308,7 +308,7 @@ export default function WageEmploymentPage() {
               </Panel>
               <Panel title="12-Month Placement Rate" subtitle="% employed within 12 months of graduation"
                 info="Trend in quick employment placement outcomes.">
-                <ChartWithPlaceholder data={trends} height={280}>
+                <ChartWithPlaceholder data={trends || []} height={280}>
                   <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={trends || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
