@@ -339,8 +339,8 @@ export default function HEMPSie() {
   const avgConfidenceFiltered = filteredCohortsForConfidence.length ? parseFloat((filteredCohortsForConfidence.reduce((s, c) => s + (c.confidence || 0), 0) / filteredCohortsForConfidence.length).toFixed(1)) : 0;
   const avgNPSFiltered = filteredCohortsForConfidence.length ? parseFloat((filteredCohortsForConfidence.reduce((s, c) => s + c.nps, 0) / filteredCohortsForConfidence.length).toFixed(1)) : 0;
 
-  const totalPWD = filteredCohorts.reduce((s, c) => s + c.pwd, 0);
-  const totalRefugees = filteredCohorts.reduce((s, c) => s + c.idpRefugees, 0);
+  const totalPWD = filteredCohorts.reduce((s, c) => s + (c.pwd || 0), 0);
+  const totalRefugees = filteredCohorts.reduce((s, c) => s + (c.idpRefugees || 0), 0);
   const inclusionReachTotal = totalPWD + totalRefugees;
   const totalApplicants = Math.round(totalSelected * 1.3);
   const overallPerformanceScore = parseFloat(((avgSatisfaction + (femalePct / 10) + (19 / 10) + (totalEmploymentLeads ? 5 : 3)) / 4 * 2).toFixed(1));

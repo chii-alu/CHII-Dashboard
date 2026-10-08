@@ -155,6 +155,15 @@ export interface SieCohort {
   internshipPlacements: number;
   placementConversionRate: number;
   completionFullProgramme?: number;
+  pwd?: number;
+  idpRefugees?: number;
+  npsPromoters?: number;
+  npsPassives?: number;
+  npsDetractors?: number;
+  overallPerformanceScore?: number;
+  learningOutcomesScore?: number;
+  participantEngagement?: number;
+  targetAchievementRate?: number;
 }
 
 export async function getSieCohortsFromSupabase(): Promise<SieCohort[]> {
