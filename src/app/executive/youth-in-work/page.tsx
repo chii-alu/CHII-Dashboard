@@ -714,7 +714,7 @@ export default function YouthInWorkPage() {
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="Score" radius={[0, 4, 4, 0]} barSize={20}>
                       <LabelList dataKey="Score" position="right" fontSize={10} fill="#374151" fontWeight={700} />
-                      (quality.indicators || []).map((d, i) => (
+                      {(quality.indicators || []).map((d: any, i: number) => (
                         <Cell key={d.name} fill={["#102C5E", "#479BD6", "#E0A458", "#D45F2C"][i % 4]} />
                       ))}
                     </Bar>
