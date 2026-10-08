@@ -721,9 +721,9 @@ export default function YouthInWorkPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
-              {quality.indicators && (
+              {(quality.indicators || []).length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 8, justifyContent: "center" }}>
-                {quality.indicators.map((d, i) => (
+                {(quality.indicators || []).map((d: any, i: number) => (
                   <span key={d.name} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
                     <span style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: ["#102C5E", "#479BD6", "#E0A458", "#D45F2C"][i % 4] }} />{d.name}
                   </span>
