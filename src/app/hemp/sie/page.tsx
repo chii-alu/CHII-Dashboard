@@ -6,6 +6,7 @@ import HeaderDesign from "@/components/layout/header-design";
 import { getSieCohortsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { targets2030 } from "@/data/hemp-participation";
+import { SIE_DISCIPLINES, SIE_EXPOSURE_AREAS } from "@/data/hemp/sie";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
