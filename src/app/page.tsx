@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 
 /** Premium serif fonts for executive branding */
-const serif = Fraunces({ subsets: ["latin"], weight: ["500", "600", "700"], display: "swap" });
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["500", "600"], display: "swap" });
+const serif = Fraunces({ subsets: ["latin"], weight: "600", display: "swap" });
+const playfair = Playfair_Display({ subsets: ["latin"], weight: "600", display: "swap" });
 
 // ─── Palette ─────────────────────────────────────────────────────────────────
 // Blues matched to the Executive page header/KPI navy (#102C5E / #14306B / #85B7EB).
