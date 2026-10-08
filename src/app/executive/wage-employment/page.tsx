@@ -386,7 +386,7 @@ export default function WageEmploymentPage() {
               <Panel title="CHII Support Assessment" subtitle="Agreement with: CHII's support contributed to my employment"
                 info="How participants rate CHII's contribution to their employment outcomes.">
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={quality.contribution} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
+                  <BarChart data={quality.contribution || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
