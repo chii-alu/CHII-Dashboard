@@ -328,12 +328,12 @@ export default function FurtherEducationPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
             <Panel title="Qualification Level" subtitle="Type of qualification pursued"
               info="Qualification level graduates are pursuing.">
-              <Donut data={d.qualification} colors={PALETTE} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />
+              <Donut data={d.qualification || []} colors={PALETTE} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />
             </Panel>
             <Panel title="Field of Study" subtitle="Disciplines, ranked"
               info="Fields of study graduates pursue, sorted from most to least.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={d.fieldData} margin={{ top: 4, right: 36, bottom: 0, left: 8 }}>
+                <BarChart layout="vertical" data={d.fieldData || []} margin={{ top: 4, right: 36, bottom: 0, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={120} axisLine={false} tickLine={false} />
@@ -347,11 +347,11 @@ export default function FurtherEducationPage() {
             </Panel>
             <Panel title="Relevance to ALU Degree" subtitle="How further study relates to the degree"
               info="How closely graduates' further study relates to their ALU degree.">
-              <Donut data={d.relevance} colors={["#102C5E", "#479BD6", "#C5D2E0"]} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />
+              <Donut data={d.relevance || []} colors={["#102C5E", "#479BD6", "#C5D2E0"]} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />
             </Panel>
             <Panel title="Study Destination" subtitle="Within Africa · Europe · North America · Asia / Other"
               info="Geographic regions where graduates pursue further education.">
-              <Donut data={d.region} colors={["#102C5E", "#479BD6", "#D45F2C", "#A81B2D"]} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />
+              <Donut data={d.region || []} colors={["#102C5E", "#479BD6", "#D45F2C", "#A81B2D"]} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />
             </Panel>
           </div>
         </section>

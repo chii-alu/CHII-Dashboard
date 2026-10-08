@@ -330,7 +330,7 @@ export default function WageEmploymentPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
               <Panel title="Employment Rate by Program" subtitle="Program employment rates"
                 info="Employment rate for each program.">
-                <ChartWithPlaceholder data={programOutcomes.rateData} height={260}>
+                <ChartWithPlaceholder data={programOutcomes.rateData || []} height={260}>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={programOutcomes.rateData || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -346,7 +346,7 @@ export default function WageEmploymentPage() {
               </Panel>
               <Panel title="Employment Type by Program" subtitle="Contract type distribution per program"
                 info="How employment types vary across programs.">
-                <ChartWithPlaceholder data={programOutcomes.typeData} height={260}>
+                <ChartWithPlaceholder data={programOutcomes.typeData || []} height={260}>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={programOutcomes.typeData || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />

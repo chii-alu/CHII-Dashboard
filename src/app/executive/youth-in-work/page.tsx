@@ -529,9 +529,9 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
           <Panel title="Primary &amp; Secondary Jobs" subtitle="Participants by job type"
             info="Participants holding a primary (main) or secondary (additional) job.">
-            <ChartWithPlaceholder data={jobs.primarySecondary} height={250}>
+            <ChartWithPlaceholder data={jobs.primarySecondary || []} height={250}>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={jobs.primarySecondary} margin={{ top: 18, right: 12, bottom: 0, left: -8 }} barGap={6} barCategoryGap="36%">
+                <BarChart data={jobs.primarySecondary || []} margin={{ top: 18, right: 12, bottom: 0, left: -8 }} barGap={6} barCategoryGap="36%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
@@ -546,9 +546,9 @@ export default function YouthInWorkPage() {
           </Panel>
           <Panel title="Job Categories" subtitle="New · Additional · Improved"
             info="New: first job or re-entry after a break. Additional: a second income source alongside existing work. Improved: better pay, conditions, or advancement.">
-            <ChartWithPlaceholder data={jobs.jobCategories} height={250}>
+            <ChartWithPlaceholder data={jobs.jobCategories || []} height={250}>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={jobs.jobCategories} margin={{ top: 18, right: 12, bottom: 0, left: -10 }} barCategoryGap="34%">
+                <BarChart data={jobs.jobCategories || []} margin={{ top: 18, right: 12, bottom: 0, left: -10 }} barCategoryGap="34%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
@@ -576,9 +576,9 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Primary & Secondary Jobs Trend" subtitle="Primary vs secondary roles, by year"
               info="How primary and secondary job-holding changes over time.">
-              <ChartWithPlaceholder data={jobs.psTrend} height={250}>
+              <ChartWithPlaceholder data={jobs.psTrend || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={jobs.psTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+                  <LineChart data={jobs.psTrend || []} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
                     <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
@@ -592,9 +592,9 @@ export default function YouthInWorkPage() {
             </Panel>
             <Panel title="Youth in Work Trend by Inclusion" subtitle="Participants in work, by year"
               info="Youth holding a primary or secondary job each year, including female, PWD, and refugee participants.">
-              <ChartWithPlaceholder data={jobs.youthTrend} height={250}>
+              <ChartWithPlaceholder data={jobs.youthTrend || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={jobs.youthTrend} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+                  <LineChart data={jobs.youthTrend || []} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
                     <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
@@ -621,9 +621,9 @@ export default function YouthInWorkPage() {
             </Panel>
             <Panel title="Jobs Created by Pillar" subtitle="Positions attributable to each program's enterprises"
               info="Total jobs created by enterprises, grouped by the founder's program.">
-              <ChartWithPlaceholder data={jobs.createdByProgram} height={230}>
+              <ChartWithPlaceholder data={jobs.createdByProgram || []} height={230}>
                 <ResponsiveContainer width="100%" height={230}>
-                  <BarChart data={jobs.createdByProgram} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="38%">
+                  <BarChart data={jobs.createdByProgram || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="38%">
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
@@ -654,9 +654,9 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Work Outcomes by Priority Group" subtitle="Employment · Internships · Enterprise"
               info="Participants in each work outcome by priority group.">
-              <ChartWithPlaceholder data={inclusion.outcomesByPriorityGroup} height={230}>
+              <ChartWithPlaceholder data={inclusion.outcomesByPriorityGroup || []} height={230}>
                 <ResponsiveContainer width="100%" height={230}>
-                  <BarChart layout="vertical" data={inclusion.outcomesByPriorityGroup} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                  <BarChart layout="vertical" data={inclusion.outcomesByPriorityGroup || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                     <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={140} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
@@ -673,9 +673,9 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Primary & Secondary Jobs by Priority Group" subtitle="Women · Refugees / displaced · Persons w/ disability"
               info="Primary and secondary job holders who belong to each priority group.">
-              <ChartWithPlaceholder data={inclusion.primaryByGroup} height={230}>
+              <ChartWithPlaceholder data={inclusion.primaryByGroup || []} height={230}>
                 <ResponsiveContainer width="100%" height={230}>
-                  <BarChart layout="vertical" data={inclusion.primaryByGroup} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                  <BarChart layout="vertical" data={inclusion.primaryByGroup || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                     <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
@@ -690,8 +690,8 @@ export default function YouthInWorkPage() {
             </Panel>
             <Panel title="Geographic Distribution" subtitle="Africa vs outside Africa"
               info="Share of participants based in Africa versus the diaspora.">
-              <ChartWithPlaceholder data={inclusion.africaSplit} height={300}>
-                <Donut data={inclusion.africaSplit} colors={[C_GREEN, "#C5D2E0"]} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
+              <ChartWithPlaceholder data={inclusion.africaSplit || []} height={300}>
+                <Donut data={inclusion.africaSplit || []} colors={[C_GREEN, "#C5D2E0"]} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
               </ChartWithPlaceholder>
             </Panel>
           </div>
@@ -705,9 +705,9 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
             <Panel title="Decent Work Indicators" subtitle="Average score out of 100"
               info="How working participants score on each dignified-work indicator — reliable income, sense of purpose, reputation, and respect in the workplace.">
-              <ChartWithPlaceholder data={quality.indicators} height={250}>
+              <ChartWithPlaceholder data={quality.indicators || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart layout="vertical" data={quality.indicators} margin={{ top: 4, right: 40, bottom: 0, left: 8 }} barCategoryGap="28%">
+                  <BarChart layout="vertical" data={quality.indicators || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }} barCategoryGap="28%">
                     <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.06)" />
                     <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
@@ -733,17 +733,17 @@ export default function YouthInWorkPage() {
             </Panel>
             <Panel title="Dignified Work Status" subtitle="Accessing vs progressing"
               info="Working participants accessing dignified work versus those still progressing toward it.">
-              <ChartWithPlaceholder data={quality.dignified} height={340}>
-                <Donut data={quality.dignified} colors={[C_BLUE, "#C5D2E0"]} total={quality.dignifiedTotal} totalLabel="Working" height={340} legendPercent />
+              <ChartWithPlaceholder data={quality.dignified || []} height={340}>
+                <Donut data={quality.dignified || []} colors={[C_BLUE, "#C5D2E0"]} total={quality.dignifiedTotal} totalLabel="Working" height={340} legendPercent />
               </ChartWithPlaceholder>
             </Panel>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
             <Panel title="Employment Sector" subtitle="Where working participants are placed"
               info="Distribution of primary jobs across sectors, sorted from most to least.">
-              <ChartWithPlaceholder data={quality.sectors} height={Math.max(260, (quality.sectors?.length || 0) * 30)}>
+              <ChartWithPlaceholder data={quality.sectors || []} height={Math.max(260, (quality.sectors?.length || 0) * 30)}>
                 <ResponsiveContainer width="100%" height={Math.max(260, (quality.sectors?.length || 0) * 30)}>
-                  <BarChart layout="vertical" data={quality.sectors} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                  <BarChart layout="vertical" data={quality.sectors || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                     <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={200} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
@@ -757,9 +757,9 @@ export default function YouthInWorkPage() {
             </Panel>
             <Panel title="Employer Type" subtitle="Startup · Corporate · Public · NGO · Self-employed"
               info="Type of employer for working participants.">
-              <ChartWithPlaceholder data={quality.employers} height={340}>
+              <ChartWithPlaceholder data={quality.employers || []} height={340}>
                 {quality.employers && (
-                  <Donut data={quality.employers} colors={EMPLOYER_PALETTE} total={quality.employers.reduce((s, d) => s + d.value, 0)} totalLabel="Working" height={340} legendPercent />
+                  <Donut data={quality.employers || []} colors={EMPLOYER_PALETTE} total={quality.employers.reduce((s, d) => s + d.value, 0)} totalLabel="Working" height={340} legendPercent />
                 )}
               </ChartWithPlaceholder>
             </Panel>

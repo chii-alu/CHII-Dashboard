@@ -448,7 +448,7 @@ export default function EntrepreneurshipPage() {
             <Panel title="Enterprise Stage Distribution" subtitle="Enterprises per stage"
               info="Number of enterprises in each stage, sorted by magnitude.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={v.stageDist} margin={{ top: 4, right: 36, bottom: 0, left: 8 }}>
+                <BarChart layout="vertical" data={v.stageDist || []} margin={{ top: 4, right: 36, bottom: 0, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={96} axisLine={false} tickLine={false} />
@@ -462,12 +462,12 @@ export default function EntrepreneurshipPage() {
             </Panel>
             <Panel title="Enterprise Status" subtitle="Current operating status"
               info="Breakdown of enterprises by current status, from pre-seed through to non-operational.">
-              <Donut data={v.statusData} colors={PALETTE} total={v.statusTotal} totalLabel="Enterprises" height={340} legendPercent />
+              <Donut data={v.statusData || []} colors={PALETTE} total={v.statusTotal} totalLabel="Enterprises" height={340} legendPercent />
             </Panel>
             <Panel title="Enterprises Started per Year" subtitle="New enterprises by year"
               info="Count of enterprises launched each year, in chronological order.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={v.perYear} margin={{ top: 18, right: 10, bottom: 0, left: -18 }}>
+                <BarChart data={v.perYear || []} margin={{ top: 18, right: 10, bottom: 0, left: -18 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -485,7 +485,7 @@ export default function EntrepreneurshipPage() {
             <Panel title="Enterprise Survival Rate" subtitle="% surviving over time"
               info="Share of enterprises still operating at year 1, 3, and 5 after launch.">
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={v.survival} margin={{ top: 10, right: 16, bottom: 14, left: 0 }}>
+                <LineChart data={v.survival || []} margin={{ top: 10, right: 16, bottom: 14, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false}
                     label={{ value: "Years since launch", position: "insideBottom", offset: -8, fontSize: 10, fill: "#9CA3AF" }} />
@@ -509,7 +509,7 @@ export default function EntrepreneurshipPage() {
             <Panel title="Capital Raised Over Time" subtitle="Total raised by year (USD)"
               info="Total capital raised by enterprises each year, in USD. Hover a point for the exact amount.">
               <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={growth.capital} margin={{ top: 10, right: 16, bottom: 14, left: 8 }}>
+                <LineChart data={growth.capital || []} margin={{ top: 10, right: 16, bottom: 14, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
                   <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false}
                     label={{ value: "Year", position: "insideBottom", offset: -8, fontSize: 10, fill: "#9CA3AF" }} />
@@ -523,7 +523,7 @@ export default function EntrepreneurshipPage() {
             <Panel title="Funding Sources" subtitle="How enterprises are funded"
               info="Primary funding source per enterprise, sorted by magnitude.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={v.funding} margin={{ top: 18, right: 10, bottom: 0, left: -18 }}>
+                <BarChart data={v.funding || []} margin={{ top: 18, right: 10, bottom: 0, left: -18 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} height={40} />
                   <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -548,7 +548,7 @@ export default function EntrepreneurshipPage() {
             <Panel title="Jobs by Employment Type" subtitle="Full-time · Part-time · Seasonal"
               info="Contract-type split of jobs created by enterprises.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={ji.byType} margin={{ top: 18, right: 12, bottom: 0, left: 4 }}>
+                <BarChart data={ji.byType || []} margin={{ top: 18, right: 12, bottom: 0, left: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} />
                   <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={44} />
@@ -563,7 +563,7 @@ export default function EntrepreneurshipPage() {
 <Panel title="Jobs by Priority Groups" subtitle="Inclusive reach, ranked"
               info="Jobs reaching priority groups — women, youth, refugees/displaced, and persons with disability. Sorted by magnitude.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={ji.priority} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                <BarChart layout="vertical" data={ji.priority || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                   <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
@@ -586,12 +586,12 @@ export default function EntrepreneurshipPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }} className="ep-two">
             <Panel title="Founder Inclusion Reach" subtitle="Female · PWD · Refugee / IDP"
               info="Reach across inclusion demographics: female founders, persons with disabilities, and refugees/displaced persons.">
-              <Donut data={founders.inclusionReachData} colors={["#102C5E", "#479BD6", "#E0A458"]} total={total} totalLabel="Founders" height={340} legendPercent />
+              <Donut data={founders.inclusionReachData || []} colors={["#102C5E", "#479BD6", "#E0A458"]} total={total} totalLabel="Founders" height={340} legendPercent />
             </Panel>
             <Panel title="Enterprise Work Indicators" subtitle="Share of founders reporting each, %"
               info="Share of founders reporting each decent-work indicator, on a fixed 0–100% scale.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={outcomes.indicators} margin={{ top: 20, right: 12, bottom: 0, left: -10 }}>
+                <BarChart data={outcomes.indicators || []} margin={{ top: 20, right: 12, bottom: 0, left: -10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} interval={0} />
                   <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -609,7 +609,7 @@ export default function EntrepreneurshipPage() {
             <Panel title="Household Improvements" subtitle="Reported impact areas, ranked"
               info="How enterprise income improved founder households, sorted from most to least reported.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={outcomes.household} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                <BarChart layout="vertical" data={outcomes.household || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                   <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={160} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
@@ -623,7 +623,7 @@ export default function EntrepreneurshipPage() {
             <Panel title="Reasons Founders Continue" subtitle="Why founders keep trading, ranked"
               info="Top reasons founders continue running their enterprises, sorted from most to least cited.">
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={outcomes.persistence} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                <BarChart layout="vertical" data={outcomes.persistence || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                   <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={170} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
