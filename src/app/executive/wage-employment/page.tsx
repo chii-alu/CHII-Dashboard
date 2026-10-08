@@ -240,11 +240,11 @@ export default function WageEmploymentPage() {
               <style>{`@media (max-width: 720px){ .we-two{ grid-template-columns: 1fr !important; } }`}</style>
               <Panel title="Inclusion Reach" subtitle="Female · Refugee · PWD"
                 info="Distribution of wage-employed participants from inclusion-focused priority groups.">
-                <Donut data={inclusionReachData} colors={{ Female: "#102C5E", Refugee: "#E0A458", PWD: "#479BD6" }} total={0} totalLabel="Employed" height={340} legendPercent />
+                <Donut data={inclusionReachData || []} colors={{ Female: "#102C5E", Refugee: "#E0A458", PWD: "#479BD6" }} total={0} totalLabel="Employed" height={340} legendPercent />
               </Panel>
               <Panel title="Contract Type" subtitle="Full-time · Part-time · Seasonal"
                 info="Contract-type split across the employed population.">
-                <Donut data={empTypeData} colors={EMP_COLOR} total={0} totalLabel="Employed" height={340} legendPercent />
+                <Donut data={empTypeData || []} colors={EMP_COLOR} total={0} totalLabel="Employed" height={340} legendPercent />
               </Panel>
               <Panel title="Employer Type & Working Arrangement" subtitle="Employer type, broken down by on-site · hybrid · remote"
                 info="Each employer type split by working arrangement.">
