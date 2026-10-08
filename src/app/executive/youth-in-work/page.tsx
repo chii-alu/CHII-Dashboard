@@ -758,8 +758,8 @@ export default function YouthInWorkPage() {
             <Panel title="Employer Type" subtitle="Startup · Corporate · Public · NGO · Self-employed"
               info="Type of employer for working participants.">
               <ChartWithPlaceholder data={quality.employers || []} height={340}>
-                {quality.employers && (
-                  <Donut data={quality.employers || []} colors={EMPLOYER_PALETTE} total={quality.employers.reduce((s, d) => s + d.value, 0)} totalLabel="Working" height={340} legendPercent />
+                {(quality.employers || []).length > 0 && (
+                  <Donut data={quality.employers || []} colors={EMPLOYER_PALETTE} total={(quality.employers || []).reduce((s: number, d: any) => s + d.value, 0)} totalLabel="Working" height={340} legendPercent />
                 )}
               </ChartWithPlaceholder>
             </Panel>
