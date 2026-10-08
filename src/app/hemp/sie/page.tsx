@@ -327,16 +327,16 @@ export default function HEMPSie() {
 
   const avgRelevance = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.relevance, 0) / filteredCohorts.length).toFixed(1)) : 0;
   const avgQuality = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.quality, 0) / filteredCohorts.length).toFixed(1)) : 0;
-  const avgUsefulness = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.usefulness, 0) / filteredCohorts.length).toFixed(1)) : 0;
-  const avgConfidence = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.confidence, 0) / filteredCohorts.length).toFixed(1)) : 0;
+  const avgUsefulness = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + (c.usefulness || 0), 0) / filteredCohorts.length).toFixed(1)) : 0;
+  const avgConfidence = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + (c.confidence || 0), 0) / filteredCohorts.length).toFixed(1)) : 0;
   const avgNPS = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.nps, 0) / filteredCohorts.length).toFixed(1)) : 0;
-  const avgCompletion = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.completionFullProgramme, 0) / filteredCohorts.length).toFixed(1)) : 0;
+  const avgCompletion = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + (c.completionFullProgramme || 0), 0) / filteredCohorts.length).toFixed(1)) : 0;
 
   const avgRelevanceFiltered = filteredCohortsForQuality.length ? parseFloat((filteredCohortsForQuality.reduce((s, c) => s + c.relevance, 0) / filteredCohortsForQuality.length).toFixed(1)) : 0;
   const avgQualityFiltered = filteredCohortsForQuality.length ? parseFloat((filteredCohortsForQuality.reduce((s, c) => s + c.quality, 0) / filteredCohortsForQuality.length).toFixed(1)) : 0;
-  const avgUsefulnessFiltered = filteredCohortsForQuality.length ? parseFloat((filteredCohortsForQuality.reduce((s, c) => s + c.usefulness, 0) / filteredCohortsForQuality.length).toFixed(1)) : 0;
+  const avgUsefulnessFiltered = filteredCohortsForQuality.length ? parseFloat((filteredCohortsForQuality.reduce((s, c) => s + (c.usefulness || 0), 0) / filteredCohortsForQuality.length).toFixed(1)) : 0;
 
-  const avgConfidenceFiltered = filteredCohortsForConfidence.length ? parseFloat((filteredCohortsForConfidence.reduce((s, c) => s + c.confidence, 0) / filteredCohortsForConfidence.length).toFixed(1)) : 0;
+  const avgConfidenceFiltered = filteredCohortsForConfidence.length ? parseFloat((filteredCohortsForConfidence.reduce((s, c) => s + (c.confidence || 0), 0) / filteredCohortsForConfidence.length).toFixed(1)) : 0;
   const avgNPSFiltered = filteredCohortsForConfidence.length ? parseFloat((filteredCohortsForConfidence.reduce((s, c) => s + c.nps, 0) / filteredCohortsForConfidence.length).toFixed(1)) : 0;
 
   const totalPWD = filteredCohorts.reduce((s, c) => s + c.pwd, 0);

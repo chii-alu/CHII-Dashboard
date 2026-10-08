@@ -146,12 +146,15 @@ export interface SieCohort {
   satisfaction: number;
   relevance: number;
   quality: number;
+  usefulness?: number;
+  confidence?: number;
   nps: number;
   careerClarityPct: number;
   healthInterests: Record<string, number>;
   employmentPlacements: number;
   internshipPlacements: number;
   placementConversionRate: number;
+  completionFullProgramme?: number;
 }
 
 export async function getSieCohortsFromSupabase(): Promise<SieCohort[]> {
