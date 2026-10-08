@@ -613,9 +613,9 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Jobs by Category" subtitle="Full-time · Part-time · Seasonal"
               info="Distribution of jobs by employment category type.">
-              <ChartWithPlaceholder data={jobs.byCategory ? jobs.byCategory.filter(d => ["Full-time", "Part-time", "Seasonal"].includes(d.name)) : null} height={300}>
-                {jobs.byCategory && (
-                  <Donut data={jobs.byCategory.filter(d => ["Full-time", "Part-time", "Seasonal"].includes(d.name))} colors={WORKCAT_COLOR} total={jobs.byCategory.filter(d => ["Full-time", "Part-time", "Seasonal"].includes(d.name)).reduce((sum, d) => sum + d.value, 0)} totalLabel="Jobs" height={300} legendPercent />
+              <ChartWithPlaceholder data={(jobs.byCategory || []).filter((d: any) => ["Full-time", "Part-time", "Seasonal"].includes(d.name))} height={300}>
+                {(jobs.byCategory || []).length > 0 && (
+                  <Donut data={(jobs.byCategory || []).filter((d: any) => ["Full-time", "Part-time", "Seasonal"].includes(d.name))} colors={WORKCAT_COLOR} total={(jobs.byCategory || []).filter((d: any) => ["Full-time", "Part-time", "Seasonal"].includes(d.name)).reduce((sum: number, d: any) => sum + d.value, 0)} totalLabel="Jobs" height={300} legendPercent />
                 )}
               </ChartWithPlaceholder>
             </Panel>
