@@ -741,8 +741,8 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
             <Panel title="Employment Sector" subtitle="Where working participants are placed"
               info="Distribution of primary jobs across sectors, sorted from most to least.">
-              <ChartWithPlaceholder data={quality.sectors || []} height={Math.max(260, (quality.sectors?.length || 0) * 30)}>
-                <ResponsiveContainer width="100%" height={Math.max(260, (quality.sectors?.length || 0) * 30)}>
+              <ChartWithPlaceholder data={quality.sectors || []} height={Math.max(260, ((quality.sectors || []).length) * 30)}>
+                <ResponsiveContainer width="100%" height={Math.max(260, ((quality.sectors || []).length) * 30)}>
                   <BarChart layout="vertical" data={quality.sectors || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                     <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={200} axisLine={false} tickLine={false} />
