@@ -474,7 +474,7 @@ export default function YouthInWorkPage() {
             <Panel title="Work Pathway Distribution" subtitle="Where are our youth today?"
               info="The mix of pathways youth follow: wage employment, internships, enterprises, further education, and more.">
               <ChartWithPlaceholder data={pathwayDist} height={300}>
-                <Donut data={pathwayDist} colors={PATHWAY_COLOR} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
+                <Donut data={pathwayDist || []} colors={PATHWAY_COLOR} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
               </ChartWithPlaceholder>
             </Panel>
             <Panel title="Employment Outcomes by Program" subtitle="Employment · Internships · Enterprise across HEMP · HENT · HECO"
