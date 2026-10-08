@@ -534,7 +534,7 @@ export default function OutreachPage() {
                     <Bar dataKey="value" name="Participants" radius={[0, 4, 4, 0]}
                       label={{ position: "right", fontSize: 10, fill: "#374151", fontWeight: 700 }}>
                       {byIntervention && byIntervention.map((d: any) => (
-                        <Cell key={d.name} fill={PILLAR_COLOR[d.pillar]} />
+                        <Cell key={d.name} fill={PILLAR_COLOR[d.pillar as Pillar]} />
                       ))}
                     </Bar>
                   </BarChart>
