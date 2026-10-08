@@ -246,6 +246,10 @@ export interface Internship {
   appliesToHealthProblems: number;
   idpParticipants: number;
   plwdParticipants: number;
+  asksClarifyingQuestions?: number;
+  communicatesProfessionally?: number;
+  meetsDeadlines?: number;
+  worksInTeams?: number;
 }
 
 export async function getInternshipsFromSupabase(): Promise<Internship[]> {
