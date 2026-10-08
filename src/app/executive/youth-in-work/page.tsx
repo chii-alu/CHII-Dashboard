@@ -630,7 +630,7 @@ export default function YouthInWorkPage() {
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="jobs" name="Jobs created" barSize={48} radius={[4, 4, 0, 0]}>
                       <LabelList dataKey="jobs" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                      (jobs.createdByProgram || []).map(d => <Cell key={d.program} fill={PROGRAM_COLOR[d.program as Program]} />)}
+                      {(jobs.createdByProgram || []).map((d: any) => <Cell key={d.program} fill={PROGRAM_COLOR[d.program as Program]} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
