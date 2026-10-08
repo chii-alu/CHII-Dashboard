@@ -266,7 +266,7 @@ export default function WageEmploymentPage() {
               </Panel>
               <Panel title="Time to Employment after Graduation" subtitle="When graduates found employment"
                 info="Distribution of time between graduation and first employment.">
-                <ChartWithPlaceholder data={null || []} height={260}>
+                <ChartWithPlaceholder data={null} height={260}>
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart data={[]} margin={{ top: 16, right: 10, bottom: 0, left: -16 }} barCategoryGap="26%">
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
