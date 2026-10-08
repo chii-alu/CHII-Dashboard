@@ -560,9 +560,9 @@ export default function YouthInWorkPage() {
                 </BarChart>
               </ResponsiveContainer>
             </ChartWithPlaceholder>
-            {jobs.jobCategories && (
+            {(jobs.jobCategories || []).length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", marginTop: 8, justifyContent: "center" }}>
-              {jobs.jobCategories.map(d => (
+              {(jobs.jobCategories || []).map((d: any) => (
                 <span key={d.name} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
                   <span style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: JOBCAT_COLOR[d.name] }} />{d.name}
                 </span>
