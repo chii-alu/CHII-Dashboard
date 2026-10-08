@@ -555,7 +555,7 @@ export default function YouthInWorkPage() {
                   <Tooltip content={<NamedBarTip header="Jobs" colorMap={JOBCAT_COLOR} />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                   <Bar dataKey="value" name="Youth" barSize={56} radius={[4, 4, 0, 0]}>
                     <LabelList dataKey="value" position="top" fontSize={11} fill={NAVY} fontWeight={700} />
-                    {jobs.jobCategories && jobs.jobCategories.map(d => <Cell key={d.name} fill={JOBCAT_COLOR[d.name]} />)}
+                    {(jobs.jobCategories || []).map((d: any) => <Cell key={d.name} fill={JOBCAT_COLOR[d.name]} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -630,7 +630,7 @@ export default function YouthInWorkPage() {
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="jobs" name="Jobs created" barSize={48} radius={[4, 4, 0, 0]}>
                       <LabelList dataKey="jobs" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                      {jobs.createdByProgram && jobs.createdByProgram.map(d => <Cell key={d.program} fill={PROGRAM_COLOR[d.program as Program]} />)}
+                      (jobs.createdByProgram || []).map(d => <Cell key={d.program} fill={PROGRAM_COLOR[d.program as Program]} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -714,7 +714,7 @@ export default function YouthInWorkPage() {
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="Score" radius={[0, 4, 4, 0]} barSize={20}>
                       <LabelList dataKey="Score" position="right" fontSize={10} fill="#374151" fontWeight={700} />
-                      {quality.indicators && quality.indicators.map((d, i) => (
+                      (quality.indicators || []).map((d, i) => (
                         <Cell key={d.name} fill={["#102C5E", "#479BD6", "#E0A458", "#D45F2C"][i % 4]} />
                       ))}
                     </Bar>

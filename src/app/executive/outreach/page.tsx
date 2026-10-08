@@ -533,7 +533,7 @@ export default function OutreachPage() {
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="value" name="Participants" radius={[0, 4, 4, 0]}
                       label={{ position: "right", fontSize: 10, fill: "#374151", fontWeight: 700 }}>
-                      {byIntervention && byIntervention.map((d: any) => (
+                      {(byIntervention || []).map((d: any) => (
                         <Cell key={d.name} fill={PILLAR_COLOR[d.pillar as Pillar]} />
                       ))}
                     </Bar>

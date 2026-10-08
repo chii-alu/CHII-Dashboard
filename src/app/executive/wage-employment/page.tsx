@@ -256,7 +256,7 @@ export default function WageEmploymentPage() {
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={110} axisLine={false} tickLine={false} />
                       <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                       <Legend wrapperStyle={{ fontSize: 10 }} />
-                      {orgByArr && ARRANGEMENTS.map((a, i) => (
+                      {(ARRANGEMENTS).map((a, i) => (
                         <Bar key={a} dataKey={a} stackId="ar" fill={ARR_COLOR[a]} barSize={18}
                           radius={i === ARRANGEMENTS.length - 1 ? [0, 4, 4, 0] : undefined} />
                       ))}
