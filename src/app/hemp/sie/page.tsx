@@ -5,6 +5,7 @@ import PortalFooter from "@/components/layout/portal-footer";
 import HeaderDesign from "@/components/layout/header-design";
 import { getSieCohortsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { targets2030 } from "@/data/hemp-participation";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
