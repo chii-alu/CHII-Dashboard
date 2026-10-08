@@ -607,10 +607,10 @@ export default function HEMPInternships() {
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
                     const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgSkills = orgInternships.length ? (orgInternships.reduce((s, i) => s + i.asksClarifyingQuestions + i.communicatesProfessionally + i.meetsDeadlines + i.worksInTeams, 0) / (orgInternships.length * 4)) : 0;
-                    const avgHealth = orgInternships.length ? (orgInternships.reduce((s, i) => s + i.healthSystemsUnderstanding + i.appliesToHealthProblems, 0) / (orgInternships.length * 2)) : 0;
-                    const avgRecommendation = orgInternships.length ? (orgInternships.reduce((s, i) => s + i.recommendationScore, 0) / orgInternships.length) : 0;
-                    const avgHire = orgInternships.length ? ((orgInternships.reduce((s, i) => s + i.likelyToHire, 0) / orgInternships.length) * 2) : 0;
+                    const avgSkills = orgInternships.length ? (orgInternships.reduce((s, i) => s + (i.asksClarifyingQuestions || 0) + (i.communicatesProfessionally || 0) + (i.meetsDeadlines || 0) + (i.worksInTeams || 0), 0) / (orgInternships.length * 4)) : 0;
+                    const avgHealth = orgInternships.length ? (orgInternships.reduce((s, i) => s + (i.healthSystemsUnderstanding || 0) + (i.appliesToHealthProblems || 0), 0) / (orgInternships.length * 2)) : 0;
+                    const avgRecommendation = orgInternships.length ? (orgInternships.reduce((s, i) => s + (i.recommendationScore || 0), 0) / orgInternships.length) : 0;
+                    const avgHire = orgInternships.length ? ((orgInternships.reduce((s, i) => s + (i.likelyToHire || 0), 0) / orgInternships.length) * 2) : 0;
                     const overallScore = parseFloat(((avgSkills + avgHealth + (avgRecommendation / 2) + avgHire) / 4 * 2).toFixed(1));
                     return { name: o, "Overall Rating": overallScore };
                   })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
