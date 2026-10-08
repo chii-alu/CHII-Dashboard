@@ -555,7 +555,7 @@ export default function OutreachPage() {
             info="Share of each priority group within HEMP, HENT and HECO.">
             <ChartWithPlaceholder data={inclusionByProgram} height={280}>
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart layout="vertical" data={inclusionByProgram} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barCategoryGap="26%">
+                <BarChart layout="vertical" data={inclusionByProgram || []} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barCategoryGap="26%">
                   <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
                   <XAxis type="number" domain={[0, 100]} tickCount={6} tick={{ fontSize: 9, fill: "#9CA3AF" }} tickFormatter={(v: number) => `${v}%`} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="metric" tick={{ fontSize: 10, fill: "#374151" }} width={92} axisLine={false} tickLine={false} />
