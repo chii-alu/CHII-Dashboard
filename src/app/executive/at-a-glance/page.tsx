@@ -8,7 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { MetadataHeader } from "@/components/MetadataHeader";
-import { getMap, getBreakdown, getHeadlines } from "@/lib/dashboardData";
+import { getBreakdown, getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createClient } from "@/lib/supabase-client";
 import { Users, BookOpen, Briefcase, TrendingUp, Zap, Target, Award, MessageCircle } from "lucide-react";
@@ -110,15 +110,18 @@ function MapContainer({
     setSelectedCountry(null);
   };
 
+  const dataKey = JSON.stringify([Array.from(countryData.entries()), outreachData, youthData, wageData, entrepreneurshipData, furtherEducationData]);
+
   useEffect(() => {
     if (!mapContainer.current) return;
+    let cancelled = false;
 
     const initMap = async () => {
       if (!mapContainer.current) return;
 
       await initMapboxToken();
 
-      if (!mapContainer.current) return;
+      if (cancelled || !mapContainer.current) return;
 
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
@@ -138,7 +141,7 @@ function MapContainer({
       });
       resizeObserver.observe(mapContainer.current);
 
-      map.current.on("load", () => {
+      map.current.on("style.load", () => {
         // Convert countryData to array and create markers with real coordinates
         const countries = Array.from(countryData.entries()).map(([country, count]) => {
           const coords = COUNTRY_COORDS[country] || [0, 0];
@@ -277,12 +280,13 @@ function MapContainer({
     initMap();
 
     return () => {
+      cancelled = true;
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
     };
-  }, [countryData]);
+  }, [dataKey]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -533,27 +537,27 @@ export default function AtAGlancePage() {
 
   // For map, try different section or use map function with different params
   const { data: outreachMapData } = useDashboardData(
-    () => getMap('EXEC'),
+    () => fetch('/api/exec-map?breakdown=Outreach').then(r => r.json()).then(rows => Array.isArray(rows) ? rows : []),
     []
   );
 
   const { data: youthMapData } = useDashboardData(
-    () => getMap('EXEC'),
+    () => fetch('/api/exec-map?breakdown=Youth%20in%20Work').then(r => r.json()).then(rows => Array.isArray(rows) ? rows : []),
     []
   );
 
   const { data: wageMapData } = useDashboardData(
-    () => getMap('EXEC'),
+    () => Promise.resolve([]),
     []
   );
 
   const { data: entrepreneurshipMapData } = useDashboardData(
-    () => getMap('EXEC'),
+    () => fetch('/api/exec-map?breakdown=Entreprises').then(r => r.json()).then(rows => Array.isArray(rows) ? rows : []),
     []
   );
 
   const { data: furtherEducationMapData } = useDashboardData(
-    () => getMap('EXEC'),
+    () => Promise.resolve([]),
     []
   );
 
