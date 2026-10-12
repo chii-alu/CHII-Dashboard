@@ -80,6 +80,9 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
 };
 
 const shownValue = (v: number | null) => (v === null ? "In coming data" : v.toLocaleString());
+const shownPct = (v: number | null) => (v === null ? "In coming data" : `${v}%`);
+const femalePctOf = (row: any): number | null =>
+  row && row.female != null && row.value ? Math.round((row.female / row.value) * 1000) / 10 : null;
 
 /* ─ Map Container Component ─ */
 function MapContainer({
@@ -101,7 +104,7 @@ function MapContainer({
   entrepreneurshipData: any[];
   furtherEducationData: any[];
 }) {
-  const [selectedCountry, setSelectedCountry] = useState<{ name: string; count: number; outreach: number | null; youthInWork: number | null; wageEmployment: number | null; entrepreneurs: number | null; furtherEducation: number | null; lng: number; lat: number } | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<{ name: string; count: number; outreach: number | null; outreachPct: number | null; youthInWork: number | null; youthPct: number | null; wageEmployment: number | null; wagePct: number | null; entrepreneurs: number | null; entrepreneurPct: number | null; furtherEducation: number | null; educationPct: number | null; lng: number; lat: number } | null>(null);
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
 
   const handleReset = () => {
@@ -237,6 +240,11 @@ function MapContainer({
               wageEmployment: outcomes.wageEmployment.count,
               entrepreneurs: outcomes.entrepreneurs.count,
               furtherEducation: outcomes.furtherEducation.count,
+              outreachPct: femalePctOf(outreachCountryData),
+              youthPct: femalePctOf(youthCountryData),
+              wagePct: femalePctOf(wageCountryData),
+              entrepreneurPct: femalePctOf(entrepreneurCountryData),
+              educationPct: femalePctOf(educationCountryData),
               lng,
               lat
             });
@@ -311,6 +319,14 @@ function MapContainer({
                   <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.wageEmployment)}</td>
                   <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.entrepreneurs)}</td>
                   <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.furtherEducation)}</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: "4px 6px", color: "var(--text-secondary)", fontWeight: 600, fontSize: 11 }}>Female %</td>
+                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{shownPct(selectedCountry.outreachPct)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{shownPct(selectedCountry.youthPct)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{shownPct(selectedCountry.wagePct)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{shownPct(selectedCountry.entrepreneurPct)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{shownPct(selectedCountry.educationPct)}</td>
                 </tr>
               </tbody>
             </table>
@@ -491,53 +507,59 @@ export default function AtAGlancePage() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
 
+  const [refreshKey, setRefreshKey] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setRefreshKey(k => k + 1), 30000);
+    return () => clearInterval(id);
+  }, []);
+
   // Fetch all KPI data from "At a Glance" section (contains all program outcome metrics)
   const { data: atAGlanceHeadlines } = useDashboardData(
     () => fetch('/api/exec-section/At%20a%20Glance').then(r => r.json()).then(result => result.headlines || []),
-    []
+    [refreshKey]
   );
 
   const { data: atAGlanceSegments } = useDashboardData(
     () => fetch('/api/exec-section/At%20a%20Glance').then(r => r.json()).then(result => result.segments || []),
-    []
+    [refreshKey]
   );
 
   // Fetch Outreach data via API endpoint (which can use service role key to bypass RLS)
   const { data: outreachHeadlines, loading: outreachLoading, error: outreachError } = useDashboardData(
     () => fetch('/api/outreach-data').then(r => r.json()).then(result => result.headlines || []),
-    []
+    [refreshKey]
   );
 
   // Fetch Youth in Work data via API endpoint (uses service role key)
   const { data: youthHeadlines } = useDashboardData(
     () => fetch('/api/youth-in-work-data').then(r => r.json()).then(result => result.headlines || []),
-    []
+    [refreshKey]
   );
 
   // For map, try different section or use map function with different params
   const { data: outreachMapData } = useDashboardData(
     () => fetch('/api/exec-map?breakdown=Outreach').then(r => r.json()).then(rows => Array.isArray(rows) ? rows : []),
-    []
+    [refreshKey]
   );
 
   const { data: youthMapData } = useDashboardData(
     () => fetch('/api/exec-map?breakdown=Youth%20in%20Work').then(r => r.json()).then(rows => Array.isArray(rows) ? rows : []),
-    []
+    [refreshKey]
   );
 
   const { data: wageMapData } = useDashboardData(
     () => Promise.resolve([]),
-    []
+    [refreshKey]
   );
 
   const { data: entrepreneurshipMapData } = useDashboardData(
-    () => fetch('/api/exec-map?breakdown=Entreprises').then(r => r.json()).then(rows => Array.isArray(rows) ? rows : []),
-    []
+    () => fetch('/api/exec-map?breakdown=Entrepreneurs').then(r => r.json()).then(rows => Array.isArray(rows) ? rows : []),
+    [refreshKey]
   );
 
   const { data: furtherEducationMapData } = useDashboardData(
     () => Promise.resolve([]),
-    []
+    [refreshKey]
   );
 
   // Fetch demographic breakdowns from Supabase
@@ -620,6 +642,13 @@ export default function AtAGlancePage() {
   const refugeeIdp = atAGlanceHeadlines?.find((h: any) => h.metric === 'Refugee / IDP')?.value ?? null;
   const refugeeFemalePct = segmentPct('Refugee / IDP', 'female');
   const refugeeMalePct = segmentPct('Refugee / IDP', 'male');
+
+  const insightCards = [
+    { title: "Gender Balance", figure: null, detail: "Female participants", copy: "In coming data", accentColor: "var(--brand-secondary)" },
+    { title: "Regional Growth", figure: null, detail: "Countries reached (Outreach)", copy: "In coming data", accentColor: "#16A34A" },
+    { title: "Employment Success", figure: null, detail: "Participants in wage employment", copy: "In coming data", accentColor: "#9333EA" },
+    { title: "Venture Momentum", figure: null, detail: "Enterprises", copy: "In coming data", accentColor: "#EAB308" }
+  ];
 
   /* ─ Country data aggregation for all interventions ─ */
   const countryData = new Map<string, number>();
@@ -727,36 +756,7 @@ export default function AtAGlancePage() {
           e.currentTarget.style.backgroundColor = "var(--bg-surface-raised)";
           e.currentTarget.style.boxShadow = "var(--shadow-md)";
         }}>
-          {[
-            {
-              title: "Gender Balance",
-              figure: "52%",
-              detail: "Female participants (Target: 50%)",
-              copy: "Strong gender parity across HEMP, HENT, and HECO programs. Consistent above target baseline.",
-              accentColor: "var(--brand-secondary)"
-            },
-            {
-              title: "Regional Growth",
-              figure: "+28%",
-              detail: "YoY expansion across 12 countries",
-              copy: "Sub-Saharan Africa reach increased. East Africa leading with +38% growth. New West Africa hubs activated.",
-              accentColor: "#16A34A"
-            },
-            {
-              title: "Employment Success",
-              figure: "76%",
-              detail: "Graduate employment rate",
-              copy: "Wage employment (39%), Self-employment (23%), Further education (14%). Exceeds regional benchmarks.",
-              accentColor: "#9333EA"
-            },
-            {
-              title: "Venture Momentum",
-              figure: "18",
-              detail: "New enterprises (↑22% YoY)",
-              copy: "2,151 jobs created. Avg. revenue $52K. 8 ventures scaled to multi-year sustainability.",
-              accentColor: "#EAB308"
-            }
-          ].map((insight, i) => (
+          {insightCards.map((insight, i) => (
             <div
               key={i}
               style={{
@@ -773,7 +773,7 @@ export default function AtAGlancePage() {
 
               {/* Hero figure */}
               <p style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1, margin: 0, marginTop: 8 }}>
-                {insight.figure}
+                {insight.figure ?? "In coming data"}
               </p>
 
               {/* Label */}
