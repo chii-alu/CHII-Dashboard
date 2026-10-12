@@ -219,7 +219,7 @@ function MapContainer({
             "Total: " + count + " beneficiaries<br><br>" +
             "Youth in Work: " + outcomes.youthInWork.count + " (" + youthPct + "% F)<br>" +
             "Wage Employment: " + outcomes.wageEmployment.count + " (" + wagePct + "% F)<br>" +
-            "Entrepreneurs: " + outcomes.entrepreneurs.count + " (" + entrepreneurPct + "% F)<br>" +
+            "Enterprises: " + outcomes.entrepreneurs.count + " (" + entrepreneurPct + "% F)<br>" +
             "Further Education: " + outcomes.furtherEducation.count + " (" + educationPct + "% F)";
 
           const marker = new mapboxgl.Marker({ element: el, draggable: false })
@@ -308,7 +308,7 @@ function MapContainer({
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Outreach</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Youth in Work</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Wage Employment</th>
-                  <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Entrepreneurs</th>
+                  <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Enterprises</th>
                   <th style={{ textAlign: "left", padding: "5px 6px", fontWeight: 600, color: "var(--text-secondary)", fontSize: 11 }}>Further Education</th>
                 </tr>
               </thead>
