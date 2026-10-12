@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServer } from "@/lib/supabaseServer";
+
+// Always fetch fresh data; never serve a saved copy.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(
   request: Request,
@@ -7,55 +11,45 @@ export async function GET(
 ) {
   try {
     const section = decodeURIComponent(params.section);
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    const supabase = getSupabaseServer();
 
-    if (!supabaseUrl) {
-      return NextResponse.json(
-        { error: "Missing NEXT_PUBLIC_SUPABASE_URL" },
-        { status: 500 }
-      );
+    const [values, sync] = await Promise.all([
+      supabase
+        .from("v_metric_values")
+        .select("*")
+        .eq("dashboard", "EXEC")
+        .eq("section", section)
+        .is("year", null)
+        .order("metric"),
+      supabase
+        .from("v_last_sync")
+        .select("last_synced")
+        .eq("dashboard", "EXEC")
+        .maybeSingle(),
+    ]);
+
+    if (values.error) {
+      console.error(`[API] Supabase error for ${section}:`, values.error);
+      return NextResponse.json({ error: values.error.message }, { status: 500 });
     }
 
-    const key = supabaseServiceKey || supabaseAnonKey;
-    if (!key) {
-      return NextResponse.json(
-        { error: "Missing Supabase keys" },
-        { status: 500 }
-      );
-    }
+    const data = values.data ?? [];
+    console.log(`[API] ${section} data rows:`, data.length);
 
-    const supabase = createClient(supabaseUrl, key);
-    console.log(`[API] Fetching ${section} data with key type:`, supabaseServiceKey ? "service_role" : "anon");
-
-    const { data, error } = await supabase
-      .from("v_metric_values")
-      .select("*")
-      .eq("dashboard", "EXEC")
-      .eq("section", section)
-      .is("year", null)
-      .order("metric");
-
-    if (error) {
-      console.error(`[API] Supabase error for ${section}:`, error);
-      return NextResponse.json(
-        { error: error.message, details: error },
-        { status: 500 }
-      );
-    }
-
-    console.log(`[API] ${section} data rows:`, data?.length || 0);
-
-    // Transform to headline format - filter for segment='all'
-    const headlines = (data || [])
+    const headlines = data
       .filter((row: any) => row.segment === "all")
-      .map((row: any) => ({
-        metric: row.metric,
-        value: row.value,
-      }));
+      .map((row: any) => ({ metric: row.metric, value: row.value }));
 
-    return NextResponse.json({ headlines, rawRowCount: data?.length || 0 });
+    const segments = data
+      .filter((row: any) => row.segment !== "all")
+      .map((row: any) => ({ metric: row.metric, segment: row.segment, value: row.value }));
+
+    return NextResponse.json({
+      headlines,
+      segments,
+      lastSynced: sync.data?.last_synced ?? null,
+      rawRowCount: data.length,
+    });
   } catch (error: any) {
     console.error(`[API] Error fetching section data:`, error);
     return NextResponse.json(

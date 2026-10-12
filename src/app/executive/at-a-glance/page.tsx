@@ -514,6 +514,11 @@ export default function AtAGlancePage() {
     []
   );
 
+  const { data: atAGlanceSegments } = useDashboardData(
+    () => fetch('/api/exec-section/At%20a%20Glance').then(r => r.json()).then(result => result.segments || []),
+    []
+  );
+
   // Fetch Outreach data via API endpoint (which can use service role key to bypass RLS)
   const { data: outreachHeadlines, loading: outreachLoading, error: outreachError } = useDashboardData(
     () => fetch('/api/outreach-data').then(r => r.json()).then(result => result.headlines || []),
@@ -630,26 +635,26 @@ export default function AtAGlancePage() {
   // Get gender breakdown from Supabase data
   const femaleBreakdown = genderBreakdown?.find(b => b.category.toLowerCase().includes('female'));
   const totalFemale = femaleBreakdown?.value || 0;
-  const femaleShare = genderBreakdown && genderBreakdown.length > 0
-    ? genderBreakdown[0]?.percentage || 0
-    : 0;
+  const segmentFemalePct = (metric: string) => {
+    const total = atAGlanceHeadlines?.find((h: any) => h.metric === metric)?.value || 0;
+    const female = atAGlanceSegments?.find((s: any) => s.metric === metric && s.segment === 'female')?.value || 0;
+    return total ? Math.round((female / total) * 1000) / 10 : 0;
+  };
+
+  const femaleShare = segmentFemalePct('Total Beneficiaries');
   const maleShare = 100 - femaleShare;
 
-  const currentlyEnrolled = enrollmentBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
-  const enrolledFemaleBreakdown = enrollmentBreakdown?.find(b => b.category.toLowerCase().includes('female'));
-  const enrolledFemalePct = enrolledFemaleBreakdown?.percentage || 0;
+  const currentlyEnrolled = atAGlanceHeadlines?.find((h: any) => h.metric === 'Currently Enrolled')?.value || 0;
+  const enrolledFemalePct = segmentFemalePct('Currently Enrolled');
 
-  const graduates = graduatesBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
-  const graduatesFemaleBreakdown = graduatesBreakdown?.find(b => b.category.toLowerCase().includes('female'));
-  const graduatesFemalePct = graduatesFemaleBreakdown?.percentage || 0;
+  const graduates = atAGlanceHeadlines?.find((h: any) => h.metric === 'Graduates')?.value || 0;
+  const graduatesFemalePct = segmentFemalePct('Graduates');
 
-  const youthDisability = disabilityBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
-  const disabilityFemaleBreakdown = disabilityBreakdown?.find(b => b.category.toLowerCase().includes('female'));
-  const disabilityFemalePct = disabilityFemaleBreakdown?.percentage || 0;
+  const youthDisability = atAGlanceHeadlines?.find((h: any) => h.metric === 'Youth with Disability')?.value || 0;
+  const disabilityFemalePct = segmentFemalePct('Youth with Disability');
 
-  const refugeeIdp = refugeeBreakdown?.reduce((sum, b) => sum + b.value, 0) || 0;
-  const refugeeFemaleBreakdown = refugeeBreakdown?.find(b => b.category.toLowerCase().includes('female'));
-  const refugeeFemalePct = refugeeFemaleBreakdown?.percentage || 0;
+  const refugeeIdp = atAGlanceHeadlines?.find((h: any) => h.metric === 'Refugee / IDP')?.value || 0;
+  const refugeeFemalePct = segmentFemalePct('Refugee / IDP');
 
   /* ─ Country data aggregation for all interventions ─ */
   const countryData = new Map<string, number>();

@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServer } from "@/lib/supabaseServer";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -22,7 +25,7 @@ export async function GET() {
       );
     }
 
-    const supabase = createClient(supabaseUrl, key);
+    const supabase = getSupabaseServer();
     console.log("[API] Fetching Youth in Work data with key type:", supabaseServiceKey ? "service_role" : "anon");
 
     const { data, error } = await supabase

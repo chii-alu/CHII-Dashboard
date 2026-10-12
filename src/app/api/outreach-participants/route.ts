@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServer } from "@/lib/supabaseServer";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -8,7 +11,7 @@ export async function GET() {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
     const key = supabaseServiceKey || supabaseAnonKey;
-    const supabase = createClient(supabaseUrl!, key!);
+    const supabase = getSupabaseServer();
 
     // Fetch all Outreach data with individual records
     const { data, error } = await supabase
