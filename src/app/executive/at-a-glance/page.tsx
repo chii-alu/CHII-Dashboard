@@ -77,6 +77,15 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
   "Guinea": [9.9456, -9.6966],
   "Mauritania": [21.0079, -10.9408],
   "Burundi": [-3.3731, 29.9189],
+  "Burkina Faso": [12.2383, -1.5616],
+  "Côte d’Ivoire": [7.5400, -5.5471],
+  "Democratic Republic of the Congo (DRC)": [-4.0383, 21.7587],
+  "Eritrea": [15.1794, 39.7823],
+  "Eswatini": [-26.5225, 31.4659],
+  "Lesotho": [-29.6100, 28.2336],
+  "Madagascar": [-18.7669, 46.8691],
+  "Somalia": [5.1521, 46.1996],
+  "South Sudan": [6.8770, 31.3070],
 };
 
 const shownValue = (v: number | null) => (v === null ? "In coming data" : v.toLocaleString());
@@ -164,7 +173,7 @@ function MapContainer({
         countries.forEach(({ country, count, lat, lng }) => {
           // Create marker element with dynamic sizing
           const el = document.createElement("div");
-          const size = Math.min(8 + Math.log(count) * 2, 16) * 2;
+          const size = Math.min(8 + Math.log(Math.max(count, 1)) * 2, 16) * 2;
 
           el.style.width = `${size}px`;
           el.style.height = `${size}px`;
