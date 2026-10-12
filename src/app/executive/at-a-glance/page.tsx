@@ -635,26 +635,30 @@ export default function AtAGlancePage() {
   // Get gender breakdown from Supabase data
   const femaleBreakdown = genderBreakdown?.find(b => b.category.toLowerCase().includes('female'));
   const totalFemale = femaleBreakdown?.value || 0;
-  const segmentFemalePct = (metric: string) => {
+  const segmentPct = (metric: string, segment: 'female' | 'male') => {
     const total = atAGlanceHeadlines?.find((h: any) => h.metric === metric)?.value || 0;
-    const female = atAGlanceSegments?.find((s: any) => s.metric === metric && s.segment === 'female')?.value || 0;
-    return total ? Math.round((female / total) * 1000) / 10 : 0;
+    const count = atAGlanceSegments?.find((s: any) => s.metric === metric && s.segment === segment)?.value || 0;
+    return total ? Math.round((count / total) * 1000) / 10 : 0;
   };
 
-  const femaleShare = segmentFemalePct('Total Beneficiaries');
-  const maleShare = 100 - femaleShare;
+  const femaleShare = segmentPct('Total Beneficiaries', 'female');
+  const maleShare = segmentPct('Total Beneficiaries', 'male');
 
   const currentlyEnrolled = atAGlanceHeadlines?.find((h: any) => h.metric === 'Currently Enrolled')?.value || 0;
-  const enrolledFemalePct = segmentFemalePct('Currently Enrolled');
+  const enrolledFemalePct = segmentPct('Currently Enrolled', 'female');
+  const enrolledMalePct = segmentPct('Currently Enrolled', 'male');
 
   const graduates = atAGlanceHeadlines?.find((h: any) => h.metric === 'Graduates')?.value || 0;
-  const graduatesFemalePct = segmentFemalePct('Graduates');
+  const graduatesFemalePct = segmentPct('Graduates', 'female');
+  const graduatesMalePct = segmentPct('Graduates', 'male');
 
   const youthDisability = atAGlanceHeadlines?.find((h: any) => h.metric === 'Youth with Disability')?.value || 0;
-  const disabilityFemalePct = segmentFemalePct('Youth with Disability');
+  const disabilityFemalePct = segmentPct('Youth with Disability', 'female');
+  const disabilityMalePct = segmentPct('Youth with Disability', 'male');
 
   const refugeeIdp = atAGlanceHeadlines?.find((h: any) => h.metric === 'Refugee / IDP')?.value || 0;
-  const refugeeFemalePct = segmentFemalePct('Refugee / IDP');
+  const refugeeFemalePct = segmentPct('Refugee / IDP', 'female');
+  const refugeeMalePct = segmentPct('Refugee / IDP', 'male');
 
   /* ─ Country data aggregation for all interventions ─ */
   const countryData = new Map<string, number>();
@@ -697,10 +701,10 @@ export default function AtAGlancePage() {
           <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, flexShrink: 0, textAlign: "center" }}>Outreach & Access</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
             <KPICard label="Total Beneficiaries" value={totalBeneficiaries} femalePct={femaleShare} malePct={maleShare} info="Total individuals reached across all CHII outreach programs." Icon={Users} href="/executive/outreach" />
-            <KPICard label="Youth w/ Disability" value={youthDisability} femalePct={disabilityFemalePct} malePct={100 - disabilityFemalePct} info="Youth with disability reached through outreach." Icon={Users} href="/executive/outreach" />
-            <KPICard label="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={100 - refugeeFemalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach" />
-            <KPICard label="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={100 - enrolledFemalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach" />
-            <KPICard label="Graduates" value={graduates} femalePct={graduatesFemalePct} malePct={100 - graduatesFemalePct} info="Participants who completed outreach programs." Icon={Award} href="/executive/outreach" />
+            <KPICard label="Youth w/ Disability" value={youthDisability} femalePct={disabilityFemalePct} malePct={disabilityMalePct} info="Youth with disability reached through outreach." Icon={Users} href="/executive/outreach" />
+            <KPICard label="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={refugeeMalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach" />
+            <KPICard label="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={enrolledMalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach" />
+            <KPICard label="Graduates" value={graduates} femalePct={graduatesFemalePct} malePct={graduatesMalePct} info="Participants who completed outreach programs." Icon={Award} href="/executive/outreach" />
             <KPICard label="CSAT Score" value={0} info="Customer satisfaction rating for programs." Icon={MessageCircle} href="/executive/outreach" />
             <KPICard label="Employer Rating" value={0} info="Employer satisfaction with graduate preparedness." Icon={Award} href="/executive/outreach" />
           </div>
