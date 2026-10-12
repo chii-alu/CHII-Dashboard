@@ -8,7 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { MetadataHeader } from "@/components/MetadataHeader";
-import { getBreakdown, getHeadlines } from "@/lib/dashboardData";
+import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createClient } from "@/lib/supabase-client";
 import { Users, BookOpen, Briefcase, TrendingUp, Zap, Target, Award, MessageCircle } from "lucide-react";
@@ -78,6 +78,8 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
   "Mauritania": [21.0079, -10.9408],
 };
 
+const shownValue = (v: number | null) => (v === null ? "In coming data" : v.toLocaleString());
+
 /* ─ Map Container Component ─ */
 function MapContainer({
   mapContainer,
@@ -98,7 +100,7 @@ function MapContainer({
   entrepreneurshipData: any[];
   furtherEducationData: any[];
 }) {
-  const [selectedCountry, setSelectedCountry] = useState<{ name: string; count: number; outreach: number; outreachPct: number; youthInWork: number; youthPct: number; wageEmployment: number; wagePct: number; entrepreneurs: number; entrepreneurPct: number; furtherEducation: number; educationPct: number; lng: number; lat: number } | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<{ name: string; count: number; outreach: number | null; youthInWork: number | null; wageEmployment: number | null; entrepreneurs: number | null; furtherEducation: number | null; lng: number; lat: number } | null>(null);
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
 
   const handleReset = () => {
@@ -183,32 +185,19 @@ function MapContainer({
           const entrepreneurCountryData = entrepreneurshipData?.find(d => d.country === country);
           const educationCountryData = furtherEducationData?.find(d => d.country === country);
 
-          const outreachCount = outreachCountryData?.value || 0;
-          const youthCount = youthCountryData?.value || 0;
-          const wageCount = wageCountryData?.value || 0;
-          const entrepreneurCount = entrepreneurCountryData?.value || 0;
-          const educationCount = educationCountryData?.value || 0;
-
-          // Placeholder female percentages (would need actual gender breakdown data)
-          const outreachFemale = Math.round(outreachCount * 0.48);
-          const youthFemale = Math.round(youthCount * 0.48);
-          const wageFemale = Math.round(wageCount * 0.48);
-          const entrepreneurFemale = Math.round(entrepreneurCount * 0.48);
-          const educationFemale = Math.round(educationCount * 0.48);
+          const outreachCount = outreachCountryData ? outreachCountryData.value : null;
+          const youthCount = youthCountryData ? youthCountryData.value : null;
+          const wageCount = wageCountryData ? wageCountryData.value : null;
+          const entrepreneurCount = entrepreneurCountryData ? entrepreneurCountryData.value : null;
+          const educationCount = educationCountryData ? educationCountryData.value : null;
 
           const outcomes = {
-            outreach: { count: outreachCount, female: outreachFemale },
-            youthInWork: { count: youthCount, female: youthFemale },
-            wageEmployment: { count: wageCount, female: wageFemale },
-            entrepreneurs: { count: entrepreneurCount, female: entrepreneurFemale },
-            furtherEducation: { count: educationCount, female: educationFemale }
+            outreach: { count: outreachCount },
+            youthInWork: { count: youthCount },
+            wageEmployment: { count: wageCount },
+            entrepreneurs: { count: entrepreneurCount },
+            furtherEducation: { count: educationCount }
           };
-
-          const outreachPct = outcomes.outreach.count > 0 ? Math.round((outcomes.outreach.female / outcomes.outreach.count) * 100) : 0;
-          const youthPct = outcomes.youthInWork.count > 0 ? Math.round((outcomes.youthInWork.female / outcomes.youthInWork.count) * 100) : 0;
-          const wagePct = outcomes.wageEmployment.count > 0 ? Math.round((outcomes.wageEmployment.female / outcomes.wageEmployment.count) * 100) : 0;
-          const entrepreneurPct = outcomes.entrepreneurs.count > 0 ? Math.round((outcomes.entrepreneurs.female / outcomes.entrepreneurs.count) * 100) : 0;
-          const educationPct = outcomes.furtherEducation.count > 0 ? Math.round((outcomes.furtherEducation.female / outcomes.furtherEducation.count) * 100) : 0;
 
           const offsetY = Math.floor(-(size / 2 + 10));
           const popup = new mapboxgl.Popup({
@@ -220,10 +209,10 @@ function MapContainer({
           // Build HTML manually to avoid type issues
           const html = "<strong>" + country + "</strong><br><br>" +
             "Total: " + count + " beneficiaries<br><br>" +
-            "Youth in Work: " + outcomes.youthInWork.count + " (" + youthPct + "% F)<br>" +
-            "Wage Employment: " + outcomes.wageEmployment.count + " (" + wagePct + "% F)<br>" +
-            "Enterprises: " + outcomes.entrepreneurs.count + " (" + entrepreneurPct + "% F)<br>" +
-            "Further Education: " + outcomes.furtherEducation.count + " (" + educationPct + "% F)";
+            "Youth in Work: " + shownValue(outcomes.youthInWork.count) + "<br>" +
+            "Wage Employment: " + shownValue(outcomes.wageEmployment.count) + "<br>" +
+            "Enterprises: " + shownValue(outcomes.entrepreneurs.count) + "<br>" +
+            "Further Education: " + shownValue(outcomes.furtherEducation.count);
 
           const marker = new mapboxgl.Marker({ element: el, draggable: false })
             .setLngLat([lng, lat])
@@ -241,15 +230,10 @@ function MapContainer({
               name: country,
               count,
               outreach: outcomes.outreach.count,
-              outreachPct,
               youthInWork: outcomes.youthInWork.count,
-              youthPct,
               wageEmployment: outcomes.wageEmployment.count,
-              wagePct,
               entrepreneurs: outcomes.entrepreneurs.count,
-              entrepreneurPct,
               furtherEducation: outcomes.furtherEducation.count,
-              educationPct,
               lng,
               lat
             });
@@ -319,19 +303,11 @@ function MapContainer({
               <tbody>
                 <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                   <td style={{ padding: "4px 6px", color: "var(--text-secondary)", fontWeight: 600, fontSize: 11 }}>Beneficiaries</td>
-                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.outreach}</td>
-                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.youthInWork}</td>
-                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.wageEmployment}</td>
-                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.entrepreneurs}</td>
-                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{selectedCountry.furtherEducation}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "4px 6px", color: "var(--text-secondary)", fontWeight: 600, fontSize: 11 }}>Female %</td>
-                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.outreachPct}%</td>
-                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.youthPct}%</td>
-                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.wagePct}%</td>
-                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.entrepreneurPct}%</td>
-                  <td style={{ padding: "4px 6px", color: "var(--brand-secondary)", fontWeight: 600, fontSize: 11 }}>{selectedCountry.educationPct}%</td>
+                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.outreach)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.youthInWork)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.wageEmployment)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.entrepreneurs)}</td>
+                  <td style={{ padding: "4px 6px", color: "var(--text-primary)", fontWeight: 500, fontSize: 11 }}>{shownValue(selectedCountry.furtherEducation)}</td>
                 </tr>
               </tbody>
             </table>
@@ -385,10 +361,10 @@ function KPICard({
   secondaryText,
 }: {
   label: string;
-  value: number | string;
+  value: number | string | null;
   yoy?: number | null;
-  femalePct?: number;
-  malePct?: number;
+  femalePct?: number | null;
+  malePct?: number | null;
   otherPct?: number;
   info?: string;
   Icon?: ComponentType<any>;
@@ -457,7 +433,7 @@ function KPICard({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8, flex: 1 }}>
         {Icon && <Icon size={18} color="var(--brand-secondary)" style={{ flexShrink: 0, strokeWidth: 2 }} />}
         <p style={{ fontSize: 28, fontWeight: 800, color: "var(--brand-secondary)", lineHeight: 1 }}>
-          {typeof value === "number" ? value.toLocaleString() : value}
+          {value === null ? "In coming data" : typeof value === "number" ? value.toLocaleString() : value}
         </p>
       </div>
 
@@ -477,13 +453,13 @@ function KPICard({
                 <circle cx="12" cy="8" r="4" />
                 <path d="M12 14v8M8 18h8" />
               </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-secondary)" }}>{femalePct}%</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-secondary)" }}>{femalePct === null ? "—" : `${femalePct}%`}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={BLUE_MALE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM9 11l5 9M14 20h-10" />
               </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-secondary)" }}>{malePct}%</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-secondary)" }}>{malePct === null ? "—" : `${malePct}%`}</span>
             </div>
             {otherPct !== undefined && otherPct > 0 && (
               <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -562,10 +538,6 @@ export default function AtAGlancePage() {
   );
 
   // Fetch demographic breakdowns from Supabase
-  const { data: genderBreakdown } = useDashboardData(
-    () => getBreakdown('EXEC', 'Headline Cards', 'Total Participants'),
-    []
-  );
 
   // Fetch metadata from Outreach API
   useEffect(() => {
@@ -600,67 +572,49 @@ export default function AtAGlancePage() {
       .catch(err => console.error('Error fetching metadata:', err));
   }, []);
 
-  const { data: enrollmentBreakdown } = useDashboardData(
-    () => getBreakdown('EXEC', 'Headline Cards', 'Currently Enrolled'),
-    []
-  );
 
-  const { data: graduatesBreakdown } = useDashboardData(
-    () => getBreakdown('EXEC', 'Headline Cards', 'Graduates'),
-    []
-  );
 
-  const { data: disabilityBreakdown } = useDashboardData(
-    () => getBreakdown('EXEC', 'Headline Cards', 'Persons with Disability'),
-    []
-  );
 
-  const { data: refugeeBreakdown } = useDashboardData(
-    () => getBreakdown('EXEC', 'Headline Cards', 'Refugees/IDPs'),
-    []
-  );
 
   // Aggregate country data
   const countries = outreachMapData ? new Set(outreachMapData.map(d => d.country)).size : 0;
 
   // Calculate metrics from outreach headlines data
-  const totalBeneficiaries = outreachHeadlines?.find((h: any) => h.metric === 'Total Participants (All Programmes)')?.value || 0;
+  const totalBeneficiaries = outreachHeadlines?.find((h: any) => h.metric === 'Total Participants (All Programmes)')?.value ?? null;
 
   // Calculate Youth in Work metrics
-  const youthInWorkTotal = youthHeadlines?.find((h: any) => h.metric === 'Participants')?.value || 0;
+  const youthInWorkTotal = youthHeadlines?.find((h: any) => h.metric === 'Participants')?.value ?? null;
 
   // Extract all KPI values from At a Glance section
-  const wageEmploymentTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Wage Employment')?.value || 0;
-  const entrepreneursTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Entrepreneurs')?.value || 0;
-  const jobsCreatedTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Jobs Created (Total)')?.value || 0;
-  const enterprisesTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Enterprises')?.value || 0;
-  const jobSeekingTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Job Seeking')?.value || 0;
-  const furtherEducationTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Further Education')?.value || 0;
-  // Get gender breakdown from Supabase data
-  const femaleBreakdown = genderBreakdown?.find(b => b.category.toLowerCase().includes('female'));
-  const totalFemale = femaleBreakdown?.value || 0;
-  const segmentPct = (metric: string, segment: 'female' | 'male') => {
-    const total = atAGlanceHeadlines?.find((h: any) => h.metric === metric)?.value || 0;
-    const count = atAGlanceSegments?.find((s: any) => s.metric === metric && s.segment === segment)?.value || 0;
-    return total ? Math.round((count / total) * 1000) / 10 : 0;
+  const wageEmploymentTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Wage Employment')?.value ?? null;
+  const entrepreneursTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Entrepreneurs')?.value ?? null;
+  const jobsCreatedTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Jobs Created (Total)')?.value ?? null;
+  const enterprisesTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Enterprises')?.value ?? null;
+  const jobSeekingTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Job Seeking')?.value ?? null;
+  const furtherEducationTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Further Education')?.value ?? null;
+  const segmentPct = (metric: string, segment: 'female' | 'male'): number | null => {
+    const total = atAGlanceHeadlines?.find((h: any) => h.metric === metric)?.value;
+    const count = atAGlanceSegments?.find((s: any) => s.metric === metric && s.segment === segment)?.value;
+    if (!total || count === undefined) return null;
+    return Math.round((count / total) * 1000) / 10;
   };
 
   const femaleShare = segmentPct('Total Beneficiaries', 'female');
   const maleShare = segmentPct('Total Beneficiaries', 'male');
 
-  const currentlyEnrolled = atAGlanceHeadlines?.find((h: any) => h.metric === 'Currently Enrolled')?.value || 0;
+  const currentlyEnrolled = atAGlanceHeadlines?.find((h: any) => h.metric === 'Currently Enrolled')?.value ?? null;
   const enrolledFemalePct = segmentPct('Currently Enrolled', 'female');
   const enrolledMalePct = segmentPct('Currently Enrolled', 'male');
 
-  const graduates = atAGlanceHeadlines?.find((h: any) => h.metric === 'Graduates')?.value || 0;
+  const graduates = atAGlanceHeadlines?.find((h: any) => h.metric === 'Graduates')?.value ?? null;
   const graduatesFemalePct = segmentPct('Graduates', 'female');
   const graduatesMalePct = segmentPct('Graduates', 'male');
 
-  const youthDisability = atAGlanceHeadlines?.find((h: any) => h.metric === 'Youth with Disability')?.value || 0;
+  const youthDisability = atAGlanceHeadlines?.find((h: any) => h.metric === 'Youth with Disability')?.value ?? null;
   const disabilityFemalePct = segmentPct('Youth with Disability', 'female');
   const disabilityMalePct = segmentPct('Youth with Disability', 'male');
 
-  const refugeeIdp = atAGlanceHeadlines?.find((h: any) => h.metric === 'Refugee / IDP')?.value || 0;
+  const refugeeIdp = atAGlanceHeadlines?.find((h: any) => h.metric === 'Refugee / IDP')?.value ?? null;
   const refugeeFemalePct = segmentPct('Refugee / IDP', 'female');
   const refugeeMalePct = segmentPct('Refugee / IDP', 'male');
 
@@ -709,8 +663,8 @@ export default function AtAGlancePage() {
             <KPICard label="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={refugeeMalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach" />
             <KPICard label="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={enrolledMalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach" />
             <KPICard label="Graduates" value={graduates} femalePct={graduatesFemalePct} malePct={graduatesMalePct} info="Participants who completed outreach programs." Icon={Award} href="/executive/outreach" />
-            <KPICard label="CSAT Score" value={0} info="Customer satisfaction rating for programs." Icon={MessageCircle} href="/executive/outreach" />
-            <KPICard label="Employer Rating" value={0} info="Employer satisfaction with graduate preparedness." Icon={Award} href="/executive/outreach" />
+            <KPICard label="CSAT Score" value={null} info="Customer satisfaction rating for programs." Icon={MessageCircle} href="/executive/outreach" />
+            <KPICard label="Employer Rating" value={null} info="Employer satisfaction with graduate preparedness." Icon={Award} href="/executive/outreach" />
           </div>
         </div>
 
