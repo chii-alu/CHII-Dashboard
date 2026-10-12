@@ -76,6 +76,7 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
   "Sierra Leone": [8.4606, -11.7799],
   "Guinea": [9.9456, -9.6966],
   "Mauritania": [21.0079, -10.9408],
+  "Burundi": [-3.3731, 29.9189],
 };
 
 const shownValue = (v: number | null) => (v === null ? "In coming data" : v.toLocaleString());
@@ -145,15 +146,17 @@ function MapContainer({
 
       map.current.on("style.load", () => {
         // Convert countryData to array and create markers with real coordinates
-        const countries = Array.from(countryData.entries()).map(([country, count]) => {
-          const coords = COUNTRY_COORDS[country] || [0, 0];
-          return {
-            country,
-            count,
-            lat: coords[0],
-            lng: coords[1]
-          };
-        });
+        const countries = Array.from(countryData.entries())
+          .filter(([country]) => COUNTRY_COORDS[country])
+          .map(([country, count]) => {
+            const coords = COUNTRY_COORDS[country];
+            return {
+              country,
+              count,
+              lat: coords[0],
+              lng: coords[1]
+            };
+          });
 
         countries.forEach(({ country, count, lat, lng }) => {
           // Create marker element with dynamic sizing
