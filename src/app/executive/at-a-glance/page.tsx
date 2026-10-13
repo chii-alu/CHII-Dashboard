@@ -86,6 +86,10 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
   "Madagascar": [-18.7669, 46.8691],
   "Somalia": [5.1521, 46.1996],
   "South Sudan": [6.8770, 31.3070],
+  "Central African Republic": [6.6111, 20.9394],
+  "China": [35.8617, 104.1954],
+  "The Gambia": [13.4432, -15.3101],
+  "Togo": [8.6195, 0.8248],
 };
 
 const shownValue = (v: number | null) => (v === null ? "In coming data" : v.toLocaleString());
@@ -121,7 +125,7 @@ function MapContainer({
 
   const handleReset = () => {
     map.current?.flyTo({
-      center: [20, 3],
+      center: [30, 8],
       zoom: 2.6,
       duration: 1000
     });
@@ -144,7 +148,7 @@ function MapContainer({
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/dark-v11",
-        center: [20, 3],
+        center: [30, 8],
         zoom: 2.6,
         attributionControl: false,
         cooperativeGestures: true
