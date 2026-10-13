@@ -5,7 +5,7 @@ import Link from "next/link";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import PortalNav from "@/components/layout/portal-nav";
-import PortalFooter from "@/components/layout/portal-footer";
+import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -518,7 +518,7 @@ export default function HEMPPage() {
       <PortalNav portal="hemp" />
 
       {/* Header */}
-      <div className="max-w-[1600px] mx-auto px-10 pt-2">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-2">
         <header style={{ position: "relative", overflow: "hidden", backgroundColor: HEADER_NAVY, borderRadius: 12, minHeight: 120, display: "flex", alignItems: "center" }}>
           <HeaderDesign />
           <div className="px-4 sm:px-6 py-6" style={{ position: "relative", zIndex: 10, width: "100%" }}>
@@ -794,7 +794,9 @@ export default function HEMPPage() {
         {/* Footer placeholder */}
       </div>
 
-      <PortalFooter portal="hemp" />
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
+        <FeaturedImpactStory footer />
+      </div>
     </div>
   );
 }

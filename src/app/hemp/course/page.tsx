@@ -1,7 +1,7 @@
 "use client";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import PortalNav from "@/components/layout/portal-nav";
-import PortalFooter from "@/components/layout/portal-footer";
+import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { getGHCohortsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -578,9 +578,12 @@ export default function HEMPCourses() {
           </section>
         )}
 
-        <PortalFooter portal="hemp" synced="18 Jun 2026, EAT" />
 
       </div>
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
+        <FeaturedImpactStory footer />
+      </div>
+
     </div>
   );
 }

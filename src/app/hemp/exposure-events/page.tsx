@@ -1,7 +1,7 @@
 "use client";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import PortalNav from "@/components/layout/portal-nav";
-import PortalFooter from "@/components/layout/portal-footer";
+import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { getExposureEventStats } from "@/data/hemp-exposure-events";
 import { targets2030 } from "@/data/hemp-participation";
@@ -677,7 +677,10 @@ export default function ExposureEvents() {
 
       </div>
 
-      <PortalFooter portal="hemp" />
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
+        <FeaturedImpactStory footer />
+      </div>
+
     </div>
   );
 }

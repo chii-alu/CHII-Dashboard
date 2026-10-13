@@ -2,7 +2,7 @@
 import { PortalThemeProvider, Funnel, BarList, ChartTip } from "@/components/ui";
 import { HeaderStatsPanel } from "@/components/ui/hemp";
 import PortalNav from "@/components/layout/portal-nav";
-import PortalFooter from "@/components/layout/portal-footer";
+import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { DonutRing } from "@/components/charts/donut-chart";
 import { fellows, craHackathons, researchPartnerships, CRA_PILLARS } from "@/data/heco/cra";
 import { Banknote, BookOpen, GraduationCap, Handshake, Rocket, Users, Info, ChevronDown, X } from "lucide-react";
@@ -281,7 +281,7 @@ export default function HecoOverviewPage() {
         </header>
       </div>
 
-      <div className="max-w-[1440px] mx-auto px-6 py-7">
+      <div className="max-w-[1600px] mx-auto px-10 py-7">
 
         {/* ════ TOP STATS HEADER ════ */}
         <HeaderStatsPanel
@@ -623,7 +623,10 @@ export default function HecoOverviewPage() {
           </section>
         )}
 
-        <PortalFooter portal="heco" />
+      </div>
+
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
+        <FeaturedImpactStory footer />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import PortalNav from "@/components/layout/portal-nav";
-import PortalFooter from "@/components/layout/portal-footer";
+import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { healthXSessions, HX_TYPES, ORG_TYPES } from "@/data/hemp/healthx";
 import { healthXSymposia } from "@/data/hemp/healthx-careers";
 import { useState, useMemo } from "react";
@@ -570,9 +570,12 @@ export default function HEMPCareerExposure() {
           </section>
         )}
 
-        <PortalFooter portal="hemp" synced="18 Jun 2026, EAT" />
 
       </div>
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
+        <FeaturedImpactStory footer />
+      </div>
+
     </div>
   );
 }

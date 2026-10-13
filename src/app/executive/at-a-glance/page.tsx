@@ -812,7 +812,7 @@ export default function AtAGlancePage() {
       </div>
 
       {/* ── Footer Section ─────────────────────────────── */}
-      <div className="max-w-[1600px] mx-auto px-10 py-10">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
         <FeaturedImpactStory footer />
       </div>
     </div>
