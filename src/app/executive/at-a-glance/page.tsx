@@ -90,8 +90,11 @@ const COUNTRY_COORDS: Record<string, [number, number]> = {
 
 const shownValue = (v: number | null) => (v === null ? "In coming data" : v.toLocaleString());
 const shownPct = (v: number | null) => (v === null ? "In coming data" : `${v}%`);
-const femalePctOf = (row: any): number | null =>
-  row && row.female != null && row.value ? Math.round((row.female / row.value) * 1000) / 10 : null;
+const femalePctOf = (row: any): number | null => {
+  if (!row || row.female == null) return null;
+  if (!row.value) return 0;
+  return Math.round((row.female / row.value) * 1000) / 10;
+};
 
 /* ─ Map Container Component ─ */
 function MapContainer({
