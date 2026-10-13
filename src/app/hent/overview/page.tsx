@@ -220,6 +220,7 @@ export default function HENTOverview() {
                     masterclasses.reduce((s, m) => s + m.femaleAttendees, 0) +
                     studyTrips.reduce((s, v) => s + v.femaleParticipants, 0);
   const FEMALE_PCT = TOTAL_PART ? Math.round((TOTAL_FEM / TOTAL_PART) * 100) : 0;
+  const PWD_LED_VENTURES = new Set(founders.filter(f => f.isPWD).map(f => f.ventureId)).size;
 
   const TOTAL_JOBS = ALL_VENTURES.reduce((s, v) => s + v.jobsTotal, 0);
   const TOTAL_JOBS_YOUTH = ALL_VENTURES.reduce((s, v) => s + v.jobsYouth, 0);
@@ -334,12 +335,12 @@ export default function HENTOverview() {
               tip: "Cumulative participants across all HENT programmes (masterclasses, hackathons, mentorship, study trips)",
             },
             {
-              label: "Female Share",
-              num: FEMALE_PCT,
-              icon: WomanIcon,
-              displayFmt: (n) => n + "%",
-              sub: "Female participants",
-              tip: "Percentage of female participants across all programmes",
+              label: "PWD-led Ventures",
+              num: PWD_LED_VENTURES,
+              icon: Users,
+              displayFmt: (n) => n.toLocaleString(),
+              sub: "Ventures with a PWD founder",
+              tip: "Ventures with at least one founder who is a person with a disability",
             },
             {
               label: "Active Ventures",

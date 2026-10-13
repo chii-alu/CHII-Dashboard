@@ -24,6 +24,7 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
     wordmarkLines: ["HEALTH", "ENTREPRENEURSHIP", "PILLAR"],
     rootHref: "/hent/overview",
     items: [
+      { label: "At a Glance",           href: "/hent/at-a-glance" },
       { label: "Overview",              href: "/hent/overview" },
       { label: "Ventures",              href: "/hent/ventures" },
       { label: "Venture Funding",       href: "/hent/venture-funding" },
