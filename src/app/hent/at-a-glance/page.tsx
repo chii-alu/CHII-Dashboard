@@ -4,7 +4,7 @@ import { Users, Briefcase, TrendingUp, Zap, Target, Award, Handshake, Info, Chev
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import PortalNav from "@/components/layout/portal-nav";
-import FeaturedImpactStory from "@/components/layout/featured-impact-story";
+import PortalFooter from "@/components/layout/portal-footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { getPortalTheme } from "@/theme/portals";
 
@@ -154,10 +154,10 @@ export default function HENTAtAGlance() {
   const maleShare = segmentPct("Total Participants", "male");
 
   const insights = [
-    { title: "Gender Balance" },
-    { title: "Regional Growth" },
-    { title: "Employment Success" },
-    { title: "Venture Momentum" },
+    { title: "Gender Balance", detail: "Female representation (Target: 50%)", copy: "Gender split of HENT participants across programmes.", accentColor: "#042C53" },
+    { title: "Regional Growth", detail: "YoY expansion across HENT countries", copy: "Regional reach of HENT programmes over time.", accentColor: "#16A34A" },
+    { title: "Employment Success", detail: "Participants in employment", copy: "Share of HENT participants moving into employment.", accentColor: "#3B82F6" },
+    { title: "Venture Momentum", detail: "Ventures supported and funded", copy: "Growth of HENT ventures, jobs and capital.", accentColor: "#9333EA" },
   ];
 
   return (
@@ -214,19 +214,56 @@ export default function HENTAtAGlance() {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-10 pb-7">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", backgroundColor: "#FFFFFF", borderRadius: 10, border: "1px solid #E5E7EB", padding: "20px 0", overflow: "hidden" }}>
+      <div className="max-w-[1600px] mx-auto px-10" style={{ marginTop: 24, marginBottom: 0 }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+          gap: 0,
+          backgroundColor: "#fff",
+          borderRadius: 10,
+          border: "1px solid #E5E7EB",
+          padding: "20px 0",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+          transition: "all 200ms ease",
+          overflow: "hidden",
+          backgroundImage: "linear-gradient(to right, #042C53 0%, #042C53 25%, #16A34A 25%, #16A34A 50%, #3B82F6 50%, #3B82F6 75%, #9333EA 75%, #9333EA 100%)",
+          backgroundSize: "100% 5px",
+          backgroundPosition: "0 0",
+          backgroundRepeat: "no-repeat"
+        }}>
           {insights.map((insight, i) => (
-            <div key={insight.title} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "0 16px", textAlign: "center", borderRight: i < 3 ? "1px solid #E5E7EB" : "none" }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: HEADER_NAVY, marginTop: 8 }}>{insight.title}</p>
-              <p style={{ fontSize: 11, color: "#6B7280" }}>{NOT_AVAILABLE}</p>
+            <div
+              key={insight.title}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                padding: "0 16px",
+                position: "relative",
+                textAlign: "center",
+                borderRight: i < 3 ? "1px solid #E5E7EB" : "none"
+              }}
+            >
+              <p style={{ fontSize: 14, fontWeight: 800, color: "#042C53", lineHeight: 1.2, margin: 0, marginTop: 8 }}>
+                {NOT_AVAILABLE}
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#042C53", lineHeight: 1.2, margin: 0 }}>
+                {insight.title}
+              </p>
+              <p style={{ fontSize: 11, fontWeight: 500, color: "#6B7280", lineHeight: 1.3, margin: 0 }}>
+                {insight.detail}
+              </p>
+              <p style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.4, margin: 0, marginBottom: 8 }}>
+                {insight.copy}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer />
+        <PortalFooter portal="hent" synced="In coming data" />
       </div>
     </div>
   );
