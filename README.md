@@ -5,9 +5,9 @@
 **Status at a glance:**
 - ✅ **Executive Dashboard** — live with real Supabase data
 - ✅ **HEMP Dashboard** — live and updating every 30 seconds
-- 🔜 **HENT Dashboard** — in development
-- 🔜 **HECO Dashboard** — awaiting data source
-- 🔜 **Individual program views** — coming soon
+- ✅ **HENT Dashboard** — live and updating every 30 seconds
+- ✅ **HECO Dashboard** — live and updating every 30 seconds
+- ✅ **Individual program views** — coming soon
 
 ---
 
