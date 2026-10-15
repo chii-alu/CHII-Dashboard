@@ -1,5 +1,6 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { MetadataHeader } from "@/components/MetadataHeader";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 
@@ -233,6 +234,8 @@ const YIW_SECTIONS: { n: number; label: string }[] = [
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function YouthInWorkPage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
   const [program, setProgram] = useState<"all" | Program>("all");
   const [ptype, setPtype] = useState<"all" | ParticipantType>("all");
@@ -243,7 +246,6 @@ export default function YouthInWorkPage() {
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const [youthData, setYouthData] = useState<any[]>([]);
   const [apiMetrics, setApiMetrics] = useState<any>({});
   const [metricsLoaded, setMetricsLoaded] = useState(false);
@@ -281,7 +283,6 @@ export default function YouthInWorkPage() {
               setLastUpdated(`${dateStr}, ${timeStr} CAT`);
             }
             if (latestRecord.source) {
-              setDataSource(latestRecord.source.replace(/_/g, ' ').replace('.xlsx', ''));
             }
           }
         }
@@ -407,7 +408,7 @@ export default function YouthInWorkPage() {
         title="Youth in Work"
         subtitle="How are CHII participants accessing and creating meaningful work?"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         period="2022–2026"
       />
 
@@ -787,7 +788,7 @@ export default function YouthInWorkPage() {
         </section>
         )}
 
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
 
       <style>{`

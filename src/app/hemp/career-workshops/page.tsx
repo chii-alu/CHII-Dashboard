@@ -1,5 +1,6 @@
 "use client";
 import PortalNav from "@/components/layout/portal-nav";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
@@ -230,6 +231,8 @@ const RATING_DIST = [
 ];
 
 export default function CareerWorkshopsPage() {
+  const dataSource = useDataSource("HEMP");
+  const syncedAt = useSyncedAt("HEMP");
   const categories = ["Reach & Engagement", "Quality & Experience", "Partners"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
@@ -301,11 +304,11 @@ export default function CareerWorkshopsPage() {
                 Student engagement through professional development and career exposure
               </p>
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> HEMP Consolidated Database</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2021–2026</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
             </div>
           </div>
@@ -728,7 +731,7 @@ export default function CareerWorkshopsPage() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
 
     </div>

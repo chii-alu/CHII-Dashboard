@@ -1,5 +1,6 @@
 "use client";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, ChartTip, ChartLegend, useCountUp } from "@/components/ui";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
@@ -126,6 +127,8 @@ function derive(rows: typeof ALL_VENTURES) {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function VentureFundingPage() {
+  const dataSource = useDataSource("HENT");
+  const syncedAt = useSyncedAt("HENT");
   const [fCohort, setFCohort] = useState("All Cohorts");
   const [fSector, setFSector] = useState("All Sectors");
   const [fStatus, setFStatus] = useState("All Instruments");
@@ -213,7 +216,7 @@ export default function VentureFundingPage() {
                 Catalytic, milestone-based funding for promising student ventures
               </p>
               <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(190,228,214,0.5)" }}>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> HENT Consolidated Database</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> {COHORTS[0]}–{COHORTS[COHORTS.length - 1]}</span>
                 <span aria-hidden="true">·</span>
@@ -736,7 +739,7 @@ export default function VentureFundingPage() {
           </div>
         </section>
 
-        <PortalFooter portal="hent" />
+        <PortalFooter synced={syncedAt} source={dataSource} portal="hent" />
 
       </div>
     </div>

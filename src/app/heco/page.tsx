@@ -1,5 +1,6 @@
 "use client";
 import { PortalThemeProvider, Funnel, BarList, ChartTip } from "@/components/ui";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { HeaderStatsPanel } from "@/components/ui/hemp";
 import PortalNav from "@/components/layout/portal-nav";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
@@ -227,6 +228,8 @@ function derive(
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function HecoOverviewPage() {
+  const dataSource = useDataSource("HECO");
+  const syncedAt = useSyncedAt("HECO");
   const [fYear, setFYear]       = useState("All Years");
   const [fCountry, setFCountry] = useState("All Countries");
 
@@ -270,11 +273,11 @@ export default function HecoOverviewPage() {
                 Health Ecosystem for Clinical Outcomes - Fellowship, Student Hackathons and Research Partnerships
               </p>
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
-                <span><span style={{ color: "rgba(215,225,245,0.8)", fontWeight: 600 }}>Data source:</span> HECO Consolidated Database</span>
+                <span><span style={{ color: "rgba(215,225,245,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(215,225,245,0.8)", fontWeight: 600 }}>Period:</span> {YEARS[0]}–{YEARS[YEARS.length - 1]}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(215,225,245,0.8)", fontWeight: 600 }}>Last updated:</span> 04 Jun 2026, 16:30 EAT</span>
+                <span><span style={{ color: "rgba(215,225,245,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
             </div>
           </div>
@@ -626,7 +629,7 @@ export default function HecoOverviewPage() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
     </div>
   );

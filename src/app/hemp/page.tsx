@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { Users, BookOpen, Briefcase, TrendingUp, Target, Award, Zap, MessageCircle, Info, ChevronRight, Accessibility, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import mapboxgl from "mapbox-gl";
@@ -419,6 +420,8 @@ function MapContainer() {
 }
 
 export default function HEMPPage() {
+  const dataSource = useDataSource("HEMP");
+  const syncedAt = useSyncedAt("HEMP");
   // Fetch headline data from Supabase
   const { data: headlines, loading, error } = useDashboardData(
     () => getHeadlines('HEMP', 'At a Glance'),
@@ -528,13 +531,13 @@ export default function HEMPPage() {
                 Programme reach across 15 African countries
               </p>
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> HEMP Consolidated Database</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2021–2026</span>
                 <span aria-hidden="true">·</span>
                 <span>{countries} countries active</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 22 September 2026</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
             </div>
           </div>
@@ -795,7 +798,7 @@ export default function HEMPPage() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
     </div>
   );

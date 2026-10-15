@@ -124,7 +124,7 @@ export default function StatsKpiCard({
       {/* Animated number + Icon */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
         <Icon size={22} style={{ color: lbl, flexShrink: 0, opacity: 0.8 }} />
-        <p style={{ fontSize: 24, fontWeight: 700, color: num === null ? "#9CA3AF" : numColor, lineHeight: 1 }}>
+        <p style={{ fontSize: num === null ? 13 : 24, fontWeight: 700, color: num === null ? "#9CA3AF" : numColor, lineHeight: 1 }}>
           {num === null ? missingText : displayFmt(animated)}
         </p>
       </div>

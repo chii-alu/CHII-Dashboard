@@ -1,5 +1,6 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -145,9 +146,10 @@ const FE_SECTIONS: { n: number; label: string }[] = [
 ═══════════════════════════════════════════════════════ */
 
 export default function FurtherEducationPage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const show = (n: number) => activeSection === n;
 
   const [gender, setGender] = useState<"all" | Gender>("all");
@@ -294,7 +296,7 @@ export default function FurtherEducationPage() {
         title="Further Study"
         subtitle="Further Education, Study Pathways, and Lifelong Learning"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         period="2022–2026"
       />
 
@@ -365,7 +367,7 @@ export default function FurtherEducationPage() {
         </section>
         )}
 
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
     </div>
   );

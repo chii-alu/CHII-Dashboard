@@ -1,5 +1,6 @@
 ﻿"use client";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
 import { benchColor } from "@/theme/tokens";
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -162,6 +163,8 @@ const KPI_TILES = [
 // Youth-in-Work-style filter select (green theme)
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function FieldVisitsPage() {
+  const dataSource = useDataSource("HENT");
+  const syncedAt = useSyncedAt("HENT");
   const [yearFilter,   setYearFilter]   = useState<"All"|"2022"|"2023"|"2024"|"2025"|"2026">("All");
   const [typeFilter,   setTypeFilter]   = useState<"All"|TripType>("All");
   const [regionFilter, setRegionFilter] = useState<"All"|TripRegion>("All");
@@ -323,13 +326,13 @@ export default function FieldVisitsPage() {
             <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>Study Trips</h1>
             <p className="text-[11px] mt-1.5 font-medium" style={{ color: "rgba(181,212,244,0.78)" }}>Industry excursions, participation and learning experience</p>
             <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(181,212,244,0.5)" }}>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> HENT Consolidated Database</span>
+              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2022–2026</span>
               <span aria-hidden="true">·</span>
               <span>{studyTrips.length} visits tracked</span>
               <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
+              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
             </div>
           </div>
         </div>
@@ -848,7 +851,7 @@ export default function FieldVisitsPage() {
         </section>
 
         {/* FOOTER */}
-        <PortalFooter portal="hent" synced="28 May 2026, EAT" />
+        <PortalFooter source={dataSource} portal="hent" synced={syncedAt} />
 
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, BarList, ChartTip, ChartLegend, useCountUp } from "@/components/ui";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
@@ -107,6 +108,8 @@ function derive(rows: typeof exposureEvents) {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function ExposureNetworkingPage() {
+  const dataSource = useDataSource("HENT");
+  const syncedAt = useSyncedAt("HENT");
   const [fYear, setFYear]       = useState("All Years");
   const [fType, setFType]       = useState("All Types");
   const [fCountry, setFCountry] = useState("All Countries");
@@ -145,7 +148,7 @@ export default function ExposureNetworkingPage() {
                 Connecting founders with investors, partners, healthcare stakeholders, policy makers and peers
               </p>
               <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(190,228,214,0.5)" }}>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> HENT Consolidated Database</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> {YEARS[0]}–{YEARS[YEARS.length - 1]}</span>
                 <span aria-hidden="true">·</span>
@@ -394,7 +397,7 @@ export default function ExposureNetworkingPage() {
           </div>
         </section>
 
-        <PortalFooter portal="hent" />
+        <PortalFooter synced={syncedAt} source={dataSource} portal="hent" />
 
       </div>
     </div>

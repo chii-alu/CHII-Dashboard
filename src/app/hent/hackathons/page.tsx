@@ -1,5 +1,6 @@
 ﻿"use client";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
 import { benchColor } from "@/theme/tokens";
 import { useState, useEffect, useRef } from "react";
@@ -154,6 +155,8 @@ const KPI_TILES = [
 
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function HackathonsPage() {
+  const dataSource = useDataSource("HENT");
+  const syncedAt = useSyncedAt("HENT");
   const [trendTab, setTrendTab] = useState<"participants" | "projects" | "winners" | "startups">("participants");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -272,13 +275,13 @@ export default function HackathonsPage() {
             <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>Hackathons</h1>
             <p className="text-[11px] mt-1.5 font-medium" style={{ color: "rgba(181,212,244,0.78)" }}>Innovation events, participation and the projects and startups they generate</p>
             <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(181,212,244,0.5)" }}>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> HENT Consolidated Database</span>
+              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {YEARS[0]}–{YEARS[YEARS.length - 1]}</span>
               <span aria-hidden="true">·</span>
               <span>{total.events} hackathons tracked</span>
               <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
+              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
             </div>
           </div>
         </div>
@@ -629,7 +632,7 @@ export default function HackathonsPage() {
         </section>
 
         {/* â”€â”€ FOOTER STRIP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <PortalFooter portal="hent" synced="28 May 2026, EAT" />
+        <PortalFooter source={dataSource} portal="hent" synced={syncedAt} />
 
       </div>
     </div>

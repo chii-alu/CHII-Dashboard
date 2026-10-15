@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { Search, Download, ArrowRight, FileText } from "lucide-react";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
@@ -184,10 +185,11 @@ function Card({ card }: { card: ResourceCard }) {
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function ImpactReportsPage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [query, setQuery] = useState("");
   const [seg, setSeg] = useState<"All" | ResourceType>("All");
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
 
   useEffect(() => {
     setLastUpdated("Data available");
@@ -223,7 +225,7 @@ export default function ImpactReportsPage() {
         title="Impact reports"
         subtitle="Reports across HEMP, HENT, HECO, and MELA documenting CHII's impact across pillars"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         period="2022–2026"
       />
 
@@ -282,7 +284,7 @@ export default function ImpactReportsPage() {
         ))}
 
         <div style={{ marginTop: 24 }}>
-          <FeaturedImpactStory footer />
+          <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ export async function GET(
         .order("metric"),
       supabase
         .from("v_last_sync")
-        .select("last_synced")
+        .select("last_synced, workbook")
         .eq("dashboard", "EXEC")
         .maybeSingle(),
     ]);
@@ -48,6 +48,7 @@ export async function GET(
       headlines,
       segments,
       lastSynced: sync.data?.last_synced ?? null,
+      workbook: sync.data?.workbook ?? null,
       rawRowCount: data.length,
     });
   } catch (error: any) {

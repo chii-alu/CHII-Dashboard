@@ -1,5 +1,6 @@
 "use client";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { FilterSelect } from "@/components/ui/executive";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
@@ -148,6 +149,8 @@ const SECTIONS: { n: number; label: string }[] = [
 ];
 
 export default function EntrepreneurshipPage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");
   const [stage, setStage] = useState<"all" | Stage>("all");
@@ -156,7 +159,6 @@ export default function EntrepreneurshipPage() {
   const [active, setActive] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const show = (n: number) => active === n;
 
   useEffect(() => {
@@ -370,7 +372,7 @@ export default function EntrepreneurshipPage() {
         title="Entrepreneurship"
         subtitle="The journey from founder to enterprise growth, jobs created, and long-term economic impact"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         period="2022–2026"
       />
 
@@ -664,7 +666,7 @@ export default function EntrepreneurshipPage() {
 
         )}
 
-<FeaturedImpactStory footer />
+<FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
 
       <style>{`

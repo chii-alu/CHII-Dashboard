@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, type ComponentType, createContext, useContext } from "react";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { Info, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -478,9 +479,10 @@ function KPICard({
 }
 
 export default function AtAGlancePage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [responsive, setResponsive] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
 
@@ -638,7 +640,7 @@ export default function AtAGlancePage() {
         title="At a Glance"
         subtitle="Where CHII is reaching, across HEMP, HENT &amp; HECO programs"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         period="2022–2026"
       />
 
@@ -733,7 +735,7 @@ export default function AtAGlancePage() {
             >
 
               {/* Hero figure */}
-              <p style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1, margin: 0, marginTop: 8 }}>
+              <p style={{ fontSize: insight.figure === null ? 14 : 32, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1, margin: 0, marginTop: 8 }}>
                 {insight.figure ?? "In coming data"}
               </p>
 
@@ -758,7 +760,7 @@ export default function AtAGlancePage() {
 
       {/* ── Footer Section ─────────────────────────────── */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={lastUpdated || "Loading..."} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
     </div>
     </KpiLoadingContext.Provider>

@@ -1,5 +1,6 @@
 "use client";
 import { PortalThemeProvider, ChartCard, SectionHeader, InfoDot, Funnel, BarList, ChartTip, ChartLegend } from "@/components/ui";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -155,6 +156,8 @@ function derive(
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function CraPage() {
+  const dataSource = useDataSource("HECO");
+  const syncedAt = useSyncedAt("HECO");
   const [fCohort, setFCohort]   = useState("All Cohorts");
   const [fCountry, setFCountry] = useState("All Countries");
 
@@ -200,7 +203,7 @@ export default function CraPage() {
                 Three pillars — Public Sector Fellowship, Fellow-mentored student hackathons, and public health research partnerships
               </p>
               <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(181,212,244,0.5)" }}>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> HECO Consolidated Database</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {COHORTS[0]}–{COHORTS[COHORTS.length - 1]}</span>
                 <span aria-hidden="true">·</span>
@@ -359,7 +362,7 @@ export default function CraPage() {
           </div>
         </section>
 
-        <PortalFooter portal="heco" />
+        <PortalFooter synced={syncedAt} source={dataSource} portal="heco" />
       </div>
     </div>
     </PortalThemeProvider>

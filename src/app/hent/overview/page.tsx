@@ -1,5 +1,6 @@
 "use client";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import HeaderDesign from "@/components/layout/header-design";
@@ -172,6 +173,8 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 // ──────────────────────────────────────────────────────────
 
 export default function HENTOverview() {
+  const dataSource = useDataSource("HENT");
+  const syncedAt = useSyncedAt("HENT");
   const categories = [
     "Reach & Participation",
     "Innovation & Enterprise",
@@ -308,11 +311,11 @@ export default function HENTOverview() {
                 Health Entrepreneurship Programme Dashboard
               </p>
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(190,228,214,0.5)" }}>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> HENT Consolidated Database</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> 2022–2026</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Last updated:</span> 18 June 2026, 16:30 CAT</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
             </div>
           </div>
@@ -917,7 +920,7 @@ export default function HENTOverview() {
         )}
 
         {/* FOOTER */}
-        <PortalFooter portal="hent" synced="01 Jun 2026, EAT" />
+        <PortalFooter source={dataSource} portal="hent" synced={syncedAt} />
 
       </div>
     </div>

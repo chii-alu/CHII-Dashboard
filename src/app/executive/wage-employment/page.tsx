@@ -1,5 +1,6 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -119,11 +120,12 @@ const WE_SECTIONS: { n: number; label: string }[] = [
 ];
 
 export default function WageEmploymentPage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
 
   const show = (n: number) => activeSection === n;
 
@@ -168,7 +170,7 @@ export default function WageEmploymentPage() {
         title="Wage Employment"
         subtitle="CHII Employment Outcomes, Trends, Performance, and Work Quality"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         period="2025-2030"
       />
 
@@ -402,7 +404,7 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
     </div>
   );

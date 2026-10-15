@@ -1,5 +1,6 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -176,6 +177,8 @@ const OA_SECTIONS: { n: number; label: string }[] = [
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function OutreachPage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [program, setProgram] = useState<ProgramFilter>("All");
   const [institution, setInstitution] = useState<string>("all");
   const [population, setPopulation] = useState<PopulationFilter>("all");
@@ -187,7 +190,6 @@ export default function OutreachPage() {
   const [breakdownData, setBreakdownData] = useState<any>(null);
   const [participants, setParticipants] = useState<OutreachParticipant[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const show = (n: number) => activeSection === n;
 
   // Fetch Outreach data from Supabase
@@ -223,7 +225,6 @@ export default function OutreachPage() {
             setLastUpdated(`${dateStr}, ${timeStr} CAT`);
           }
           if (latestRecord.source) {
-            setDataSource(latestRecord.source.replace(/_/g, ' ').replace('.xlsx', ''));
           }
         }
 
@@ -417,7 +418,7 @@ export default function OutreachPage() {
         title="Outreach &amp; Access"
         subtitle="Outreach interventions across CHII's HEMP · HENT · HECO programs"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         participantsCount={participants.length}
         period="2022–2026"
       />
@@ -639,7 +640,7 @@ export default function OutreachPage() {
         </section>
         )}
 
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>
     </div>
   );

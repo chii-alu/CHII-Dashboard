@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { Users, Briefcase, TrendingUp, Zap, Target, Award, Handshake, Info, ChevronRight, type LucideIcon } from "lucide-react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -197,6 +198,8 @@ function HentMap({ countries }: { countries: HentCountry[] }) {
 }
 
 export default function HENTAtAGlance() {
+  const dataSource = useDataSource("HENT");
+  const syncedAt = useSyncedAt("HENT");
   const { data: headlines } = useDashboardData(() => fetchSection("At a Glance").then(r => r.headlines || []), []);
   const { data: segments } = useDashboardData(() => fetchSection("At a Glance").then(r => r.segments || []), []);
 
@@ -245,11 +248,11 @@ export default function HENTAtAGlance() {
                 Health Entrepreneurship Programme Dashboard
               </p>
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(190,228,214,0.5)" }}>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> HENT Consolidated Database</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> 2022–2026</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Last updated:</span> In coming data</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
             </div>
           </div>
@@ -329,7 +332,7 @@ export default function HENTAtAGlance() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <PortalFooter portal="hent" synced="In coming data" />
+        <PortalFooter source={dataSource} portal="hent" synced={syncedAt} />
       </div>
     </div>
   );

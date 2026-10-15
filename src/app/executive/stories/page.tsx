@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import dynamic from "next/dynamic";
 import { Info, ChevronDown, FileText, Video, MapPin, Film, BookOpen } from "lucide-react";
 import {
@@ -71,12 +72,13 @@ function Dropdown({ label, value, options, onChange }: {
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function ImpactStoriesPage() {
+  const dataSource = useDataSource("EXEC");
+  const syncedAt = useSyncedAt("EXEC");
   const [selected, setSelected] = useState<Story | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [cluster, setCluster] = useState(true);
   const [nameQuery, setNameQuery] = useState("");
   const [lastUpdated, setLastUpdated] = useState<string>("");
-  const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
 
   const [type, setType] = useState("All");
   const [program, setProgram] = useState("All");
@@ -118,7 +120,7 @@ export default function ImpactStoriesPage() {
         title="Impact stories"
         subtitle="Graduate journeys and enterprise spotlights across Africa"
         dataSource={dataSource}
-        lastUpdated={lastUpdated || "Loading..."}
+        lastUpdated={syncedAt}
         period="2022–2026"
       />
 
@@ -225,7 +227,7 @@ export default function ImpactStoriesPage() {
         </div>
 
         <div style={{ marginTop: 16 }}>
-          <FeaturedImpactStory footer />
+          <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
         </div>
       </div>
 
