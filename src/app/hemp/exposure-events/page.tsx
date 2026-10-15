@@ -1,14 +1,10 @@
 "use client";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
-import { getExposureEventStats } from "@/data/hemp-exposure-events";
-import { targets2030 } from "@/data/hemp-participation";
-import { missionStudents } from "@/data/mission-students";
-import { REACH_RECORDS, COUNTRY_REGION, GEO_REGIONS } from "@/data/hemp/geo-reach";
-import { healthXSymposia } from "@/data/hemp/healthx-careers";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -185,7 +181,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 export default function ExposureEvents() {
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
-  const stats = getExposureEventStats();
+  const stats: { totalParticipants: number | null; avgRating: string | null; eventCount: number | null } = { totalParticipants: null, avgRating: null, eventCount: null };
   const categories = ["Reach & Engagement", "Quality & Impact", "Partners"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
@@ -195,75 +191,35 @@ export default function ExposureEvents() {
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years"].filter(Boolean).length;
 
-  const totalParticipants = stats.totalParticipants || 2359;
-  const totalPWD = Math.round(totalParticipants * 0.12);
-  const totalRefugees = Math.round(totalParticipants * 0.07);
-  const inclusionReachTotal = totalPWD + totalRefugees;
+  const totalParticipants = stats.totalParticipants;
+  const totalPWD: number | null = null;
+  const totalRefugees: number | null = null;
+  const inclusionReachTotal: number | null = totalPWD === null || totalRefugees === null ? null : totalPWD + totalRefugees;
 
-  const eventTrendData = [
-    { year: 2021, events: 2, students: 4, goal: 3 },
-    { year: 2022, events: 4, students: 6, goal: 5 },
-    { year: 2023, events: 6, students: 8, goal: 7 },
-    { year: 2024, events: 8, students: 9, goal: 8 },
-    { year: 2025, events: 5, students: 6, goal: 6 },
-    { year: 2026, events: 3, students: 4, goal: 5 }
-  ];
+  const eventTrendData: any[] = [];
 
-  const eventTypeData = [
-    { name: "Tech Innovation", value: 6 },
-    { name: "Healthcare", value: 5 },
-    { name: "Entrepreneurship", value: 4 },
-    { name: "Community", value: 4 }
-  ];
+  const eventTypeData: any[] = [];
 
-  const completionData = [
-    { type: "Tech Innovation", completion: 96 },
-    { type: "Healthcare", completion: 97 },
-    { type: "Entrepreneurship", completion: 94 },
-    { type: "Community", completion: 91 }
-  ];
+  const completionData: any[] = [];
 
-  const participantData = [
-    { name: "Female", value: 1094 },
-    { name: "Male", value: 1265 }
-  ];
+  const participantData: any[] = [];
 
-  const inclusionReachData = [
-    { category: "PWD", value: 287, percentage: 12, fill: "#F97316" },
-    { category: "Refugee", value: 156, percentage: 7, fill: "#8B5CF6" }
-  ];
+  const inclusionReachData: any[] = [];
 
-  const healthInterestData = [
-    { area: "Digital Health", count: 285 },
-    { area: "Mental Health", count: 245 },
-    { area: "Health Equity, Advocacy and Leadership", count: 198 },
-    { area: "Disease Prevention and Control", count: 167 },
-    { area: "Maternal and Child Health", count: 142 },
-    { area: "One Health", count: 128 },
-    { area: "Public Health", count: 115 },
-    { area: "Nutrition", count: 92 },
-    { area: "Sexual and Reproductive Health", count: 78 },
-    { area: "Dental Health", count: 65 }
-  ];
+  const healthInterestData: any[] = [];
 
-  const ratingDistData = [
-    { rating: 5, percent: 40 },
-    { rating: 4, percent: 38 },
-    { rating: 3, percent: 16 },
-    { rating: 2, percent: 5 },
-    { rating: 1, percent: 1 }
-  ];
+  const ratingDistData: any[] = [];
 
   // Mission Students Context
-  const totalEnrolled = missionStudents.length;
-  const femaleStudents = missionStudents.filter(s => s.gender === "Female").length;
-  const femalePct = Math.round((femaleStudents / totalEnrolled) * 100);
-  const completed = missionStudents.filter(s => s.enrollmentStatus === "completed").length;
-  const completionRate = Math.round((completed / totalEnrolled) * 100);
-  const employed = Math.round(completed * 0.68);
-  const employmentRate = completed > 0 ? Math.round((employed / completed) * 100) : 0;
-  const avgGPA = "3.2";
-  const venturesCreated = missionStudents.filter(s => s.hasHealthVenture).length;
+  const totalEnrolled: number | null = null;
+  const femaleStudents: number | null = null;
+  const femalePct: number | null = null;
+  const completed: number | null = null;
+  const completionRate: number | null = null;
+  const employed: number | null = null;
+  const employmentRate: number | null = null;
+  const avgGPA: string | null = null;
+  const venturesCreated: number | null = null;
 
   return (
     <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh" }}>
@@ -300,66 +256,66 @@ export default function ExposureEvents() {
               num: stats.totalParticipants,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: ${targets2030.exposureEvents.toLocaleString()} by 2030 | 20% of goal`,
+              sub: ``,
               tip: "Total participants across all events toward 2030 target",
               pace: true,
               paceA: stats.totalParticipants,
-              paceT: targets2030.exposureEvents,
+              paceT: null,
             },
             {
               label: "Female Participation",
-              num: 46,
+              num: null,
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 50% | 35% mission students`,
+              sub: "mission students",
               tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
-              paceA: 46,
-              paceT: 50,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Quality Score",
-              num: parseFloat(stats.avgRating),
+              num: stats.avgRating === null ? null : parseFloat(stats.avgRating),
               icon: Briefcase,
               displayFmt: (n) => n.toFixed(1),
-              sub: `Goal: 4.0+ | Out of 5`,
+              sub: `Out of 5`,
               tip: "Average participant satisfaction rating",
               pace: true,
-              paceA: parseFloat(stats.avgRating) * 20,
-              paceT: 80,
+              paceA: stats.avgRating === null ? null : parseFloat(stats.avgRating) * 20,
+              paceT: null,
             },
             {
               label: "Partner Organizations",
-              num: 63,
+              num: null,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: 100+ | Unique partnerships`,
+              sub: `Unique partnerships`,
               tip: "Number of collaborating organizations",
               pace: true,
-              paceA: 63,
-              paceT: 100,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Events Delivered",
               num: stats.eventCount,
               icon: TrendingUp,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: 50 | Total exposure events`,
+              sub: `Total exposure events`,
               tip: "Total number of events delivered",
               pace: true,
               paceA: stats.eventCount,
-              paceT: 50,
+              paceT: null,
             },
             {
               label: "Inclusion Reach",
-              num: 19,
+              num: null,
               icon: Users,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 19% | PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
+              sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
               pace: true,
-              paceA: 19,
-              paceT: 19,
+              paceA: null,
+              paceT: null,
             },
           ]}
         />
@@ -448,15 +404,7 @@ export default function ExposureEvents() {
               <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Exposure Events participants by primary academic programme" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[
-                      { programme: "BSc (Hons) Software Engineering", count: 142 },
-                      { programme: "BSc (Hons) Entrepreneurial Leadership", count: 138 },
-                      { programme: "ALURW - International Business and Trade", count: 58 },
-                      { programme: "Teach-out - ALURW - Global Challenges", count: 12 },
-                      { programme: "ALCHE - Entrepreneurial Leadership", count: 8 },
-                      { programme: "ALCHE - Software Engineering", count: 2 },
-                      { programme: "Teach out - ALURW - Computer Science", count: 1 },
-                    ]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                    <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="programme" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={210} />
@@ -552,14 +500,9 @@ export default function ExposureEvents() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <Panel title="Partners by Type" subtitle="Distribution across organisation types" info="Partner count by organisation category" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <ChartWithPlaceholder data={null} height={280}>
                   <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={[
-                      { type: "Health facility", count: 18 },
-                      { type: "NGO", count: 15 },
-                      { type: "Private sector", count: 12 },
-                      { type: "Government", count: 10 },
-                      { type: "Academic", count: 8 }
-                    ]} layout="vertical" margin={{ top: 6, right: 14, bottom: 0, left: 130 }}>
+                    <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 14, bottom: 0, left: 130 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="type" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={120} />
@@ -569,6 +512,7 @@ export default function ExposureEvents() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </ChartWithPlaceholder>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 12, backgroundColor: "#479BD6", borderRadius: 2 }} />
@@ -578,24 +522,15 @@ export default function ExposureEvents() {
                 </div>
               </Panel>
 
-              <Panel title="Partner Directory" subtitle="Complete list of organisations" info="63 active partner organisations">
+              <Panel title="Partner Directory" subtitle="Complete list of organisations" info="Partner organisations">
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 8, borderBottom: `1px solid ${LIGHT_BORDER}` }}>
                     <p style={{ fontSize: 10, fontWeight: 600, color: "#6B7280", margin: 0, textTransform: "uppercase", letterSpacing: "0.02em" }}>
-                      63 partners
+                      In coming data
                     </p>
                   </div>
                   <div style={{ maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-                    {[
-                      { name: "Hospital partner", type: "Health facility", events: 8, year: 2023 },
-                      { name: "Health centre partner", type: "Health facility", events: 5, year: 2024 },
-                      { name: "NGO partner", type: "NGO", events: 6, year: 2023 },
-                      { name: "NGO partner 2", type: "NGO", events: 4, year: 2024 },
-                      { name: "Health-tech company", type: "Private sector", events: 3, year: 2025 },
-                      { name: "Pharma company", type: "Private sector", events: 4, year: 2024 },
-                      { name: "Ministry of Health", type: "Government", events: 5, year: 2023 },
-                      { name: "University partner", type: "Academic", events: 6, year: 2024 }
-                    ].map((p, idx) => (
+                    {([] as { name: string; type: string; events: number; year: number }[]).map((p, idx) => (
                       <div key={idx} style={{ padding: "12px 14px", backgroundColor: "white", border: `1px solid ${LIGHT_BORDER}`, borderRadius: 8, borderLeft: `4px solid ${BRAND}` }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 8 }}>
                           <div style={{ minWidth: 0, flex: 1 }}>
@@ -654,13 +589,7 @@ export default function ExposureEvents() {
               </Panel>
               <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={[
-                    { metric: "Relevance", rating: 4.25 },
-                    { metric: "Quality", rating: 4.6 },
-                    { metric: "Usefulness", rating: 4.4 },
-                    { metric: "Confidence", rating: 4.2 },
-                    { metric: "NPS (÷2)", rating: 3.9 },
-                  ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">
+                  <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />

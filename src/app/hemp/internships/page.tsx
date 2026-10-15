@@ -205,15 +205,15 @@ export default function HEMPInternships() {
   const avgEmployerRating = filteredInternships.length ? parseFloat(((filteredInternships.reduce((s, i) => s + i.recommendationScore + i.likelyToHire * 2 + i.healthSystemsUnderstanding + i.appliesToHealthProblems, 0) / (filteredInternships.length * 6)) * 2).toFixed(1)) : 0;
 
   // Fallback values for Mission Students (will be replaced with Supabase data)
-  const msTotalEnrolled = 50;
-  const msFemaleStudents = 25;
-  const msFemalePct = 50;
-  const msCompleted = 45;
-  const msCompletionRate = 90;
-  const msEmployed = 30;
-  const msEmploymentRate = 67;
+  const msTotalEnrolled = null;
+  const msFemaleStudents = null;
+  const msFemalePct = null;
+  const msCompleted = null;
+  const msCompletionRate = null;
+  const msEmployed = null;
+  const msEmploymentRate = null;
   const msAvgGPA = "3.2";
-  const msVenturesCreated = 5;
+  const msVenturesCreated = null;
 
   if (loading) {
     return (
@@ -281,7 +281,7 @@ export default function HEMPInternships() {
               num: placementsSecured,
               icon: Briefcase,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: ${Math.round(placementsSecured * 1.3).toLocaleString()} by 2030 | ${msTotalEnrolled} mission students`,
+              sub: `${msTotalEnrolled} mission students`,
               tip: "Total internship placements secured",
               pace: true,
               paceA: placementsSecured,
@@ -292,33 +292,33 @@ export default function HEMPInternships() {
               num: femalePct,
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 50% | ${msFemalePct}% mission students`,
+              sub: `${msFemalePct}% mission students`,
               tip: "Percentage of female participants",
               pace: true,
               paceA: femalePct,
-              paceT: 50,
+              paceT: null,
             },
             {
               label: "Inclusion Reach",
-              num: 19,
+              num: null,
               icon: Users,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 19% | PWD: ${Math.round(totalStudents * 0.12)} | Refugee: ${Math.round(totalStudents * 0.07)}`,
+              sub: "In coming data",
               tip: "Percentage of students with disabilities and refugee background",
               pace: true,
-              paceA: 19,
-              paceT: 19,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Employment Conversions",
               num: conversionRate,
               icon: Briefcase,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 65%`,
+              sub: "In coming data",
               tip: "Percentage securing employment after internship",
               pace: true,
               paceA: conversionRate,
-              paceT: 65,
+              paceT: null,
             },
             {
               label: "Employer Rating",
@@ -329,7 +329,7 @@ export default function HEMPInternships() {
               tip: "Average employer satisfaction rating",
               pace: true,
               paceA: avgEmployerRating * 10,
-              paceT: 80,
+              paceT: null,
             },
           ]}
         />
@@ -433,15 +433,7 @@ export default function HEMPInternships() {
               <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Internship participants by primary academic programme" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[
-                      { programme: "BSc (Hons) Software Engineering", count: 142 },
-                      { programme: "BSc (Hons) Entrepreneurial Leadership", count: 138 },
-                      { programme: "ALURW - International Business and Trade", count: 58 },
-                      { programme: "Teach-out - ALURW - Global Challenges", count: 12 },
-                      { programme: "ALCHE - Entrepreneurial Leadership", count: 8 },
-                      { programme: "ALCHE - Software Engineering", count: 2 },
-                      { programme: "Teach out - ALURW - Computer Science", count: 1 },
-                    ]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                    <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="programme" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={210} />
@@ -462,18 +454,7 @@ export default function HEMPInternships() {
               <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Internship participants by health interest" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[
-                      { area: "Digital Health", count: 285 },
-                      { area: "Mental Health", count: 245 },
-                      { area: "Health Equity, Advocacy and Leadership", count: 198 },
-                      { area: "Disease Prevention and Control", count: 167 },
-                      { area: "Maternal and Child Health", count: 142 },
-                      { area: "One Health", count: 128 },
-                      { area: "Public Health", count: 115 },
-                      { area: "Nutrition", count: 92 },
-                      { area: "Sexual and Reproductive Health", count: 78 },
-                      { area: "Dental Health", count: 65 },
-                    ].sort((a, b) => b.count - a.count)} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 180 }}>
+                    <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 180 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="area" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={170} />
@@ -507,8 +488,8 @@ export default function HEMPInternships() {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Female", value: femaleStudents },
-                    { name: "PWD", value: Math.round(totalStudents * 0.12) },
-                    { name: "Refugee/IDP", value: Math.round(totalStudents * 0.07) },
+                    { name: "PWD", value: null },
+                    { name: "Refugee/IDP", value: null },
                   ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -563,17 +544,7 @@ export default function HEMPInternships() {
               </Panel>
               <Panel title="Departments by Organization" subtitle="Department distribution across partner organizations" info="Number of internship placements by department within each organization" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={[
-                    ...Array.from(new Set(filteredInternships.map(i => i.organization))).filter(o => o !== "CHII Internal").sort().map(o => {
-                      const orgInternships = filteredInternships.filter(i => i.organization === o);
-                      const deptCounts: Record<string, number> = {};
-                      orgInternships.forEach(i => {
-                        deptCounts[i.department] = (deptCounts[i.department] || 0) + 1;
-                      });
-                      return { organization: o, ...deptCounts };
-                    }),
-                    { organization: "CHII", "HECO": 12, "HENT": 18, "HEMP": 25, "MELA": 15 }
-                  ]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                  <BarChart data={[]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                     <YAxis dataKey="organization" type="category" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
@@ -707,28 +678,7 @@ export default function HEMPInternships() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Internship Quality & Relevance" subtitle="Student perception of internship experience" info="Average student ratings for quality, relevance, clarity, support, and usefulness (1-5 scale)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={[
-                    {
-                      dimension: "Relevance to Career Goals",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.relevanceToCareer || 0), 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                    {
-                      dimension: "Overall Quality",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.overallQuality || 0), 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                    {
-                      dimension: "Clarity of Role & Responsibilities",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.clarityOfRole || 0), 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                    {
-                      dimension: "Support & Supervision",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.supportSupervision || 0), 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                    {
-                      dimension: "Usefulness",
-                      score: filteredInternships.length ? parseFloat((filteredInternships.reduce((s, i) => s + (i.skillApplicationToRealWorld || 0), 0) / filteredInternships.length).toFixed(2)) : 0
-                    },
-                  ]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 190 }} barCategoryGap="12%">
+                  <BarChart data={[]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 190 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="dimension" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={180} />

@@ -6,7 +6,6 @@ import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { getSieCohortsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import { targets2030 } from "@/data/hemp-participation";
 import { SIE_DISCIPLINES, SIE_EXPOSURE_AREAS } from "@/data/hemp/sie";
 import { useState, useMemo } from "react";
 import {
@@ -348,7 +347,7 @@ export default function HEMPSie() {
   const totalRefugees = filteredCohorts.reduce((s, c) => s + (c.idpRefugees || 0), 0);
   const inclusionReachTotal = totalPWD + totalRefugees;
   const totalApplicants = Math.round(totalSelected * 1.3);
-  const overallPerformanceScore = parseFloat(((avgSatisfaction + (femalePct / 10) + (19 / 10) + (totalEmploymentLeads ? 5 : 3)) / 4 * 2).toFixed(1));
+  const overallPerformanceScore: number | null = null;
 
   const funnelFilteredCohorts = useMemo(() => {
     if (!sieCohorts) return [];
@@ -365,15 +364,15 @@ export default function HEMPSie() {
   );
 
   // Fallback values for Mission Students (will be replaced with Supabase data)
-  const msTotalEnrolled = 50;
-  const msFemaleStudents = 25;
-  const msFemalePct = 50;
-  const msCompleted = 45;
-  const msCompletionRate = 90;
-  const msEmployed = 30;
-  const msEmploymentRate = 67;
+  const msTotalEnrolled = null;
+  const msFemaleStudents = null;
+  const msFemalePct = null;
+  const msCompleted = null;
+  const msCompletionRate = null;
+  const msEmployed = null;
+  const msEmploymentRate = null;
   const msAvgGPA = "3.2";
-  const msVenturesCreated = 5;
+  const msVenturesCreated = null;
 
   if (loading) {
     return (
@@ -441,33 +440,33 @@ export default function HEMPSie() {
               num: totalSelected,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: ${targets2030.sie.toLocaleString()} by 2030 | ${msTotalEnrolled} mission students`,
+              sub: `${msTotalEnrolled} mission students`,
               tip: "Total participants selected toward 2030 target",
               pace: true,
               paceA: totalSelected,
-              paceT: targets2030.sie,
+              paceT: null,
             },
             {
               label: "Female Participation",
               num: femalePct,
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 50% | ${msFemalePct}% mission students`,
+              sub: `${msFemalePct}% mission students`,
               tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
               paceA: femalePct,
-              paceT: 50,
+              paceT: null,
             },
             {
               label: "Inclusion Reach",
-              num: 19,
+              num: null,
               icon: Users,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 19% | PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
+              sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
               pace: true,
-              paceA: 19,
-              paceT: 19,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "NPS Score",
@@ -477,19 +476,19 @@ export default function HEMPSie() {
               sub: `Out of 10 | Based on satisfaction and inclusion`,
               tip: "Composite score based on satisfaction, female participation, inclusion, and employment outcomes",
               pace: true,
-              paceA: overallPerformanceScore * 10,
-              paceT: 80,
+              paceA: overallPerformanceScore === null ? null : overallPerformanceScore * 10,
+              paceT: null,
             },
             {
               label: "Satisfaction Score",
               num: avgSatisfaction,
               icon: Briefcase,
               displayFmt: (n) => n.toFixed(1),
-              sub: `Goal: 4.5+ | Out of 5`,
+              sub: `Out of 5`,
               tip: "Average participant satisfaction rating",
               pace: true,
               paceA: avgSatisfaction * 20,
-              paceT: 90,
+              paceT: null,
             },
           ]}
         />
@@ -747,12 +746,7 @@ export default function HEMPSie() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Quality Ratings & Career Clarity" subtitle="Programme assessment and career outcome (1-5 scale)" info="Average ratings for relevance, quality, usefulness, and career direction clarity" filterOptions={["All Years", ...years.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { metric: "Relevance", rating: avgRelevanceFiltered },
-                    { metric: "Quality", rating: avgQualityFiltered },
-                    { metric: "Usefulness", rating: avgUsefulnessFiltered },
-                    { metric: "Career Clarity", rating: filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.careerClarityPct, 0) / filteredCohorts.length / 20).toFixed(2)) : 0 },
-                  ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                  <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
@@ -768,10 +762,7 @@ export default function HEMPSie() {
               </Panel>
               <Panel title="Skill Confidence & NPS" subtitle="Learning confidence and recommendation likelihood" info="5-point confidence scale and 0-10 Net Promoter Score" filterOptions={["All Years", ...years.map(String)]} filterValue={filterConfidenceYear} onFilterChange={setFilterConfidenceYear}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { name: "Confidence", value: avgConfidenceFiltered, metric: "confidence" },
-                    { name: "NPS (÷2)", value: avgNPSFiltered / 2, metric: "nps" },
-                  ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                  <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />

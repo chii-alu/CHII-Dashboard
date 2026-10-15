@@ -1,4 +1,5 @@
 "use client";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import PortalNav from "@/components/layout/portal-nav";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
@@ -180,55 +181,17 @@ function CustomBar(props: any) {
 }
 
 // Mock Career Workshops data
-const SESSIONS_DATA = [
-  { year: 2021, sessions: 2, students: 177, goal: 400 },
-  { year: 2022, sessions: 3, students: 350, goal: 700 },
-  { year: 2023, sessions: 5, students: 753, goal: 1100 },
-  { year: 2024, sessions: 5, students: 1359, goal: 1500 },
-  { year: 2025, sessions: 3, students: 1978, goal: 1900 },
-  { year: 2026, sessions: 2, students: 2359, goal: 2359 },
-];
+const SESSIONS_DATA: any[] = [];
 
-const SESSION_TYPES = [
-  { name: "Format A", sessions: 7, avgAttendance: 118 },
-  { name: "Format B", sessions: 5, avgAttendance: 95 },
-  { name: "Format C", sessions: 5, avgAttendance: 108 },
-  { name: "Format D", sessions: 3, avgAttendance: 78 },
-];
+const SESSION_TYPES: any[] = [];
 
-const PARTNERS_BY_TYPE = [
-  { type: "Health facility", count: 18 },
-  { type: "NGO", count: 15 },
-  { type: "Private sector", count: 12 },
-  { type: "Government", count: 10 },
-  { type: "Academic", count: 8 },
-];
+const PARTNERS_BY_TYPE: any[] = [];
 
-const PARTNERS = [
-  { name: "Hospital partner", type: "Health facility", sessions: 8, year: 2023, topics: "Clinical career paths" },
-  { name: "Health centre partner", type: "Health facility", sessions: 5, year: 2024, topics: "Facility visit" },
-  { name: "NGO partner", type: "NGO", sessions: 6, year: 2023, topics: "Community health roles" },
-  { name: "NGO partner 2", type: "NGO", sessions: 4, year: 2024, topics: "Session topic" },
-  { name: "Health-tech company", type: "Private sector", sessions: 3, year: 2025, topics: "Innovation exposure" },
-  { name: "Pharma company", type: "Private sector", sessions: 4, year: 2024, topics: "CV and interview skills" },
-  { name: "Ministry of Health", type: "Government", sessions: 5, year: 2023, topics: "Public sector careers" },
-  { name: "University partner", type: "Academic", sessions: 6, year: 2024, topics: "Further study" },
-];
+const PARTNERS: any[] = [];
 
-const QUALITY_BY_TYPE = [
-  { type: "Format A", score: 4.1 },
-  { type: "Format B", score: 3.9 },
-  { type: "Format C", score: 4.2 },
-  { type: "Format D", score: 3.8 },
-];
+const QUALITY_BY_TYPE: any[] = [];
 
-const RATING_DIST = [
-  { rating: 5, percent: 35 },
-  { rating: 4, percent: 42 },
-  { rating: 3, percent: 18 },
-  { rating: 2, percent: 4 },
-  { rating: 1, percent: 1 },
-];
+const RATING_DIST: any[] = [];
 
 export default function CareerWorkshopsPage() {
   const dataSource = useDataSource("HEMP");
@@ -239,7 +202,7 @@ export default function CareerWorkshopsPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterYear, setFilterYear] = useState("All Years");
   const [filterSessionType, setFilterSessionType] = useState("All Types");
-  const [filterPartner, setFilterPartner] = useState("All 63 Partners");
+  const [filterPartner, setFilterPartner] = useState("All Partners");
   const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
   const [partnerSearch, setPartnerSearch] = useState("");
 
@@ -250,7 +213,7 @@ export default function CareerWorkshopsPage() {
   );
 
   const show = (category: string) => activeCategory === category;
-  const activeFilterCount = [filterYear !== "All Years", filterSessionType !== "All Types", filterPartner !== "All 63 Partners"].filter(Boolean).length;
+  const activeFilterCount = [filterYear !== "All Years", filterSessionType !== "All Types", filterPartner !== "All Partners"].filter(Boolean).length;
 
   const filteredSessionsForHealthInterest = useMemo(() => {
     // TODO: Use real data from Supabase
@@ -259,16 +222,16 @@ export default function CareerWorkshopsPage() {
 
   const filteredPartners = useMemo(() => {
     return PARTNERS.filter(p => {
-      const matchPartner = filterPartner === "All 63 Partners" || p.name === filterPartner;
+      const matchPartner = filterPartner === "All Partners" || p.name === filterPartner;
       const matchSearch = p.name.toLowerCase().includes(partnerSearch.toLowerCase());
       return matchPartner && matchSearch;
     });
   }, [filterPartner, partnerSearch]);
 
-  const totalParticipants = headlineData?.find(h => h.metric === "Total Participants")?.value || 2359;
-  const totalPWD = Math.round(totalParticipants * 0.12);
-  const totalRefugees = Math.round(totalParticipants * 0.07);
-  const inclusionReachTotal = totalPWD + totalRefugees;
+  const totalParticipants = headlineData?.find(h => h.metric === "Total Participants")?.value ?? null;
+  const totalPWD: number | null = null;
+  const totalRefugees: number | null = null;
+  const inclusionReachTotal: number | null = totalPWD === null || totalRefugees === null ? null : totalPWD + totalRefugees;
 
   if (loading) {
     return (
@@ -322,69 +285,69 @@ export default function CareerWorkshopsPage() {
           cards={[
             {
               label: "Total Participants",
-              num: 2359,
+              num: null,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: 1,500 by 2030 | 20% of goal`,
+              sub: ``,
               tip: "Total participants in career workshops",
               pace: true,
-              paceA: 2359,
-              paceT: 1500,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Sessions Held",
-              num: 20,
+              num: null,
               icon: Briefcase,
               displayFmt: (n) => n.toString(),
-              sub: `Goal: 50 | 40% of target`,
+              sub: ``,
               tip: "Number of sessions held to date",
               pace: true,
-              paceA: 20,
-              paceT: 50,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Female Participation",
-              num: 46,
+              num: null,
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 50% | 35% mission students`,
+              sub: "mission students",
               tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
-              paceA: 46,
-              paceT: 50,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Partner Organizations",
-              num: 63,
+              num: null,
               icon: TrendingUp,
               displayFmt: (n) => n.toString(),
-              sub: `Goal: 100 by 2030 | 63% of target`,
+              sub: ``,
               tip: "Number of partner organizations",
               pace: true,
-              paceA: 63,
-              paceT: 100,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Inclusion Reach",
-              num: 19,
+              num: null,
               icon: Users,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 19% | PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
+              sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
               pace: true,
-              paceA: 19,
-              paceT: 19,
+              paceA: null,
+              paceT: null,
             },
             {
               label: "Quality Score",
-              num: 4.0,
+              num: null,
               icon: Briefcase,
               displayFmt: (n) => n.toFixed(1),
-              sub: `Goal: 4.0+ | Out of 5`,
+              sub: `Out of 5`,
               tip: "Average participant satisfaction rating",
               pace: true,
-              paceA: 80,
-              paceT: 100,
+              paceA: null,
+              paceT: null,
             },
           ]}
         />
@@ -422,13 +385,13 @@ export default function CareerWorkshopsPage() {
               onResetFilters={() => {
                 setFilterYear("All Years");
                 setFilterSessionType("All Types");
-                setFilterPartner("All 63 Partners");
+                setFilterPartner("All Partners");
               }}
             >
               {[
                 { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", "2021", "2022", "2023", "2024", "2025", "2026"] },
                 { label: "Session Type", value: filterSessionType, setValue: setFilterSessionType, options: ["All Types", "Format A", "Format B", "Format C", "Format D"] },
-                { label: "Partner", value: filterPartner, setValue: setFilterPartner, options: ["All 63 Partners", ...PARTNERS.map(p => p.name)] },
+                { label: "Partner", value: filterPartner, setValue: setFilterPartner, options: ["All Partners", ...PARTNERS.map(p => p.name)] },
               ].map(filter => (
                 <div key={filter.label} style={{ marginBottom: 12 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: BRAND_DK, margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
@@ -505,15 +468,7 @@ export default function CareerWorkshopsPage() {
               <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Career Workshop participants by primary academic programme" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[
-                      { programme: "BSc (Hons) Software Engineering", count: 142 },
-                      { programme: "BSc (Hons) Entrepreneurial Leadership", count: 138 },
-                      { programme: "ALURW - International Business and Trade", count: 58 },
-                      { programme: "Teach-out - ALURW - Global Challenges", count: 12 },
-                      { programme: "ALCHE - Entrepreneurial Leadership", count: 8 },
-                      { programme: "ALCHE - Software Engineering", count: 2 },
-                      { programme: "Teach out - ALURW - Computer Science", count: 1 },
-                    ]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                    <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="programme" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={210} />
@@ -569,8 +524,6 @@ export default function CareerWorkshopsPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={[
-                      { category: "PWD", value: 118, percentage: 5, fill: "#F97316" },
-                      { category: "Refugee", value: 71, percentage: 3, fill: "#8B5CF6" },
                     ]} layout="vertical" margin={{ top: 6, right: 14, bottom: 0, left: 80 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -636,13 +589,7 @@ export default function CareerWorkshopsPage() {
               </Panel>
               <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={[
-                    { metric: "Relevance", rating: 4.25 },
-                    { metric: "Quality", rating: 4.6 },
-                    { metric: "Usefulness", rating: 4.4 },
-                    { metric: "Confidence", rating: 4.2 },
-                    { metric: "NPS (÷2)", rating: 3.9 },
-                  ]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">
+                  <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
@@ -677,7 +624,7 @@ export default function CareerWorkshopsPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <Panel title="Partner by Type" subtitle="By organisation type" info="Distribution across partner types" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <ResponsiveContainer width="100%" height={280}>
+                  <ChartWithPlaceholder data={null} height={280}><ResponsiveContainer width="100%" height={280}>
                     <BarChart data={PARTNERS_BY_TYPE} layout="vertical" margin={{ top: 6, right: 14, bottom: 0, left: 130 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -687,7 +634,7 @@ export default function CareerWorkshopsPage() {
                         <LabelList dataKey="count" position="right" offset={5} fontSize={10} fill={BRAND_DK} fontWeight={700} />
                       </Bar>
                     </BarChart>
-                  </ResponsiveContainer>
+                  </ResponsiveContainer></ChartWithPlaceholder>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 12, backgroundColor: "#479BD6", borderRadius: 2 }} />
@@ -697,7 +644,7 @@ export default function CareerWorkshopsPage() {
                 </div>
               </Panel>
 
-              <Panel title="Partner Directory" subtitle="Complete list of organisations" info="63 active partner organisations">
+              <Panel title="Partner Directory" subtitle="Complete list of organisations" info="Partner organisations">
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div style={{ position: "relative" }}>
                     <Search size={16} style={{ position: "absolute", left: 12, top: 10, color: "#9CA3AF", pointerEvents: "none" }} />

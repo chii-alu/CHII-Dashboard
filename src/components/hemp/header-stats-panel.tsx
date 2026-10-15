@@ -9,14 +9,14 @@ const LIGHT_BORDER = "rgba(16, 44, 94, 0.12)";
 
 export interface HeaderStatCard {
   label: string;
-  num: number;
+  num: number | null;
   sub?: string;
   icon: LucideIcon | React.ComponentType<{ size?: number; color?: string; style?: React.CSSProperties }>;
   displayFmt?: (n: number) => string;
   tip?: string;
   pace?: boolean;
-  paceA?: number;
-  paceT?: number;
+  paceA?: number | null;
+  paceT?: number | null;
 }
 
 export interface HeaderStatsPanelProps {
@@ -148,12 +148,12 @@ export function HeaderStatsPanel({
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                 <card.icon size={18} style={{ color: BRAND_DK, opacity: 0.85, flexShrink: 0 }} />
                 <p style={{ fontSize: 24, fontWeight: 700, color: BRAND_DK, lineHeight: 1, margin: 0 }}>
-                  {card.displayFmt ? card.displayFmt(card.num) : Math.round(card.num).toLocaleString()}
+                  {card.num === null ? "In coming data" : card.displayFmt ? card.displayFmt(card.num) : Math.round(card.num).toLocaleString()}
                 </p>
               </div>
 
               {/* Optional Progress Bar (with pace indicator) */}
-              {card.pace && card.paceA !== undefined && card.paceT !== undefined && (
+              {card.pace && card.paceA != null && card.paceT != null && (
                 <div style={{ height: 4, borderRadius: 2, backgroundColor: LIGHT_BORDER, marginTop: 8, position: "relative" }}>
                   <div style={{
                     height: "100%",

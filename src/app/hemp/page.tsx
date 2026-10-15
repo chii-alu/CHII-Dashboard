@@ -570,15 +570,15 @@ export default function HEMPPage() {
               />
               {(() => {
                 const completedStudents = missionStudents.filter(s => s.enrollmentStatus === "completed").length;
-                const employmentTarget = Math.round(completedStudents * 0.7);
-                const employed = Math.round(completedStudents * 0.68);
+                const employmentTarget: number | null = null;
+                const employed: number | null = null;
                 return (
                   <KPICard
                     label="Employment Rate"
-                    value={`${Math.round((employed / completedStudents) * 100)}%`}
+                    value={employed === null ? "In coming data" : `${Math.round((employed / completedStudents) * 100)}%`}
                     info="Graduates securing employment or self-employment."
                     Icon={Briefcase}
-                    secondaryText={`${employed} employed | ${completedStudents - employed} pursuing further study`}
+                    secondaryText={employed === null ? "In coming data" : `${employed} employed | ${completedStudents - employed} pursuing further study`}
                   />
                 );
               })()}

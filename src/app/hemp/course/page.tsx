@@ -185,21 +185,21 @@ export default function HEMPCourses() {
     return [
       {
         name: "Enrolled",
-        january: Math.round(totalEnrolled * 0.35),
-        may: Math.round(totalEnrolled * 0.40),
-        september: Math.round(totalEnrolled * 0.25),
+        january: null,
+        may: null,
+        september: null,
       },
       {
         name: "Completed",
-        january: Math.round(totalCompleted * 0.35),
-        may: Math.round(totalCompleted * 0.40),
-        september: Math.round(totalCompleted * 0.25),
+        january: null,
+        may: null,
+        september: null,
       },
       {
         name: "Graduated",
-        january: Math.round(totalCertified * 0.35),
-        may: Math.round(totalCertified * 0.40),
-        september: Math.round(totalCertified * 0.25),
+        january: null,
+        may: null,
+        september: null,
       },
     ];
   }, [filterOutcomeYear, ghCohorts]);
@@ -210,14 +210,14 @@ export default function HEMPCourses() {
   const msFemalePct = femalePct;
   const msCompleted = totalCompleted;
   const msCompletionRate = totalEnrolled > 0 ? Math.round((totalCompleted / totalEnrolled) * 100) : 0;
-  const msEmployed = Math.round(totalCompleted * 0.68);
-  const msEmploymentRate = msCompleted > 0 ? Math.round((msEmployed / msCompleted) * 100) : 0;
+  const msEmployed: number | null = null;
+  const msEmploymentRate: number | null = msEmployed !== null && msCompleted > 0 ? Math.round((msEmployed / msCompleted) * 100) : null;
   const msAvgGPA = "3.2";
   const msVenturesCreated = totalVentureProgression;
 
-  const totalPWD = Math.round(totalEnrolled * 0.12);
-  const totalRefugees = Math.round(totalEnrolled * 0.07);
-  const inclusionReachTotal = totalPWD + totalRefugees;
+  const totalPWD: number | null = null;
+  const totalRefugees: number | null = null;
+  const inclusionReachTotal: number | null = totalPWD === null || totalRefugees === null ? null : totalPWD + totalRefugees;
 
   if (loading) {
     return (
@@ -274,7 +274,7 @@ export default function HEMPCourses() {
               num: totalEnrolled,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
-              sub: `Goal: ${Math.round(totalEnrolled * 1.5).toLocaleString()} by 2030`,
+              sub: "In coming data",
               tip: "Total students enrolled toward 2030 target",
               pace: true,
               paceA: totalEnrolled,
@@ -285,11 +285,11 @@ export default function HEMPCourses() {
               num: totalEnrolled ? Math.round((totalCompleted / totalEnrolled) * 100) : 0,
               icon: Target,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 85% | ${totalCompleted} completed the course`,
+              sub: `${totalCompleted} completed the course`,
               tip: "Percentage of enrolled students who completed the course",
               pace: true,
               paceA: totalEnrolled ? Math.round((totalCompleted / totalEnrolled) * 100) : 0,
-              paceT: 85,
+              paceT: null,
             },
             {
               label: "Graduation Rate",
@@ -300,18 +300,18 @@ export default function HEMPCourses() {
               tip: "Percentage of enrolled students who completed all graduation requirements (Graduated Enrolment Funnel)",
               pace: true,
               paceA: totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : 0,
-              paceT: 75,
+              paceT: null,
             },
             {
               label: "Female Participation",
               num: femalePct,
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 50% | ${msFemalePct}% mission students`,
+              sub: `${msFemalePct}% mission students`,
               tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
               paceA: femalePct,
-              paceT: 50,
+              paceT: null,
             },
             {
               label: "Average Score",
@@ -322,18 +322,18 @@ export default function HEMPCourses() {
               tip: "Average assessment score across cohorts",
               pace: true,
               paceA: avgScore,
-              paceT: 100,
+              paceT: null,
             },
             {
               label: "Inclusion Reach",
-              num: 19,
+              num: null,
               icon: Users,
               displayFmt: (n) => n + "%",
-              sub: `Goal: 19% | PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
+              sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
               pace: true,
-              paceA: 19,
-              paceT: 19,
+              paceA: null,
+              paceT: null,
             },
           ]}
         />
@@ -530,20 +530,7 @@ export default function HEMPCourses() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Learning Outcomes & Relevance" subtitle="Course impact and quality metrics (1-5)" info="Average relevance, quality and satisfaction ratings" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    {
-                      metric: "Relevance",
-                      value: parseFloat((filteredCohorts.reduce((s, c) => s + c.relevance, 0) / (filteredCohorts.length || 1)).toFixed(1))
-                    },
-                    {
-                      metric: "Quality",
-                      value: parseFloat((filteredCohorts.reduce((s, c) => s + c.quality, 0) / (filteredCohorts.length || 1)).toFixed(1))
-                    },
-                    {
-                      metric: "Satisfaction",
-                      value: parseFloat((filteredCohorts.reduce((s, c) => s + c.satisfaction, 0) / (filteredCohorts.length || 1)).toFixed(1))
-                    },
-                  ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                  <BarChart data={[]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
@@ -559,11 +546,7 @@ export default function HEMPCourses() {
               </Panel>
               <Panel title="Overall Progression" subtitle="Students advancing to next steps" info="Total students progressing to ventures, research, and internships" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { name: "Ventures", value: totalVentureProgression },
-                    { name: "Research", value: filteredCohorts.reduce((s, c) => s + c.progressedToResearch, 0) },
-                    { name: "Internships", value: filteredCohorts.reduce((s, c) => s + c.progressedToInternship, 0) },
-                  ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                  <BarChart data={[]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
