@@ -151,6 +151,17 @@ const SECTIONS: { n: number; label: string }[] = [
 export default function EntrepreneurshipPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
+  const [entHeadlines, setEntHeadlines] = useState<any[] | null>(null);
+  useEffect(() => {
+    fetch("/api/exec-section/Entrepreneurship")
+      .then(r => r.json())
+      .then(result => setEntHeadlines(Array.isArray(result.headlines) ? result.headlines : []))
+      .catch(() => setEntHeadlines([]));
+  }, []);
+  const ent = (metric: string): number | null =>
+    entHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
+  const entLoaded = entHeadlines !== null;
+
   const [year, setYear] = useState<"all" | number>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");
   const [stage, setStage] = useState<"all" | Stage>("all");
@@ -211,20 +222,14 @@ export default function EntrepreneurshipPage() {
       const female = yrScope.filter(x => x.gender === "Female").length;
       return { name: `${y}`, value: total, female };
     });
-    const survival = [{ name: "Year 1", value: 100 }, { name: "Year 3", value: 71 }, { name: "Year 5", value: 48 }];
+    const survival: any[] = [];
     return { stageDist, statusData, statusTotal, funding, formal, genderData, perYear, survival };
   }, [scope, total]);
 
   /* ── Section 2: growth & sustainability ────────────── */
   const growth = useMemo(() => {
-    const income = [
-      { name: "<$100", value: 38 }, { name: "$100–300", value: 96 }, { name: "$300–600", value: 121 },
-      { name: "$600–1k", value: 88 }, { name: "$1k–2k", value: 54 }, { name: "$2k+", value: 27 },
-    ];
-    const capital = [
-      { year: 2022, value: 420000 }, { year: 2023, value: 760000 }, { year: 2024, value: 1240000 },
-      { year: 2025, value: 1880000 }, { year: 2026, value: 2650000 },
-    ];
+    const income: any[] = [];
+    const capital: any[] = [];
     const byStage = STAGES.filter(s => s !== "Closed").map(s => ({ name: s, value: scope.filter(x => x.stage === s).length }));
     return { income, capital, byStage };
   }, [scope]);
@@ -232,135 +237,61 @@ export default function EntrepreneurshipPage() {
   /* ── Section 3: employment created ─────────────────── */
   const ji = useMemo(() => {
     const totalJobs = scope.reduce((s, x) => s + x.jobsCreated, 0);
-    const composition = [
-      { name: "Direct jobs", value: Math.round(totalJobs * 0.56) },
-      { name: "Indirect / part-time", value: Math.round(totalJobs * 0.30) },
-      { name: "Secondary / seasonal", value: Math.round(totalJobs * 0.14) },
-    ];
-    const priority = [
-      { name: "Women", value: Math.round(totalJobs * 0.41) },
-      { name: "Youth", value: Math.round(totalJobs * 0.52) },
-      { name: "Refugees / displaced", value: Math.round(totalJobs * 0.14) },
-      { name: "Persons w/ disability", value: Math.round(totalJobs * 0.07) },
-    ].sort((a, b) => b.value - a.value);
-    const byGender = [
-      { name: "Female", value: Math.round(totalJobs * 0.46) },
-      { name: "Male", value: Math.round(totalJobs * 0.54) },
-    ];
-    const byType = [
-      { name: "Full-time", value: Math.round(totalJobs * 0.54) },
-      { name: "Part-time", value: Math.round(totalJobs * 0.30) },
-      { name: "Seasonal", value: Math.round(totalJobs * 0.16) },
-    ];
-    const quality = [
-      { name: "Reliable income", value: Math.round(totalJobs * 0.62) },
-      { name: "Reputation", value: Math.round(totalJobs * 0.71) },
-      { name: "Respected", value: Math.round(totalJobs * 0.74) },
-      { name: "Sense of purpose", value: Math.round(totalJobs * 0.69) },
-      { name: "Other", value: Math.round(totalJobs * 0.21) },
-    ];
+    const composition: any[] = [];
+    const priority: any[] = [];
+    const byGender: any[] = [];
+    const byType: any[] = [];
+    const quality: any[] = [];
     const baseT = Math.round(totalJobs * 0.4);
     const trend = YEARS.map((year, i) => {
       const Total = Math.round(baseT * (1 + i * 0.3));
       return { year, Total, Female: Math.round(Total * 0.45) };
     });
-    const topVentures = [
-      { name: "GreenHarvest Agritech", jobs: 64, sector: "Agriculture", country: "Kenya" },
-      { name: "PayLink Africa", jobs: 52, sector: "Fintech", country: "Nigeria" },
-      { name: "EduBridge Learning", jobs: 47, sector: "Education", country: "Rwanda" },
-      { name: "MediReach Clinics", jobs: 41, sector: "Healthcare", country: "Ghana" },
-      { name: "SokoMarket", jobs: 38, sector: "Retail / commerce", country: "Kenya" },
-      { name: "SolarNest Energy", jobs: 33, sector: "Clean energy", country: "South Africa" },
-      { name: "FreightFlow", jobs: 29, sector: "Logistics", country: "Nigeria" },
-      { name: "CraftCollective", jobs: 24, sector: "Creative / media", country: "Uganda" },
-      { name: "AgroLink Co-op", jobs: 21, sector: "Agri-processing", country: "Rwanda" },
-      { name: "HealthPoint Mobile", jobs: 18, sector: "Health services", country: "Tanzania" },
-    ].sort((a, b) => b.jobs - a.jobs);
+    const topVentures: any[] = [];
     return {
       totalJobs, composition, priority, byGender, byType, quality, trend, topVentures,
-      fullTime: byType[0].value, partTime: byType[1].value,
-      womenJobs: byGender[1].value, youthJobs: priority.find(p => p.name === "Youth")!.value,
+      fullTime: byType[0]?.value ?? null, partTime: byType[1]?.value ?? null,
+      womenJobs: byGender[1]?.value ?? null, youthJobs: priority.find(p => p.name === "Youth")?.value ?? null,
     };
   }, [scope]);
 
   /* ── Section 4: founder profile ────────────────────── */
   const founders = useMemo(() => {
     const genderData = (["Female", "Male"] as Gender[]).map(g => ({ name: g, value: scope.filter(x => x.gender === g).length })).filter(d => d.value > 0);
-    const inclusionReachData = [
-      { name: "Female", value: 662 },
-      { name: "PWD", value: 94 },
-      { name: "Refugee / IDP", value: 189 },
-    ];
+    const inclusionReachData: any[] = [];
     const scholar = { count: 208, femalePct: 52.9, gender: [{ name: "Female", value: 110 }, { name: "Male", value: 98 }] };
     const scholarSplit = [
       { name: "Scholar founders", value: scholar.count },
       { name: "Non-scholar founders", value: total - scholar.count },
     ];
-    const countries = [
-      { name: "Kenya", value: 118 }, { name: "Nigeria", value: 96 }, { name: "Rwanda", value: 84 },
-      { name: "Ghana", value: 57 }, { name: "South Africa", value: 49 }, { name: "Uganda", value: 38 },
-      { name: "Tanzania", value: 31 }, { name: "Other", value: 27 },
-    ].sort((a, b) => b.value - a.value);
+    const countries: any[] = [];
     return { genderData, inclusionReachData, scholar, scholarSplit, countries };
   }, [scope, total]);
 
   /* ── Section 5: sectors & innovation ───────────────── */
   const sectors = useMemo(() => {
-    const topSectors = [
-      { name: "Agriculture", value: 96 }, { name: "Retail / commerce", value: 84 },
-      { name: "Education", value: 71 }, { name: "Fintech", value: 63 },
-      { name: "Healthcare", value: 54 }, { name: "Technology", value: 48 },
-      { name: "Manufacturing", value: 37 }, { name: "Other", value: 47 },
-    ].sort((a, b) => b.value - a.value);
-    const industries = [
-      { name: "Agri-processing", value: 58 }, { name: "E-commerce", value: 49 },
-      { name: "EdTech", value: 44 }, { name: "Payments", value: 41 },
-      { name: "Clean energy", value: 33 }, { name: "Logistics", value: 28 },
-      { name: "Health services", value: 26 }, { name: "Creative / media", value: 22 },
-    ].sort((a, b) => b.value - a.value);
-    const techVsTraditional = [
-      { name: "Technology-enabled", value: 214 },
-      { name: "Traditional", value: 286 },
-    ];
+    const topSectors: any[] = [];
+    const industries: any[] = [];
+    const techVsTraditional: any[] = [];
     return { topSectors, industries, techVsTraditional };
   }, []);
 
   /* ── Section 6: CHII support ───────────────────────── */
   const support = useMemo(() => {
-    const interventionsRaw = [
-      { name: "Mentorship", uptake: 184, help: 4.4 }, { name: "Seed funding", uptake: 142, help: 4.6 },
-      { name: "Incubation", uptake: 118, help: 4.1 }, { name: "Training", uptake: 156, help: 4.0 },
-      { name: "Network access", uptake: 131, help: 4.3 }, { name: "Market linkages", uptake: 97, help: 3.8 },
-      { name: "Legal / admin support", uptake: 64, help: 3.6 },
-    ].sort((a, b) => b.uptake - a.uptake);
+    const interventionsRaw: any[] = [];
     const interventionUptake = interventionsRaw.map(x => ({ name: x.name, value: x.uptake }));
     const helpfulness = interventionsRaw.map(x => ({ name: x.name, value: x.help }));
-    const supportQuality = [
-      { name: "Excellent", value: 38 }, { name: "Good", value: 41 }, { name: "Fair", value: 15 }, { name: "Poor", value: 6 },
-    ];
+    const supportQuality: any[] = [];
     const supportTotal = supportQuality.reduce((s, d) => s + d.value, 0);
-    const byStage = ["Pre-seed", "Seed", "Early-stage", "Growth", "Scaling"].map(s => ({
-      name: s, value: scope.filter(x => x.status === s && x.enablerSupport).length,
-    }));
+    const byStage: any[] = [];
     return { interventionUptake, helpfulness, supportQuality, supportTotal, byStage };
   }, [scope]);
 
   /* ── Section 7: founder outcomes ───────────────────── */
   const outcomes = useMemo(() => {
-    const indicators = [
-      { name: "Reliable income", value: 68 }, { name: "Good reputation", value: 84 },
-      { name: "Respected at work", value: 88 }, { name: "Sense of purpose", value: 87 },
-    ];
-    const household = [
-      { name: "Financial stability", value: 176 }, { name: "Family education", value: 148 },
-      { name: "Healthcare access", value: 124 }, { name: "Household well-being", value: 112 },
-      { name: "Helped extended family", value: 89 }, { name: "Better housing", value: 67 },
-    ].sort((a, b) => b.value - a.value);
-    const persistence = [
-      { name: "Primary income source", value: 162 }, { name: "Passion / purpose", value: 138 },
-      { name: "Flexibility / independence", value: 109 }, { name: "Community need", value: 84 },
-      { name: "No alternative employment", value: 71 }, { name: "Family business", value: 46 },
-    ].sort((a, b) => b.value - a.value);
+    const indicators: any[] = [];
+    const household: any[] = [];
+    const persistence: any[] = [];
     return { indicators, household, persistence };
   }, []);
 
@@ -381,17 +312,17 @@ export default function EntrepreneurshipPage() {
         {/* ════ OVERVIEW ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="Entrepreneurs" num={1580} sub="founders tracked" Icon={Rocket}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Entrepreneurs" num={null} sub="founders tracked" Icon={Rocket}
               tooltip="Total entrepreneurs (founders) tracked across the portfolio." />
-            <StatsKpiCard label="Active Enterprises" num={1386} sub="still operating" Icon={Activity}
-              tooltip="Enterprises still trading (not closed or non-operational)." />
-            <StatsKpiCard label="Jobs Created" num={54700} displayFmt={(n) => `${(n / 1000).toFixed(1)}K`} sub="opportunities" Icon={Briefcase}
-              tooltip="Jobs and opportunities created across all enterprises." />
-            <StatsKpiCard label="Female-led" num={62} displayFmt={(n) => `${Math.round(n)}%`} sub="of enterprises" Icon={WomanIcon}
-              tooltip="Share of enterprises led by female founders." />
-            <StatsKpiCard label="Capital Secured" num={7900000} displayFmt={(n) => `$${(n / 1000000).toFixed(1)}M`} sub="raised to date" Icon={Banknote}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Enterprises" num={ent("Enterprise Started Per Year")} sub="started" Icon={Activity}
+              tooltip="Enterprises started by participants." />
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Jobs Created" num={ent("Jobs created")} sub="created" Icon={Briefcase}
+              tooltip="Jobs created across all enterprises." />
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Female-led" num={ent("Female-led")} sub="female-led enterprises" Icon={WomanIcon}
+              tooltip="Enterprises led by female founders." />
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Capital Secured" num={null} sub="raised to date" Icon={Banknote}
               tooltip="Total capital raised by enterprises across the portfolio." />
-            <StatsKpiCard label="Market Extension" num={400} sub="entered new markets" Icon={Globe}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Market Extension" num={null} sub="entered new markets" Icon={Globe}
               tooltip="Enterprises that expanded into new markets or geographies." />
           </div>
 

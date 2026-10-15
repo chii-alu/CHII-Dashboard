@@ -566,7 +566,6 @@ export default function HEMPPage() {
                 value={countries}
                 info="Geographic distribution across Africa. Sub-Saharan expansion ongoing."
                 Icon={Users}
-                yoy={7}
                 secondaryText={`+2 new partnerships this year`}
               />
               {(() => {
@@ -649,7 +648,6 @@ export default function HEMPPage() {
                     label="Career Exposure"
                     value={careerWorkshopsCount}
                     progress={careerWorkshopsCount}
-                    progressTarget={1500}
                     progressLabel={`${Math.round((careerWorkshopsCount / 1500) * 100)}%`}
                     info="Exposure events and workshop participation toward 2030 target."
                     Icon={BookOpen}
@@ -666,7 +664,6 @@ export default function HEMPPage() {
                     label="Internships"
                     value={internshipsCount}
                     progress={internshipsCount}
-                    progressTarget={350}
                     progressLabel={`${Math.round((internshipsCount / 350) * 100)}%`}
                     info="Internship placements toward 2030 target."
                     Icon={Briefcase}
@@ -683,7 +680,6 @@ export default function HEMPPage() {
                     label="SIE Placements"
                     value={sieCount}
                     progress={sieCount}
-                    progressTarget={200}
                     progressLabel={`${Math.round((sieCount / 200) * 100)}%`}
                     info="SIE programme placements toward 2030 target."
                     Icon={TrendingUp}
@@ -700,7 +696,6 @@ export default function HEMPPage() {
                     label="Courses"
                     value={coursesCount}
                     progress={coursesCount}
-                    progressTarget={800}
                     progressLabel={`${Math.round((coursesCount / 800) * 100)}%`}
                     info="Course enrollments toward 2030 target."
                     Icon={BookOpen}
@@ -736,30 +731,30 @@ export default function HEMPPage() {
           {[
             {
               title: "Female Participation",
-              figure: `${femaleStudentsPct}%`,
-              detail: "Female representation (Target: 50%)",
+              figure: null,
+              detail: "Female representation",
               copy: "Strong gender diversity across Mission Students and HEMP programs. Inclusive recruitment across health disciplines.",
               accentColor: "#042C53"
             },
             {
               title: "Regional Growth",
-              figure: "+22%",
-              detail: "YoY expansion across 15 countries",
-              copy: "Sub-Saharan Africa reach increased. East Africa leading with +38% growth. New partnerships activated.",
+              figure: null,
+              detail: "YoY expansion across countries",
+              copy: "Sub-Saharan Africa reach increased. New partnerships activated.",
               accentColor: "#16A34A"
             },
             {
               title: "HEMP Engagement",
-              figure: `${hempEngagementRate.toFixed(0)}%`,
+              figure: null,
               detail: "Students in HEMP programmes",
               copy: "Consistent engagement across Exposure Events, Internships, SIE, and Courses. Strong pipeline building.",
               accentColor: "#3B82F6"
             },
             {
               title: "Inclusion Focus",
-              figure: `${((byInclusion.pwd + byInclusion.refugee) / totalStudents * 100).toFixed(0)}%`,
+              figure: null,
               detail: "PWD & Refugee students",
-              copy: "Deliberate focus on underrepresented populations. 441 PWD students and 294 Refugee students served.",
+              copy: "Deliberate focus on underrepresented populations.",
               accentColor: "#9333EA"
             }
           ].map((insight, i) => (
@@ -776,8 +771,8 @@ export default function HEMPPage() {
                 borderRight: i < 3 ? "1px solid #E5E7EB" : "none"
               }}
             >
-              <p style={{ fontSize: 32, fontWeight: 800, color: "#042C53", lineHeight: 1, margin: 0, marginTop: 8 }}>
-                {insight.figure}
+              <p style={{ fontSize: insight.figure === null ? 14 : 32, fontWeight: 800, color: "#042C53", lineHeight: 1, margin: 0, marginTop: 8 }}>
+                {insight.figure ?? "In coming data"}
               </p>
               <p style={{ fontSize: 13, fontWeight: 700, color: "#042C53", lineHeight: 1.2, margin: 0 }}>
                 {insight.title}

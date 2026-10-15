@@ -189,10 +189,7 @@ export default function FurtherEducationPage() {
     const countriesOfStudy = new Set(scope.map(s => s.countryOfStudy)).size;
 
     const genderData = countBy(scope, "gender", ["Female", "Male"]);
-    const cohortRate = [
-      { name: "All Talents", value: 7, pct: true },
-      { name: "Scholars", value: 17, pct: true },
-    ];
+    const cohortRate: any[] = [];
     const activeCompleted = [
       { name: "Active", value: enrolled },
       { name: "Completed", value: TOTAL - enrolled },
@@ -305,15 +302,15 @@ export default function FurtherEducationPage() {
         {/* ════ OVERVIEW ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="In Further Education" num={226} sub="graduates" Icon={GraduationCap}
+            <StatsKpiCard label="In Further Education" num={null} sub="graduates" Icon={GraduationCap}
               tooltip="Graduates pursuing further education." />
-            <StatsKpiCard label="Female Graduates" num={126} sub="female students" Icon={WomanIcon}
+            <StatsKpiCard label="Female Graduates" num={null} sub="female students" Icon={WomanIcon}
               tooltip="Female graduates in further education." />
-            <StatsKpiCard label="Master's & Above" num={88} displayFmt={(n) => `${n}%`} sub="postgraduate" Icon={BookOpen}
+            <StatsKpiCard label="Master's & Above" num={null} displayFmt={(n) => `${n}%`} sub="postgraduate" Icon={BookOpen}
               tooltip="Share pursuing master's degrees or higher." />
-            <StatsKpiCard label="Scholarship-Funded" num={29} displayFmt={(n) => `${n}%`} sub="funded share" Icon={Wallet}
+            <StatsKpiCard label="Scholarship-Funded" num={null} displayFmt={(n) => `${n}%`} sub="funded share" Icon={Wallet}
               tooltip="Share on a scholarship or otherwise funded place." />
-            <StatsKpiCard label="Further Study Rate" num={5} displayFmt={(n) => `${n}%`} sub="of all graduates" Icon={TrendingUp}
+            <StatsKpiCard label="Further Study Rate" num={null} displayFmt={(n) => `${n}%`} sub="of all graduates" Icon={TrendingUp}
               tooltip="Share of CHII graduates who progress to further study." />
             <StatsKpiCard label="Countries of Study" num={d.countriesOfStudy} sub="destinations" Icon={Globe}
               tooltip="Distinct countries where graduates pursue further study." />

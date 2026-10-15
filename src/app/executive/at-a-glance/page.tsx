@@ -681,13 +681,13 @@ export default function AtAGlancePage() {
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, flexShrink: 0, textAlign: "center" }}>Program Outcomes</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-            <KPICard label="Youth in Work" value={youthInWorkTotal} yoy={8} info="Participants employed or running enterprises." Icon={Briefcase} href="/executive/youth-in-work" secondaryText="Active workforce" />
-            <KPICard label="Wage Employment" value={wageEmploymentTotal} yoy={12} info="Participants in paid employment." Icon={Briefcase} href="/executive/wage-employment" secondaryText="Employed" />
-            <KPICard label="Entrepreneurs" value={entrepreneursTotal} yoy={5} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship" secondaryText="Business owners" />
-            <KPICard label="Jobs Created" value={jobsCreatedTotal} yoy={18} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship" secondaryText="Direct employment" />
-            <KPICard label="Enterprises" value={enterprisesTotal} yoy={22} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship" secondaryText="Active ventures" />
-            <KPICard label="Job Seeking" value={jobSeekingTotal} yoy={-15} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work" secondaryText="In transition" />
-            <KPICard label="Further Education" value={furtherEducationTotal} yoy={11} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education" secondaryText="Continuing studies" />
+            <KPICard label="Youth in Work" value={youthInWorkTotal} info="Participants employed or running enterprises." Icon={Briefcase} href="/executive/youth-in-work" secondaryText="Active workforce" />
+            <KPICard label="Wage Employment" value={wageEmploymentTotal} info="Participants in paid employment." Icon={Briefcase} href="/executive/wage-employment" secondaryText="Employed" />
+            <KPICard label="Entrepreneurs" value={entrepreneursTotal} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship" secondaryText="Business owners" />
+            <KPICard label="Jobs Created" value={jobsCreatedTotal} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship" secondaryText="Direct employment" />
+            <KPICard label="Enterprises" value={enterprisesTotal} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship" secondaryText="Active ventures" />
+            <KPICard label="Job Seeking" value={jobSeekingTotal} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work" secondaryText="In transition" />
+            <KPICard label="Further Education" value={furtherEducationTotal} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education" secondaryText="Continuing studies" />
           </div>
         </div>
         </div>
