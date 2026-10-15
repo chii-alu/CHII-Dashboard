@@ -541,37 +541,18 @@ export default function AtAGlancePage() {
 
   // Fetch demographic breakdowns from Supabase
 
-  // Fetch metadata from Outreach API
+  // Last sync time comes from the workbook sync record (v_last_sync), not from a data row
   useEffect(() => {
-    fetch('/api/outreach-breakdown')
+    fetch('/api/exec-section/At%20a%20Glance')
       .then(r => r.json())
       .then(result => {
-        if (result.rawData && result.rawData.length > 0) {
-          const latestRecord = result.rawData[0];
-          if (latestRecord.updated_at) {
-            const date = new Date(latestRecord.updated_at);
-            const dateOptions: Intl.DateTimeFormatOptions = {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              timeZone: 'Africa/Cairo'
-            };
-            const timeOptions: Intl.DateTimeFormatOptions = {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-              timeZone: 'Africa/Cairo'
-            };
-            const dateStr = new Intl.DateTimeFormat('en-US', dateOptions).format(date);
-            const timeStr = new Intl.DateTimeFormat('en-US', timeOptions).format(date);
-            setLastUpdated(`${dateStr}, ${timeStr} CAT`);
-          }
-          if (latestRecord.source) {
-            setDataSource(latestRecord.source.replace(/_/g, ' ').replace('.xlsx', ''));
-          }
-        }
+        if (!result.lastSynced) return;
+        const date = new Date(result.lastSynced);
+        const dateStr = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Africa/Kigali' }).format(date);
+        const timeStr = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Africa/Kigali' }).format(date);
+        setLastUpdated(`${dateStr}, ${timeStr} CAT`);
       })
-      .catch(err => console.error('Error fetching metadata:', err));
+      .catch(err => console.error('Error fetching sync time:', err));
   }, []);
 
 
@@ -777,7 +758,7 @@ export default function AtAGlancePage() {
 
       {/* ── Footer Section ─────────────────────────────── */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer />
+        <FeaturedImpactStory footer dataSynced={lastUpdated || "Loading..."} />
       </div>
     </div>
     </KpiLoadingContext.Provider>

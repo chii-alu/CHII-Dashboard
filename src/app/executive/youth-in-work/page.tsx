@@ -246,6 +246,7 @@ export default function YouthInWorkPage() {
   const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const [youthData, setYouthData] = useState<any[]>([]);
   const [apiMetrics, setApiMetrics] = useState<any>({});
+  const [metricsLoaded, setMetricsLoaded] = useState(false);
   const show = (n: number) => activeSection === n;
 
   // Fetch Youth in Work data from Supabase
@@ -256,6 +257,7 @@ export default function YouthInWorkPage() {
         if (result.metrics) {
           setApiMetrics(result.metrics);
         }
+        setMetricsLoaded(true);
         if (result.participants && result.participants.length > 0) {
           setYouthData(result.participants);
           if (result.rawData && result.rawData.length > 0) {
@@ -301,15 +303,17 @@ export default function YouthInWorkPage() {
   [youthData, year, program, ptype, gender, country, cohort, pathway]);
 
   /* ── Executive snapshot KPIs ───────────────────────── */
+  const totals = year === "all" ? apiMetrics : {};
+
   const kpis = useMemo(() => ({
-    total: apiMetrics.totalParticipants ?? null,
+    total: totals.totalParticipants ?? null,
     employed: null,
-    interns: apiMetrics.inInternships ?? null,
+    interns: totals.inInternships ?? null,
     founders: null,
-    jobsCreated: apiMetrics.jobsCreated ?? null,
+    jobsCreated: totals.jobsCreated ?? null,
     femalePct: null,
     africaPct: null,
-  }), [apiMetrics]);
+  }), [totals]);
 
   /* ── Section 1: work pathways ──────────────────────── */
   const pathwayDist = useMemo(() => {
@@ -331,12 +335,12 @@ export default function YouthInWorkPage() {
 
   /* ── Section 2: jobs created ───────────────────────── */
   const jobs = useMemo(() => {
-    const primary = apiMetrics.primaryJobs ?? null;
-    const secondary = apiMetrics.secondaryJobs ?? null;
+    const primary = totals.primaryJobs ?? null;
+    const secondary = totals.secondaryJobs ?? null;
     return {
       primary,
       secondary,
-      jobsCreated: apiMetrics.jobsCreated ?? null,
+      jobsCreated: totals.jobsCreated ?? null,
       youthEmployed: null,
       primaryFemale: null,
       secondaryFemale: null,
@@ -346,22 +350,22 @@ export default function YouthInWorkPage() {
       byCategory: null,
       createdByProgram: null,
       jobCategories: null,
-      youthTrend: apiMetrics.femaleYouthInWork != null || apiMetrics.refugeeYouthInWork != null || apiMetrics.pwdYouthInWork != null
-        ? [{ period: "All years", Female: apiMetrics.femaleYouthInWork ?? null, PWD: apiMetrics.pwdYouthInWork ?? null, Refugee: apiMetrics.refugeeYouthInWork ?? null }]
+      youthTrend: totals.femaleYouthInWork != null || totals.refugeeYouthInWork != null || totals.pwdYouthInWork != null
+        ? [{ period: "All years", Female: totals.femaleYouthInWork ?? null, PWD: totals.pwdYouthInWork ?? null, Refugee: totals.refugeeYouthInWork ?? null }]
         : null,
       psTrend: null,
     };
-  }, [apiMetrics]);
+  }, [totals]);
 
   /* ── Section 3: inclusion ──────────────────────────── */
   const inclusion = useMemo(() => {
-    const femalePrimary = apiMetrics.femalePrimaryJobs ?? null;
-    const femaleSecondary = apiMetrics.femaleSecondaryJobs ?? null;
+    const femalePrimary = totals.femalePrimaryJobs ?? null;
+    const femaleSecondary = totals.femaleSecondaryJobs ?? null;
     return {
       cards: {
-        female: apiMetrics.femaleYouthInWork ?? null,
-        refugee: apiMetrics.refugeeYouthInWork ?? null,
-        pwd: apiMetrics.pwdYouthInWork ?? null,
+        female: totals.femaleYouthInWork ?? null,
+        refugee: totals.refugeeYouthInWork ?? null,
+        pwd: totals.pwdYouthInWork ?? null,
         scholar: null,
         africa: null,
       },
@@ -376,7 +380,7 @@ export default function YouthInWorkPage() {
       femaleShare: null,
       outcomesByPriorityGroup: null,
     };
-  }, [apiMetrics]);
+  }, [totals]);
 
   /* ── Section 4: quality of work ────────────────────── */
   const quality = useMemo(() => {
@@ -412,19 +416,19 @@ export default function YouthInWorkPage() {
         {/* ════ EXECUTIVE SNAPSHOT ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="Participants" num={kpis.total} sub="students + alumni" Icon={Users}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Participants" num={kpis.total} sub="students + alumni" Icon={Users}
               tooltip="Total youth tracked across the CHII ecosystem." />
-            <StatsKpiCard label="In Employment" num={kpis.employed} sub="primary employment" Icon={Briefcase}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="In Employment" num={kpis.employed} sub="primary employment" Icon={Briefcase}
               tooltip="Youth in wage employment, including those at supported enterprises." />
-            <StatsKpiCard label="In Internships" num={kpis.interns} sub="active internships" Icon={GraduationCap}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="In Internships" num={kpis.interns} sub="active internships" Icon={GraduationCap}
               tooltip="Youth currently in internship placements." />
-            <StatsKpiCard label="Enterprise" num={kpis.founders} sub="running enterprises" Icon={Rocket}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Enterprise" num={kpis.founders} sub="running enterprises" Icon={Rocket}
               tooltip="Participants founding or co-running an enterprise." />
-            <StatsKpiCard label="Jobs Created" num={kpis.jobsCreated} sub="by supported enterprises" Icon={Hammer}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Jobs Created" num={kpis.jobsCreated} sub="by supported enterprises" Icon={Hammer}
               tooltip="Positions created by enterprises CHII participants founded." />
-            <StatsKpiCard label="Female" num={kpis.femalePct} displayFmt={(n) => `${Math.round(n)}%`} sub="of participants" Icon={WomanIcon}
+            <StatsKpiCard missingText={metricsLoaded ? "–" : ""} label="Female" num={kpis.femalePct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="of participants" Icon={WomanIcon}
               tooltip="Share of female participants." />
-            <StatsKpiCard label="Based in Africa" num={kpis.africaPct} displayFmt={(n) => `${Math.round(n)}%`} sub="on the continent" Icon={Globe}
+            <StatsKpiCard missingText={metricsLoaded ? "–" : ""} label="Based in Africa" num={kpis.africaPct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="on the continent" Icon={Globe}
               tooltip="Share of youth currently based in Africa." />
           </div>
 
