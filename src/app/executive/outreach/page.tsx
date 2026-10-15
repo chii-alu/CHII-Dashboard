@@ -37,21 +37,6 @@ const REACH_GENDERS: Gender[] = ["Female", "Male"];
 /* outreach reporting years: 2022 → 2026 */
 const OA_YEARS = [2022, 2023, 2024, 2025, 2026];
 
-/* Student-population reference data (academic programmes) */
-const POP_BY_PROGRAM = [
-  { name: "BSc Software Eng", Graduated: 820, "Not graduated": 540 },
-  { name: "Computer Science", Graduated: 760, "Not graduated": 480 },
-  { name: "Entrepreneurial Leadership", Graduated: 690, "Not graduated": 520 },
-  { name: "International Business & Trade", Graduated: 610, "Not graduated": 430 },
-  { name: "Global Challenges", Graduated: 470, "Not graduated": 360 },
-];
-const POP_GENDER_BY_PROGRAM = [
-  { name: "BSc Software Eng", Female: 612, Male: 748 },
-  { name: "Computer Science", Female: 560, Male: 680 },
-  { name: "Entrepreneurial Leadership", Female: 640, Male: 570 },
-  { name: "International Business & Trade", Female: 540, Male: 500 },
-  { name: "Global Challenges", Female: 430, Male: 400 },
-];
 const ENGAGEMENT_STATUSES = ["Registered", "Completed"] as const;
 const STATUS_COLOR: Record<string, string> = {
   Registered: "#85B7EB", Completed: "#A81B2D",
@@ -200,7 +185,7 @@ export default function OutreachPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [supabaseData, setSupabaseData] = useState<any>(null);
   const [breakdownData, setBreakdownData] = useState<any>(null);
-  const [participants, setParticipants] = useState<OutreachParticipant[]>(OUTREACH_PARTICIPANTS);
+  const [participants, setParticipants] = useState<OutreachParticipant[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [dataSource, setDataSource] = useState<string>("CHII MELA Consolidated Database");
   const show = (n: number) => activeSection === n;
@@ -267,32 +252,25 @@ export default function OutreachPage() {
   const kpis = useMemo(() => {
     // Use Supabase data if available, otherwise calculate from scope
     if (supabaseData && supabaseData.length > 0) {
-      const total = supabaseData.find((m: any) => m.metric === 'Total Participants (All Programmes)')?.value || 0;
-      const femalePct = supabaseData.find((m: any) => m.metric === 'Female Share (%)')?.value || 0;
-      const missionCount = supabaseData.find((m: any) => m.metric === 'Mission Students')?.value || 0;
-      const interventionCount = supabaseData.find((m: any) => m.metric === 'Interventions (Types)')?.value || 0;
+      const total = supabaseData.find((m: any) => m.metric === 'Total Participants (All Programmes)')?.value ?? null;
+      const femalePct = supabaseData.find((m: any) => m.metric === 'Female Share (%)')?.value ?? null;
+      const missionCount = supabaseData.find((m: any) => m.metric === 'Mission Students')?.value ?? null;
+      const interventionCount = supabaseData.find((m: any) => m.metric === 'Interventions (Types)')?.value ?? null;
 
       return {
         total,
         femalePct,
-        missionPct: total > 0 ? Math.round((missionCount / total) * 100) : 0,
+        missionPct: total && missionCount !== null ? Math.round((missionCount / total) * 100) : null,
         missionCount,
         interventionCount,
-        institutionCount: 0,
-        completionPct: 0,
+        institutionCount: null,
+        completionPct: null,
       };
     }
 
-    // Fallback to calculated values from scope
-    const total = scope.length;
-    const female = scope.filter(s => s.gender === "Female").length;
-    const mission = scope.filter(s => s.missionStudent).length;
-    const completed = scope.filter(s => s.status === "Completed").length;
-    const interventionCount = new Set(scope.map(s => s.intervention)).size;
-    const institutionCount = new Set(scope.map(s => s.institution)).size;
     return {
-      total, femalePct: share(female, total), missionPct: share(mission, total), missionCount: mission,
-      interventionCount, institutionCount, completionPct: share(completed, total),
+      total: null, femalePct: null, missionPct: null, missionCount: null,
+      interventionCount: null, institutionCount: null, completionPct: null,
     };
   }, [scope, supabaseData]);
 
@@ -324,26 +302,19 @@ export default function OutreachPage() {
 
   /* ── Section 3: demographics ───────────────────────── */
   const inclusion = useMemo(() => {
-    // Use Supabase data if available
-    if (supabaseData && supabaseData.length > 0) {
-      const total = supabaseData.find((m: any) => m.metric === 'Total Participants (All Programmes)')?.value || 1;
-      const refugeeCount = supabaseData.find((m: any) => m.metric === 'Refugee / IDP (Count)')?.value || 0;
-      const pwdCount = supabaseData.find((m: any) => m.metric === 'Youth with Disability (Count)')?.value || 0;
-
-      // If we don't have counts, check for the values from At a Glance section
-      const actualRefugeeCount = refugeeCount || 62; // From At a Glance
-      const actualPwdCount = pwdCount || 29; // From At a Glance
-
-      return {
-        female: 60, // Female Share % from database
-        male: 40,
-        refugee: Math.round((actualRefugeeCount / total) * 100),
-        pwd: Math.round((actualPwdCount / total) * 100),
-        mission: total > 0 ? Math.round(((supabaseData.find((m: any) => m.metric === 'Mission Students')?.value || 0) / total) * 100) : 0,
-      };
-    }
-    // No fallback - return null for ChartWithPlaceholder to show "In coming data"
-    return null;
+    if (!supabaseData || supabaseData.length === 0) return null;
+    const total = supabaseData.find((m: any) => m.metric === 'Total Participants (All Programmes)')?.value || 0;
+    const femalePct = supabaseData.find((m: any) => m.metric === 'Female Share (%)')?.value ?? null;
+    const refugeeCount = supabaseData.find((m: any) => m.metric === 'Refugee / IDP (Count)')?.value ?? null;
+    const pwdCount = supabaseData.find((m: any) => m.metric === 'Youth with Disability (Count)')?.value ?? null;
+    const missionCount = supabaseData.find((m: any) => m.metric === 'Mission Students')?.value ?? null;
+    return {
+      female: femalePct,
+      male: null,
+      refugee: refugeeCount !== null && total ? Math.round((refugeeCount / total) * 100) : null,
+      pwd: pwdCount !== null && total ? Math.round((pwdCount / total) * 100) : null,
+      mission: missionCount !== null && total ? Math.round((missionCount / total) * 100) : null,
+    };
   }, [supabaseData]);
 
   // Inclusion by program — grouped (metric rows × program series)

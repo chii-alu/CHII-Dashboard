@@ -30,23 +30,7 @@ export async function GET() {
       );
     }
 
-    // Transform into participant records format
-    const participants = data
-      ?.filter((row: any) => row.intervention && row.segment === "all")
-      ?.map((row: any, idx: number) => ({
-        id: idx,
-        intervention: row.intervention,
-        pillar: row.pillar || "HEMP",
-        gender: row.metric?.includes("Female") ? "Female" : "Male",
-        missionStudent: Math.random() > 0.7, // Estimated
-        refugee: Math.random() > 0.96, // ~4% refugee rate
-        pwd: Math.random() > 0.98, // ~2% PWD rate
-        status: Math.random() > 0.7 ? "Completed" : "Registered",
-        yearEngaged: 2026,
-        institution: "University", // Placeholder
-      })) || [];
-
-    console.log("[API] Generated", participants.length, "participant records from Supabase");
+    const participants: unknown[] = [];
 
     return NextResponse.json({
       participants,

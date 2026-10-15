@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, type ComponentType } from "react";
+import React, { useState, useEffect, useRef, type ComponentType, createContext, useContext } from "react";
 import { Info, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -340,6 +340,8 @@ function MapContainer({
 }
 
 /* ─ KPI Card Component (Navy fill, like Outreach StatsKpiCard) ─ */
+const KpiLoadingContext = createContext(false);
+
 function KPICard({
   label,
   value,
@@ -364,6 +366,7 @@ function KPICard({
   secondaryText?: string;
 }) {
   const animated = useCountUp(typeof value === "number" ? value : 0);
+  const kpiLoading = useContext(KpiLoadingContext);
   const [showTooltip, setShowTooltip] = useState(false);
   const LIGHT_BLUE = "#B5D4F4";
 
@@ -426,7 +429,7 @@ function KPICard({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8, flex: 1 }}>
         {Icon && <Icon size={18} color="var(--brand-secondary)" style={{ flexShrink: 0, strokeWidth: 2 }} />}
         <p style={{ fontSize: 28, fontWeight: 800, color: "var(--brand-secondary)", lineHeight: 1 }}>
-          {value === null ? "In coming data" : typeof value === "number" ? Math.round(animated).toLocaleString() : value}
+          {value === null ? (kpiLoading ? "" : "In coming data") : typeof value === "number" ? Math.round(animated).toLocaleString() : value}
         </p>
       </div>
 
@@ -643,7 +646,10 @@ export default function AtAGlancePage() {
     );
   }
 
+  const kpiLoading = !atAGlanceHeadlines || !outreachHeadlines || !youthHeadlines;
+
   return (
+    <KpiLoadingContext.Provider value={kpiLoading}>
     <div style={{ backgroundColor: `var(--bg-tint)`, minHeight: "100vh" }}>
 
       {/* ── Header ─────────────────────────────────────── */}
@@ -774,5 +780,6 @@ export default function AtAGlancePage() {
         <FeaturedImpactStory footer />
       </div>
     </div>
+    </KpiLoadingContext.Provider>
   );
 }

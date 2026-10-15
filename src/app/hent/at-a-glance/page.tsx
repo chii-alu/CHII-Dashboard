@@ -220,7 +220,7 @@ export default function HENTAtAGlance() {
   const maleShare = segmentPct("Total Participants", "male");
 
   const insights = [
-    { title: "Gender Balance", detail: "Female representation (Target: 50%)", copy: "Gender split of HENT participants across programmes.", accentColor: "#042C53" },
+    { title: "Gender Balance", detail: "Female representation", copy: "Gender split of HENT participants across programmes.", accentColor: "#042C53" },
     { title: "Regional Growth", detail: "YoY expansion across HENT countries", copy: "Regional reach of HENT programmes over time.", accentColor: "#16A34A" },
     { title: "Employment Success", detail: "Participants in employment", copy: "Share of HENT participants moving into employment.", accentColor: "#3B82F6" },
     { title: "Venture Momentum", detail: "Ventures supported and funded", copy: "Growth of HENT ventures, jobs and capital.", accentColor: "#9333EA" },
