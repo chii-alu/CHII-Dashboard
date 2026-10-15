@@ -2,7 +2,7 @@
 import { useState, useEffect, type ComponentType } from "react";
 import { benchColor } from "@/theme/tokens";
 
-function useCountUp(target: number, duration = 1000): number {
+export function useCountUp(target: number, duration = 1000): number {
   const [val, setVal] = useState(0);
   useEffect(() => {
     let start: number | null = null;

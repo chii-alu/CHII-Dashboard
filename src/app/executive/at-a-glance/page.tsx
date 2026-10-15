@@ -9,6 +9,7 @@ import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { MetadataHeader } from "@/components/MetadataHeader";
 import { COUNTRY_COORDS } from "@/lib/country-coords";
+import { useCountUp } from "@/components/ui/stat-kpi-card";
 import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createClient } from "@/lib/supabase-client";
@@ -362,6 +363,7 @@ function KPICard({
   href?: string;
   secondaryText?: string;
 }) {
+  const animated = useCountUp(typeof value === "number" ? value : 0);
   const [showTooltip, setShowTooltip] = useState(false);
   const LIGHT_BLUE = "#B5D4F4";
 
@@ -424,7 +426,7 @@ function KPICard({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8, flex: 1 }}>
         {Icon && <Icon size={18} color="var(--brand-secondary)" style={{ flexShrink: 0, strokeWidth: 2 }} />}
         <p style={{ fontSize: 28, fontWeight: 800, color: "var(--brand-secondary)", lineHeight: 1 }}>
-          {value === null ? "In coming data" : typeof value === "number" ? value.toLocaleString() : value}
+          {value === null ? "In coming data" : typeof value === "number" ? Math.round(animated).toLocaleString() : value}
         </p>
       </div>
 
