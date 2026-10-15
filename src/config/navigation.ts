@@ -22,7 +22,7 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
   hent: {
     wordmark: "HENT",
     wordmarkLines: ["HEALTH", "ENTREPRENEURSHIP", "PILLAR"],
-    rootHref: "/hent/overview",
+    rootHref: "/hent/at-a-glance",
     items: [
       { label: "At a Glance",           href: "/hent/at-a-glance" },
       { label: "Overview",              href: "/hent/overview" },

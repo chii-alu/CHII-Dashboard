@@ -7,6 +7,7 @@ import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { getPortalTheme } from "@/theme/portals";
+import { COUNTRY_COORDS } from "@/lib/country-coords";
 
 const theme = getPortalTheme("hent");
 const HERO = "#2D6A4F";
@@ -99,9 +100,62 @@ function KPICard({ label, value, unit, info, Icon, secondaryText }: {
   );
 }
 
-function HentMap() {
+type HentCountry = { country: string; value: number; female?: number };
+
+const escapeHtml = (v: string) =>
+  v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+const fmtOrNA = (v: number | null | undefined) =>
+  v === null || v === undefined ? NOT_AVAILABLE : v.toLocaleString();
+
+function HentMap({ countries }: { countries: HentCountry[] }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markers = useRef<mapboxgl.Marker[]>([]);
+  const countriesRef = useRef<HentCountry[]>(countries);
+  countriesRef.current = countries;
+
+  const renderMarkers = (rows: HentCountry[]) => {
+    if (!map.current) return;
+    markers.current.forEach(m => m.remove());
+    markers.current = [];
+    rows.forEach(row => {
+      const coords = COUNTRY_COORDS[row.country];
+      if (!coords) return;
+      const [lat, lng] = coords;
+      const size = Math.min(8 + Math.log(Math.max(row.value, 1)) * 2, 16) * 2;
+      const el = document.createElement("div");
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+      el.style.borderRadius = "50%";
+      el.style.background = "#2D6A4F";
+      el.style.border = "3px solid white";
+      el.style.boxShadow = "0 2px 10px rgba(45,106,79,0.5)";
+      el.style.color = "white";
+      el.style.fontSize = "11px";
+      el.style.fontWeight = "700";
+      el.style.display = "flex";
+      el.style.alignItems = "center";
+      el.style.justifyContent = "center";
+      el.style.cursor = "pointer";
+      el.textContent = String(row.value);
+
+      const html = `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;min-width:200px">
+        <strong style="color:#2D6A4F">${escapeHtml(row.country)}</strong>
+        <div style="margin-top:8px;font-size:12px">
+          <div style="display:flex;justify-content:space-between;padding:4px 0"><span>Ventures</span><b>${NOT_AVAILABLE}</b></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0"><span>Venture Funding</span><b>${NOT_AVAILABLE}</b></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0"><span>Jobs created</span><b>${NOT_AVAILABLE}</b></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0"><span>Founder Diversity</span><b>${NOT_AVAILABLE}</b></div>
+        </div></div>`;
+      el.addEventListener("click", e => {
+        e.stopPropagation();
+        new mapboxgl.Popup({ offset: 12, closeButton: true }).setLngLat([lng, lat]).setHTML(html).addTo(map.current!);
+      });
+
+      markers.current.push(new mapboxgl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map.current!));
+    });
+  };
 
   useEffect(() => {
     if (!container.current) return;
@@ -117,19 +171,26 @@ function HentMap() {
         attributionControl: false,
         cooperativeGestures: true,
       });
+      map.current.on("style.load", () => renderMarkers(countriesRef.current));
     })();
     return () => {
       cancelled = true;
+      markers.current.forEach(m => m.remove());
+      markers.current = [];
       map.current?.remove();
       map.current = null;
     };
   }, []);
 
+  useEffect(() => {
+    if (map.current && map.current.isStyleLoaded()) renderMarkers(countries);
+  }, [countries]);
+
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={container} style={{ width: "100%", height: "100%", borderRadius: 10, border: "1px solid #E5E7EB", overflow: "hidden", background: "#0B1A33" }} />
       <div style={{ position: "absolute", top: 12, left: 12, backgroundColor: "rgba(255,255,255,0.92)", borderRadius: 6, padding: "6px 10px", fontSize: 11, fontWeight: 600, color: HEADER_NAVY }}>
-        Participants by country: {NOT_AVAILABLE}
+        Participants by country: {countries.length ? `${countries.length} countries` : NOT_AVAILABLE}
       </div>
     </div>
   );
@@ -138,6 +199,11 @@ function HentMap() {
 export default function HENTAtAGlance() {
   const { data: headlines } = useDashboardData(() => fetchSection("At a Glance").then(r => r.headlines || []), []);
   const { data: segments } = useDashboardData(() => fetchSection("At a Glance").then(r => r.segments || []), []);
+
+  const { data: hentCountries } = useDashboardData(
+    () => fetch("/api/hent-map").then(r => r.json()).then(rows => (Array.isArray(rows) ? rows : [])),
+    []
+  );
 
   const headline = (metric: string): number | null =>
     headlines?.find((h: any) => h.metric === metric)?.value ?? null;
@@ -203,7 +269,7 @@ export default function HENTAtAGlance() {
             <KPICard label="Employment Rate" value={headline("Employment Rate")} unit="%" Icon={Briefcase} info="Share of participants in employment." />
           </div>
 
-          <HentMap />
+          <HentMap countries={hentCountries || []} />
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "center" }}>HENT ENGAGEMENT</h2>
