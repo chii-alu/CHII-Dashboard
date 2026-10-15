@@ -81,6 +81,10 @@ export async function GET() {
     metrics.femaleYouthInWork = bySegment("Youth In Work Trend By Inclusion", "female");
     metrics.refugeeYouthInWork = bySegment("Youth In Work Trend By Inclusion", "refugee_idp");
     metrics.pwdYouthInWork = bySegment("Youth In Work Trend By Inclusion", "pwd");
+    const byBreakdown = (metric: string, breakdown: string, segment: string) =>
+      data?.find((r: any) => r.metric === metric && r.breakdown === breakdown && r.segment === segment)?.value ?? null;
+    metrics.femalePrimaryJobs = byBreakdown("Primary & Secondary Jobs By Priority Group", "Primary Jobs", "female");
+    metrics.femaleSecondaryJobs = byBreakdown("Primary & Secondary Jobs By Priority Group", "Secondary Jobs", "female");
 
     return NextResponse.json({
       participants,

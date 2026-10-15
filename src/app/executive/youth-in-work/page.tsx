@@ -341,31 +341,42 @@ export default function YouthInWorkPage() {
       primaryFemale: null,
       secondaryFemale: null,
       primarySecondary: primary !== null && secondary !== null
-        ? [{ name: "Primary Jobs", value: primary }, { name: "Secondary Jobs", value: secondary }]
+        ? [{ name: "Primary Jobs", Total: primary }, { name: "Secondary Jobs", Total: secondary }]
         : null,
       byCategory: null,
       createdByProgram: null,
       jobCategories: null,
-      youthTrend: null,
+      youthTrend: apiMetrics.femaleYouthInWork != null || apiMetrics.refugeeYouthInWork != null || apiMetrics.pwdYouthInWork != null
+        ? [{ period: "All years", Female: apiMetrics.femaleYouthInWork ?? null, PWD: apiMetrics.pwdYouthInWork ?? null, Refugee: apiMetrics.refugeeYouthInWork ?? null }]
+        : null,
       psTrend: null,
     };
   }, [apiMetrics]);
 
   /* ── Section 3: inclusion ──────────────────────────── */
   const inclusion = useMemo(() => {
-    // No actual Supabase breakdown data - return nulls for all charts
+    const femalePrimary = apiMetrics.femalePrimaryJobs ?? null;
+    const femaleSecondary = apiMetrics.femaleSecondaryJobs ?? null;
     return {
-      cards: { female: 0, refugee: 0, pwd: 0, scholar: 0, africa: 0 },
-      priorityGroups: null,      // Show "In coming data"
-      genderByPathway: null,     // Show "In coming data"
-      africaSplit: null,         // Show "In coming data"
-      topCountries: null,        // Show "In coming data"
-      byProgram: null,           // Show "In coming data"
-      primaryByGroup: null,      // Show "In coming data"
-      femaleShare: null,         // Show "In coming data"
-      outcomesByPriorityGroup: null, // Show "In coming data"
+      cards: {
+        female: apiMetrics.femaleYouthInWork ?? null,
+        refugee: apiMetrics.refugeeYouthInWork ?? null,
+        pwd: apiMetrics.pwdYouthInWork ?? null,
+        scholar: null,
+        africa: null,
+      },
+      priorityGroups: null,
+      genderByPathway: null,
+      africaSplit: null,
+      topCountries: null,
+      byProgram: null,
+      primaryByGroup: femalePrimary !== null || femaleSecondary !== null
+        ? [{ name: "Women", Primary: femalePrimary, Secondary: femaleSecondary }]
+        : null,
+      femaleShare: null,
+      outcomesByPriorityGroup: null,
     };
-  }, []);
+  }, [apiMetrics]);
 
   /* ── Section 4: quality of work ────────────────────── */
   const quality = useMemo(() => {
@@ -593,16 +604,22 @@ export default function YouthInWorkPage() {
               info="Youth holding a primary or secondary job each year, including female, PWD, and refugee participants.">
               <ChartWithPlaceholder data={jobs.youthTrend || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={jobs.youthTrend || []} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" />
-                    <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
+                  <BarChart data={jobs.youthTrend || []} margin={{ top: 18, right: 12, bottom: 0, left: -8 }} barGap={6} barCategoryGap="36%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Legend wrapperStyle={{ fontSize: 10 }} />
-                    <Line type="monotone" dataKey="Female" stroke="#479BD6" strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="PWD" stroke="#E0A458" strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="Refugee" stroke="#D45F2C" strokeWidth={2} dot={{ r: 3 }} />
-                  </LineChart>
+                    <Bar dataKey="Female" fill="#479BD6" barSize={36} radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="Female" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
+                    </Bar>
+                    <Bar dataKey="PWD" fill="#E0A458" barSize={36} radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="PWD" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
+                    </Bar>
+                    <Bar dataKey="Refugee" fill="#D45F2C" barSize={36} radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="Refugee" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
             </Panel>
