@@ -253,11 +253,11 @@ export default function YouthInWorkPage() {
     fetch('/api/youth-in-work-participants')
       .then(r => r.json())
       .then(result => {
+        if (result.metrics) {
+          setApiMetrics(result.metrics);
+        }
         if (result.participants && result.participants.length > 0) {
           setYouthData(result.participants);
-          if (result.metrics) {
-            setApiMetrics(result.metrics);
-          }
           if (result.rawData && result.rawData.length > 0) {
             const latestRecord = result.rawData[0];
             if (latestRecord.updated_at) {
@@ -301,19 +301,15 @@ export default function YouthInWorkPage() {
   [youthData, year, program, ptype, gender, country, cohort, pathway]);
 
   /* ── Executive snapshot KPIs ───────────────────────── */
-  const kpis = useMemo(() => {
-    const total = scope.length;
-    const employed = scope.filter(isEmployed).length;
-    const interns = scope.filter(isInternship).length;
-    const founders = scope.filter(isVenture).length;
-    // Use API value for jobsCreated if available, otherwise calculate from scope
-    const jobsCreated = apiMetrics.jobsCreated !== undefined ? apiMetrics.jobsCreated : scope.reduce((s, y) => s + (y.jobsCreated || 0), 0);
-    return {
-      total, employed, interns, founders, jobsCreated,
-      femalePct: share(scope.filter(y => y.gender === "Female").length, total),
-      africaPct: share(scope.filter(y => y.basedInAfrica).length, total),
-    };
-  }, [scope, apiMetrics]);
+  const kpis = useMemo(() => ({
+    total: apiMetrics.totalParticipants ?? null,
+    employed: null,
+    interns: apiMetrics.inInternships ?? null,
+    founders: null,
+    jobsCreated: apiMetrics.jobsCreated ?? null,
+    femalePct: null,
+    africaPct: null,
+  }), [apiMetrics]);
 
   /* ── Section 1: work pathways ──────────────────────── */
   const pathwayDist = useMemo(() => {
@@ -335,20 +331,23 @@ export default function YouthInWorkPage() {
 
   /* ── Section 2: jobs created ───────────────────────── */
   const jobs = useMemo(() => {
-    // No actual Supabase breakdown data for jobs - return nulls for all charts
+    const primary = apiMetrics.primaryJobs ?? null;
+    const secondary = apiMetrics.secondaryJobs ?? null;
     return {
-      primary: 0,
-      secondary: 0,
-      jobsCreated: apiMetrics?.jobsCreated || 0,
-      youthEmployed: 0,
-      primaryFemale: 0,
-      secondaryFemale: 0,
-      primarySecondary: null,  // Show "In coming data"
-      byCategory: null,        // Show "In coming data"
-      createdByProgram: null,  // Show "In coming data"
-      jobCategories: null,     // Show "In coming data"
-      youthTrend: null,        // Show "In coming data"
-      psTrend: null,           // Show "In coming data"
+      primary,
+      secondary,
+      jobsCreated: apiMetrics.jobsCreated ?? null,
+      youthEmployed: null,
+      primaryFemale: null,
+      secondaryFemale: null,
+      primarySecondary: primary !== null && secondary !== null
+        ? [{ name: "Primary Jobs", value: primary }, { name: "Secondary Jobs", value: secondary }]
+        : null,
+      byCategory: null,
+      createdByProgram: null,
+      jobCategories: null,
+      youthTrend: null,
+      psTrend: null,
     };
   }, [apiMetrics]);
 
