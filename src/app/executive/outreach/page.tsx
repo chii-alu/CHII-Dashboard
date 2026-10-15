@@ -302,18 +302,11 @@ export default function OutreachPage() {
 
   /* ── Section 3: demographics ───────────────────────── */
   const inclusion = useMemo(() => {
-    if (!supabaseData || supabaseData.length === 0) return null;
-    const total = supabaseData.find((m: any) => m.metric === 'Total Participants (All Programmes)')?.value || 0;
-    const femalePct = supabaseData.find((m: any) => m.metric === 'Female Share (%)')?.value ?? null;
-    const refugeeCount = supabaseData.find((m: any) => m.metric === 'Refugee / IDP (Count)')?.value ?? null;
-    const pwdCount = supabaseData.find((m: any) => m.metric === 'Youth with Disability (Count)')?.value ?? null;
-    const missionCount = supabaseData.find((m: any) => m.metric === 'Mission Students')?.value ?? null;
+    const headline = (metric: string) => supabaseData?.find((m: any) => m.metric === metric)?.value ?? null;
     return {
-      female: femalePct,
-      male: null,
-      refugee: refugeeCount !== null && total ? Math.round((refugeeCount / total) * 100) : null,
-      pwd: pwdCount !== null && total ? Math.round((pwdCount / total) * 100) : null,
-      mission: missionCount !== null && total ? Math.round((missionCount / total) * 100) : null,
+      female: headline('Female Share (%)'),
+      refugee: headline('Refugee / IDP (%)'),
+      pwd: headline('Persons with Disability (%)'),
     };
   }, [supabaseData]);
 
@@ -434,18 +427,18 @@ export default function OutreachPage() {
         {/* ════ SECTION 1 — EXECUTIVE OVERVIEW ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="Total Participants" num={kpis.total} sub="People reached in scope" Icon={Users}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Total Participants" num={kpis.total} sub="People reached in scope" Icon={Users}
               tooltip="Unique participants engaged across CHII outreach interventions within the current filters." />
-            <StatsKpiCard label="Interventions" num={kpis.interventionCount} sub="Active outreach programs" Icon={Layers}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Interventions" num={kpis.interventionCount} sub="Active outreach programs" Icon={Layers}
               tooltip="Distinct outreach interventions in scope (HealthX, Masterclasses, Mentorship, Hackathons, and more)." />
-            <StatsKpiCard label="Mission Students" num={kpis.missionCount} sub="Also degree / mission students" Icon={BookOpen}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Mission Students" num={kpis.missionCount} sub="Also degree / mission students" Icon={BookOpen}
               tooltip="Number of participants who are also mission (degree) students." />
-            <StatsKpiCard label="Female Share" num={kpis.femalePct} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={WomanIcon}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Female Share" num={kpis.femalePct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={WomanIcon}
               tooltip="Share of female participants across outreach interventions in scope." />
-            {inclusion && <StatsKpiCard label="Refugee / IDP" num={inclusion.refugee} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={Shield}
-              tooltip="Share of participants who are refugees or internally displaced persons." />}
-            {inclusion && <StatsKpiCard label="Persons w/ Disability" num={inclusion.pwd} displayFmt={(n) => `${Math.round(n)}%`} sub="Of participants" Icon={Accessibility}
-              tooltip="Share of participants who are persons with disability." />}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Refugee / IDP" num={inclusion.refugee} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Shield}
+              tooltip="Share of participants who are refugees or internally displaced persons." />
+            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Persons w/ Disability" num={inclusion.pwd} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Accessibility}
+              tooltip="Share of participants who are persons with disability." />
           </div>
 
           {/* Section pills (left) + compact filters dropdown (right) */}
@@ -568,7 +561,8 @@ export default function OutreachPage() {
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Legend wrapperStyle={{ fontSize: 10 }} />
                     <Bar dataKey="Female" stackId="g" fill={C_FEMALE} barSize={16} />
-                    <Bar dataKey="Male" stackId="g" fill={C_MALE} barSize={16} radius={[0, 3, 3, 0]} />
+                    <Bar dataKey="Male" stackId="g" fill={C_MALE} barSize={16} />
+                    <Bar dataKey="Non-binary" stackId="g" fill="#D45F2C" barSize={16} radius={[0, 3, 3, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartWithPlaceholder>

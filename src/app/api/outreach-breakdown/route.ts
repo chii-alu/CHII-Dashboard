@@ -132,6 +132,24 @@ export async function GET() {
     });
     const institutionChart = Object.keys(institutionMap).length > 0 ? Object.values(institutionMap) : null;
 
+    const gradMap: Record<string, any> = {};
+    data?.forEach((row: any) => {
+      if (row.metric !== "Graduation Status" || row.segment !== "all" || !row.label) return;
+      if (!gradMap[row.label]) gradMap[row.label] = { name: row.label, Graduated: null, "Not graduated": null };
+      if (row.breakdown === "Graduated") gradMap[row.label].Graduated = row.value;
+      if (row.breakdown === "Not Graduated") gradMap[row.label]["Not graduated"] = row.value;
+    });
+    const graduationStatus = Object.values(gradMap);
+
+    const genderMap: Record<string, any> = {};
+    const SEGMENT_KEYS: Record<string, string> = { female: "Female", male: "Male", non_binary: "Non-binary" };
+    data?.forEach((row: any) => {
+      if (row.metric !== "Gender Split" || !row.label || !SEGMENT_KEYS[row.segment]) return;
+      if (!genderMap[row.label]) genderMap[row.label] = { name: row.label, Female: null, Male: null, "Non-binary": null };
+      genderMap[row.label][SEGMENT_KEYS[row.segment]] = row.value;
+    });
+    const genderSplit = Object.values(genderMap);
+
     return NextResponse.json({
       byIntervention: interventionChart,
       byProgram: programChart,
@@ -139,8 +157,8 @@ export async function GET() {
       byStatus: statusChart,
       completionByProgram: completionByProgramChart,
       byInstitution: institutionChart && institutionChart.length > 0 ? institutionChart : null,
-      graduationStatus: null,
-      genderSplit: null,
+      graduationStatus: graduationStatus.length > 0 ? graduationStatus : null,
+      genderSplit: genderSplit.length > 0 ? genderSplit : null,
       demographics,
       rawData: data || [],
     });

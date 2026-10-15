@@ -34,6 +34,8 @@ interface Props {
   /** Target this KPI is measured against. Renders an "N% of target" line and
    *  colours it red → amber → green via benchColor. Ignored without `pct`. */
   bench?: number;
+  /** Text shown when `num` is null. Defaults to "In coming data". */
+  missingText?: string;
 }
 
 export default function StatsKpiCard({
@@ -49,6 +51,7 @@ export default function StatsKpiCard({
   tooltip,
   pct,
   bench,
+  missingText = "In coming data",
 }: Props) {
   const animated = useCountUp(num ?? 0);
   const [showTip, setShowTip] = useState(false);
@@ -122,7 +125,7 @@ export default function StatsKpiCard({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
         <Icon size={22} style={{ color: lbl, flexShrink: 0, opacity: 0.8 }} />
         <p style={{ fontSize: 24, fontWeight: 700, color: num === null ? "#9CA3AF" : numColor, lineHeight: 1 }}>
-          {num === null ? "In coming data" : displayFmt(animated)}
+          {num === null ? missingText : displayFmt(animated)}
         </p>
       </div>
 
