@@ -1,4 +1,5 @@
 "use client";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
@@ -143,6 +144,7 @@ export default function HEMPCourses() {
 
   // Fetch data from Supabase
   const { data: ghCohorts, loading, error } = useDashboardData(() => getGHCohortsFromSupabase(), []);
+  const hasData = (ghCohorts?.length ?? 0) > 0;
 
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = filterYear !== "All Years" ? 1 : 0;
@@ -164,9 +166,9 @@ export default function HEMPCourses() {
   const totalCompleted = filteredCohorts.reduce((s, c) => s + c.completed, 0);
   const totalCertified = filteredCohorts.reduce((s, c) => s + c.certified, 0);
   const femaleStudents = filteredCohorts.reduce((s, c) => s + c.female, 0);
-  const femalePct = totalEnrolled ? Math.round((femaleStudents / totalEnrolled) * 100) : 0;
-  const avgScore = filteredCohorts.length ? Math.round(filteredCohorts.reduce((s, c) => s + c.avgScore, 0) / filteredCohorts.length) : 0;
-  const avgSatisfaction = filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.satisfaction, 0) / filteredCohorts.length).toFixed(1)) : 0;
+  const femalePct = hasData && totalEnrolled ? Math.round((femaleStudents / totalEnrolled) * 100) : null;
+  const avgScore = hasData && filteredCohorts.length ? Math.round(filteredCohorts.reduce((s, c) => s + c.avgScore, 0) / filteredCohorts.length) : null;
+  const avgSatisfaction = hasData && filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + c.satisfaction, 0) / filteredCohorts.length).toFixed(1)) : null;
   const totalVentureProgression = filteredCohorts.reduce((s, c) => s + c.progressedToVenture, 0);
 
   const [filterOutcomeYear, setFilterOutcomeYear] = useState("All Years");
@@ -209,7 +211,7 @@ export default function HEMPCourses() {
   const msFemaleStudents = femaleStudents;
   const msFemalePct = femalePct;
   const msCompleted = totalCompleted;
-  const msCompletionRate = totalEnrolled > 0 ? Math.round((totalCompleted / totalEnrolled) * 100) : 0;
+  const msCompletionRate = hasData && totalEnrolled > 0 ? Math.round((totalCompleted / totalEnrolled) * 100) : null;
   const msEmployed: number | null = null;
   const msEmploymentRate: number | null = msEmployed !== null && msCompleted > 0 ? Math.round((msEmployed / msCompleted) * 100) : null;
   const msAvgGPA = "3.2";
@@ -278,28 +280,28 @@ export default function HEMPCourses() {
               tip: "Total students enrolled toward 2030 target",
               pace: true,
               paceA: totalEnrolled,
-              paceT: Math.round(totalEnrolled * 1.5),
+              paceT: null,
             },
             {
               label: "Completion Rate",
-              num: totalEnrolled ? Math.round((totalCompleted / totalEnrolled) * 100) : 0,
+              num: hasData && totalEnrolled ? Math.round((totalCompleted / totalEnrolled) * 100) : null,
               icon: Target,
               displayFmt: (n) => n + "%",
-              sub: `${totalCompleted} completed the course`,
+              sub: hasData ? `${totalCompleted} completed the course` : "In coming data",
               tip: "Percentage of enrolled students who completed the course",
               pace: true,
-              paceA: totalEnrolled ? Math.round((totalCompleted / totalEnrolled) * 100) : 0,
+              paceA: hasData && totalEnrolled ? Math.round((totalCompleted / totalEnrolled) * 100) : null,
               paceT: null,
             },
             {
               label: "Graduation Rate",
-              num: totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : 0,
+              num: hasData && totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : null,
               icon: Briefcase,
               displayFmt: (n) => n + "%",
-              sub: `Graduated: ${totalCertified} of ${totalEnrolled} enrolled`,
+              sub: hasData ? `Graduated: ${totalCertified} of ${totalEnrolled} enrolled` : "In coming data",
               tip: "Percentage of enrolled students who completed all graduation requirements (Graduated Enrolment Funnel)",
               pace: true,
-              paceA: totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : 0,
+              paceA: hasData && totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : null,
               paceT: null,
             },
             {
@@ -307,7 +309,7 @@ export default function HEMPCourses() {
               num: femalePct,
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
-              sub: `${msFemalePct}% mission students`,
+              sub: msFemalePct === null ? "In coming data" : `${msFemalePct}% mission students`,
               tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
               paceA: femalePct,
@@ -422,7 +424,7 @@ export default function HEMPCourses() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
 <Panel title="Enrolment Funnel" subtitle="Applied to completion journey" info="The progression from enrolment through to certification, with breakdown by cohort month" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
-                <ResponsiveContainer width="100%" height={270}>
+                <ChartWithPlaceholder data={hasData ? true : null} height={270}><ResponsiveContainer width="100%" height={270}>
                   <BarChart data={enrolmentFunnelData} margin={{ top: 26, right: 12, bottom: 0, left: -12 }} barCategoryGap="40%">
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -432,7 +434,7 @@ export default function HEMPCourses() {
                     <Bar dataKey="may" stackId="cohort" fill="#479BD6" barSize={46} name="May" />
                     <Bar dataKey="september" stackId="cohort" fill="#D17A86" barSize={46} name="September" radius={[4, 4, 0, 0]} />
                   </BarChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer></ChartWithPlaceholder>
                 <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#102C5E" }} /> January</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> May</span>
@@ -440,7 +442,7 @@ export default function HEMPCourses() {
                 </div>
               </Panel>
               <Panel title="Inclusion Reach" subtitle="Students with disabilities, refugee background, and female participation" info="Breakdown of inclusion reach across participant groups" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
-                <ResponsiveContainer width="100%" height={250}>
+                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Female", value: femaleStudents },
                     { name: "PWD", value: totalPWD },
@@ -454,7 +456,7 @@ export default function HEMPCourses() {
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer></ChartWithPlaceholder>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Count</span>
                 </div>
@@ -479,7 +481,7 @@ export default function HEMPCourses() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Average Score Trend" subtitle="Assessment performance over time" info="Average assessment score by cohort" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
-                <ResponsiveContainer width="100%" height={250}>
+                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <LineChart data={filteredCohorts.map(c => ({ year: String(c.cohortYear), score: c.avgScore }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                     <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -488,10 +490,10 @@ export default function HEMPCourses() {
                     <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
                     <Line type="monotone" dataKey="score" stroke={BRAND} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Score %" />
                   </LineChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer></ChartWithPlaceholder>
               </Panel>
               <Panel title="Module Completion by Cohort" subtitle="Completion rates across course modules" info="Average completion rate across all modules per cohort" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
-                <ResponsiveContainer width="100%" height={250}>
+                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={filteredCohorts.map(c => ({
                     name: String(c.cohortYear),
                     modules: c.moduleCompletion && Object.values(c.moduleCompletion).length ? Math.round(Object.values(c.moduleCompletion).reduce((a, b) => a + b, 0) / Object.values(c.moduleCompletion).length) : 0,
@@ -504,7 +506,7 @@ export default function HEMPCourses() {
                       <LabelList dataKey="modules" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer></ChartWithPlaceholder>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Avg Completion %</span>
                 </div>
@@ -529,7 +531,7 @@ export default function HEMPCourses() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Learning Outcomes & Relevance" subtitle="Course impact and quality metrics (1-5)" info="Average relevance, quality and satisfaction ratings" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
-                <ResponsiveContainer width="100%" height={250}>
+                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="metric" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -539,13 +541,13 @@ export default function HEMPCourses() {
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer></ChartWithPlaceholder>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Average Score</span>
                 </div>
               </Panel>
               <Panel title="Overall Progression" subtitle="Students advancing to next steps" info="Total students progressing to ventures, research, and internships" filterOptions={["All Years", ...years.map(String)]} filterValue={filterProgrammeYear} onFilterChange={setFilterProgrammeYear}>
-                <ResponsiveContainer width="100%" height={250}>
+                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -555,7 +557,7 @@ export default function HEMPCourses() {
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer></ChartWithPlaceholder>
                 <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Count</span>
                 </div>
