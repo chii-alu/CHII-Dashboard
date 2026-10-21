@@ -1,5 +1,6 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
+import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { MetadataHeader } from "@/components/MetadataHeader";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -234,6 +235,7 @@ const YIW_SECTIONS: { n: number; label: string }[] = [
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function YouthInWorkPage() {
+  const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
@@ -288,7 +290,7 @@ export default function YouthInWorkPage() {
         }
       })
       .catch(err => console.error('Error fetching Youth in Work data:', err));
-  }, []);
+  }, [refreshTick]);
 
   const scope = useMemo(() =>
     youthData.filter(y => {

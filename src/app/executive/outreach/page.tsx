@@ -1,5 +1,6 @@
 "use client";
 import { FilterSelect } from "@/components/ui/executive";
+import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartTip } from "@/components/ui/executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
@@ -177,6 +178,7 @@ const OA_SECTIONS: { n: number; label: string }[] = [
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function OutreachPage() {
+  const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [program, setProgram] = useState<ProgramFilter>("All");
@@ -235,7 +237,7 @@ export default function OutreachPage() {
         }
       })
       .catch(err => console.error('Error fetching Outreach data:', err));
-  }, []);
+  }, [refreshTick]);
 
   const scope = useMemo(() =>
     participants.filter(p => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRefreshTick } from './useRefreshTick';
 
 interface UseDashboardDataResult<T> {
   data: T | null;
@@ -18,6 +19,7 @@ export function useDashboardData<T>(
 
   // Memoize the fetch function to prevent unnecessary re-renders
   const memoizedFetchFn = useCallback(fetchFn, dependencies);
+  const refreshTick = useRefreshTick();
 
   useEffect(() => {
     let isMounted = true;
@@ -46,7 +48,7 @@ export function useDashboardData<T>(
     return () => {
       isMounted = false;
     };
-  }, [memoizedFetchFn]);
+  }, [memoizedFetchFn, refreshTick]);
 
   return { data, loading, error };
 }

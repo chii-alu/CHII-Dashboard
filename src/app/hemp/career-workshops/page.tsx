@@ -5,7 +5,6 @@ import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
-import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useState, useMemo } from "react";
 import {
@@ -208,12 +207,28 @@ export default function CareerWorkshopsPage() {
 
   // TODO: Fetch real data from Supabase using getHeadlines('HEMP', 'Intervention', { intervention: 'Career Workshops' })
   const { data: headlineData, loading, error } = useDashboardData(
-    () => getHeadlines('HEMP', 'Intervention', { intervention: 'Career Workshops' }),
+    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => result.headlines || []),
     []
   );
 
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years", filterSessionType !== "All Types", filterPartner !== "All Partners"].filter(Boolean).length;
+
+  const { data: academicProgrammeRows } = useDashboardData(
+    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => {
+      const rows = result.breakdowns?.['Participants By Academic Programmes'];
+      return rows && rows.length > 0 ? rows.map((r: any) => ({ programme: r.name, count: r.count })) : null;
+    }),
+    []
+  );
+
+  const { data: healthInterestRows } = useDashboardData(
+    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => {
+      const rows = result.breakdowns?.['Participants By Health Interests'];
+      return rows && rows.length > 0 ? rows.map((r: any) => ({ area: r.name, count: r.count })) : null;
+    }),
+    []
+  );
 
   const filteredSessionsForHealthInterest = useMemo(() => {
     // TODO: Use real data from Supabase
@@ -228,7 +243,8 @@ export default function CareerWorkshopsPage() {
     });
   }, [filterPartner, partnerSearch]);
 
-  const totalParticipants = headlineData?.find(h => h.metric === "Total Participants")?.value ?? null;
+  const headlineValue = (metric: string): number | null => headlineData?.find((h: any) => h.metric === metric)?.value ?? null;
+  const totalParticipants = headlineData?.find((h: any) => h.metric === "Total Participants")?.value ?? null;
   const totalPWD: number | null = null;
   const totalRefugees: number | null = null;
   const inclusionReachTotal: number | null = totalPWD === null || totalRefugees === null ? null : totalPWD + totalRefugees;
@@ -285,7 +301,7 @@ export default function CareerWorkshopsPage() {
           cards={[
             {
               label: "Total Participants",
-              num: null,
+              num: totalParticipants,
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
               sub: ``,
@@ -296,7 +312,7 @@ export default function CareerWorkshopsPage() {
             },
             {
               label: "Sessions Held",
-              num: null,
+              num: headlineValue("Sessions Held"),
               icon: Briefcase,
               displayFmt: (n) => n.toString(),
               sub: ``,
@@ -307,7 +323,7 @@ export default function CareerWorkshopsPage() {
             },
             {
               label: "Female Participation",
-              num: null,
+              num: (() => { const v = headlineValue("Female Participation"); return v === null ? null : Math.round(v * 1000) / 10; })(),
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
               sub: "mission students",
@@ -329,7 +345,7 @@ export default function CareerWorkshopsPage() {
             },
             {
               label: "Inclusion Reach",
-              num: null,
+              num: (() => { const v = headlineValue("Inclusion Reach"); return v === null ? null : Math.round(v * 1000) / 10; })(),
               icon: Users,
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
@@ -442,12 +458,7 @@ export default function CareerWorkshopsPage() {
               <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Career workshop participants by health interest" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterHealthInterestYear} onFilterChange={setFilterHealthInterestYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={filteredSessionsForHealthInterest.length ? Object.entries(filteredSessionsForHealthInterest.reduce((acc: Record<string, number>, s: any) => {
-                      Object.entries(s.healthInterests || {}).forEach(([area, count]: any) => {
-                        acc[area] = (acc[area] || 0) + count;
-                      });
-                      return acc;
-                    }, {})).map(([area, count]: any) => ({ area, count })).sort((a, b: any) => b.count - a.count) : []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                    <BarChart data={healthInterestRows || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="area" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={130} />
@@ -468,7 +479,7 @@ export default function CareerWorkshopsPage() {
               <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Career Workshop participants by primary academic programme" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                    <BarChart data={academicProgrammeRows || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="programme" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={210} />

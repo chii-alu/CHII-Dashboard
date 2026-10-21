@@ -1,5 +1,6 @@
 "use client";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
+import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { FilterSelect } from "@/components/ui/executive";
 import { ChartTip } from "@/components/ui/executive";
@@ -149,6 +150,7 @@ const SECTIONS: { n: number; label: string }[] = [
 ];
 
 export default function EntrepreneurshipPage() {
+  const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [entHeadlines, setEntHeadlines] = useState<any[] | null>(null);
@@ -157,7 +159,7 @@ export default function EntrepreneurshipPage() {
       .then(r => r.json())
       .then(result => setEntHeadlines(Array.isArray(result.headlines) ? result.headlines : []))
       .catch(() => setEntHeadlines([]));
-  }, []);
+  }, [refreshTick]);
   const ent = (metric: string): number | null =>
     entHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const entLoaded = entHeadlines !== null;
