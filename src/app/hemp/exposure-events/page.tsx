@@ -1,5 +1,6 @@
 "use client";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
@@ -179,6 +180,13 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function ExposureEvents() {
+  const { data: interventionData } = useDashboardData(
+    () => fetch('/api/hemp-intervention?intervention=Exposure%20Events').then(r => r.json()),
+    []
+  );
+  const actualOf = (metric: string): number | null => interventionData?.headlines?.find((h: any) => h.metric === metric)?.value ?? null;
+  const targetOf = (metric: string): number | null => interventionData?.targets?.find((h: any) => h.metric === metric)?.value ?? null;
+  const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 10);
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   const stats: { totalParticipants: number | null; avgRating: string | null; eventCount: number | null } = { totalParticipants: null, avgRating: null, eventCount: null };
@@ -264,14 +272,14 @@ export default function ExposureEvents() {
             },
             {
               label: "Female Participation",
-              num: null,
+              num: pctOf(actualOf("Female Participation")),
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
               sub: "mission students",
               tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
               paceA: null,
-              paceT: null,
+              paceT: pctOf(targetOf("Female Participation")),
             },
             {
               label: "Quality Score",
@@ -308,14 +316,14 @@ export default function ExposureEvents() {
             },
             {
               label: "Inclusion Reach",
-              num: null,
+              num: pctOf(actualOf("Inclusion Reach")),
               icon: Users,
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
               pace: true,
               paceA: null,
-              paceT: null,
+              paceT: pctOf(targetOf("Inclusion Reach")),
             },
           ]}
         />

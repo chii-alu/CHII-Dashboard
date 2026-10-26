@@ -214,6 +214,31 @@ export default function CareerWorkshopsPage() {
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years", filterSessionType !== "All Types", filterPartner !== "All Partners"].filter(Boolean).length;
 
+  const { data: inclusionRaw } = useDashboardData(
+    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => ({
+      segments: result.segments || [],
+    })),
+    []
+  );
+
+  const inclusionReachBars = useMemo(() => {
+    if (!inclusionRaw) return null;
+    const pick = (segment: string): number | null => {
+      const rows = inclusionRaw.segments.filter((r: any) =>
+        r.metric === 'Inclusion Reach' && r.segment === segment &&
+        (filterYear === 'All Years' ? r.year === null : r.year === Number(filterYear)));
+      return rows.length ? rows.reduce((sum: number, r: any) => sum + r.value, 0) : null;
+    };
+    const refugee = pick('refugee_idp');
+    const pwd = pick('pwd');
+    if (refugee === null && pwd === null) return null;
+    const asPct = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 10);
+    return [
+      { category: 'Refugee', value: asPct(refugee), percentage: asPct(refugee) },
+      { category: 'PWD', value: asPct(pwd), percentage: asPct(pwd) },
+    ];
+  }, [inclusionRaw, filterYear]);
+
   const { data: academicProgrammeRows } = useDashboardData(
     () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => {
       const rows = result.breakdowns?.['Participants By Academic Programmes'];
@@ -531,11 +556,11 @@ export default function CareerWorkshopsPage() {
                 </div>
               </Panel>
 
-              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <ChartWithPlaceholder data={inclusionReachBars} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={[
-                    ]} layout="vertical" margin={{ top: 6, right: 14, bottom: 0, left: 80 }}>
+                    <BarChart data={inclusionReachBars || []} layout="vertical" margin={{ top: 6, right: 14, bottom: 0, left: 80 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="category" type="category" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={75} />
@@ -545,6 +570,7 @@ export default function CareerWorkshopsPage() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </ChartWithPlaceholder>
                   <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 12, backgroundColor: "#F97316", borderRadius: 2 }} />

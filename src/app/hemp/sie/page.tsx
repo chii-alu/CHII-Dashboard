@@ -166,6 +166,13 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPSie() {
+  const { data: interventionData } = useDashboardData(
+    () => fetch('/api/hemp-intervention?intervention=SIE').then(r => r.json()),
+    []
+  );
+  const actualOf = (metric: string): number | null => interventionData?.headlines?.find((h: any) => h.metric === metric)?.value ?? null;
+  const targetOf = (metric: string): number | null => interventionData?.targets?.find((h: any) => h.metric === metric)?.value ?? null;
+  const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 10);
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   const categories = ["Reach & Engagement", "Exposure & Outcomes", "Quality & Feedback"];
@@ -428,47 +435,47 @@ export default function HEMPSie() {
           cards={[
             {
               label: "Total Applicants",
-              num: totalApplicants,
+              num: actualOf("Total Applicants"),
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
               sub: `Application volume | ${totalSelected} participants selected`,
               tip: "Total students who applied for SIE",
               pace: true,
               paceA: totalApplicants,
-              paceT: Math.round(totalApplicants * 1.2),
+              paceT: targetOf("Total Applicants"),
             },
             {
               label: "Participants Selected",
-              num: totalSelected,
+              num: actualOf("Participants Selected"),
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
               sub: msTotalEnrolled === null ? "In coming data" : `${msTotalEnrolled} mission students`,
               tip: "Total participants selected toward 2030 target",
               pace: true,
               paceA: totalSelected,
-              paceT: null,
+              paceT: targetOf("Participants Selected"),
             },
             {
               label: "Female Participation",
-              num: femalePct,
+              num: pctOf(actualOf("Female Participation")),
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
               sub: msFemalePct === null ? "In coming data" : `${msFemalePct}% mission students`,
               tip: "Percentage of female participants across all students and mission cohort",
               pace: true,
               paceA: femalePct,
-              paceT: null,
+              paceT: pctOf(targetOf("Female Participation")),
             },
             {
               label: "Inclusion Reach",
-              num: null,
+              num: pctOf(actualOf("Inclusion Reach")),
               icon: Users,
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
               pace: true,
               paceA: null,
-              paceT: null,
+              paceT: pctOf(targetOf("Inclusion Reach")),
             },
             {
               label: "NPS Score",

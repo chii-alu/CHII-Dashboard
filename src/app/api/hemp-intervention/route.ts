@@ -13,25 +13,30 @@ export async function GET(request: Request) {
       .eq("dashboard", "HEMP")
       .eq("section", "Intervention")
       .eq("intervention", intervention)
-      .is("year", null)
-      .eq("value_type", "actual");
+      ;
 
     if (error) {
       console.error("[API] Supabase error for HEMP intervention:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const headlines = (data ?? [])
+    const yearly = (data ?? []).filter((row: any) => row.value_type === "actual" && row.segment !== "all");
+    const actual = (data ?? []).filter((row: any) => row.value_type === "actual" && row.year === null);
+    const headlines = actual
       .filter((row: any) => row.segment === "all" && !row.label)
+      .map((row: any) => ({ metric: row.metric, value: row.value }));
+    const targets = (data ?? [])
+      .filter((row: any) => row.value_type === "target" && row.year === null && row.segment === "all" && !row.label)
       .map((row: any) => ({ metric: row.metric, value: row.value }));
 
     const breakdowns: Record<string, { name: string; count: number | null }[]> = {};
-    (data ?? [])
+    actual
       .filter((row: any) => row.segment === "all" && row.label)
       .forEach((row: any) => {
         (breakdowns[row.metric] ??= []).push({ name: row.label, count: row.value });
       });
-    return NextResponse.json({ headlines, breakdowns });
+    const segments = yearly.map((row: any) => ({ metric: row.metric, segment: row.segment, year: row.year, value: row.value }));
+    return NextResponse.json({ headlines, targets, breakdowns, segments });
   } catch (error: any) {
     console.error("[API] Error fetching HEMP intervention:", error);
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
