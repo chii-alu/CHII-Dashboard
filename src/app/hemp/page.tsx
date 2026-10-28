@@ -44,25 +44,29 @@ const HEADER_NAVY = "#042C53";
 const RED_FEMALE = "#DC2626";
 const BLUE_MALE = "#479BD6";
 
-// Calculate pace toward 2030 targets
-function calculatePace(current: number, target: number, yearsPassed: number = 3.25): { status: string; needed: number; color: string } {
-  const yearsRemaining = 4 - yearsPassed;
-  const requiredPerYear = (target - current) / yearsRemaining;
-  const requiredNow = target * (yearsPassed / 4);
-  const progressRatio = current / requiredNow;
+// Pace toward the 2025–2030 target period, from today's date and the database values
+function calculatePace(current: number | null, target: number | null): { status: string; needed: number | null; color: string } {
+  if (current === null || target === null || target === 0) {
+    return { status: "In coming data", needed: null, color: "#9CA3AF" };
+  }
+  const start = Date.UTC(2025, 0, 1);
+  const end = Date.UTC(2030, 0, 1);
+  const elapsed = Math.min(1, Math.max(0, (Date.now() - start) / (end - start)));
+  const requiredNow = target * elapsed;
+  const progressRatio = requiredNow > 0 ? current / requiredNow : 1;
+  const yearsRemaining = (1 - elapsed) * 5;
+  const needed = yearsRemaining > 0 ? (target - current) / yearsRemaining : null;
 
   let status = "On Pace";
-  let color = "#3B82F6"; // blue
-
+  let color = "#3B82F6";
   if (progressRatio >= 1.15) {
     status = "Ahead of Schedule";
-    color = "#16A34A"; // green
+    color = "#16A34A";
   } else if (progressRatio < 0.85) {
     status = "Behind Schedule";
-    color = "#EA580C"; // orange
+    color = "#EA580C";
   }
-
-  return { status, needed: Math.round(requiredPerYear), color };
+  return { status, needed, color };
 }
 
 const COUNTRY_COORDS: Record<string, [number, number]> = {
@@ -423,19 +427,24 @@ export default function HEMPPage() {
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   // Fetch headline data from Supabase
-  const { data: headlines, loading, error } = useDashboardData(
-    () => getHeadlines('HEMP', 'At a Glance'),
+  const { data: headlineResult, loading, error } = useDashboardData(
+    () => fetch('/api/hemp-section/At%20a%20Glance').then(r => r.json()),
     []
   );
+  const headlines = headlineResult?.headlines;
+  const headlineValue = (metric: string): number | null => headlines?.find((h: any) => h.metric === metric)?.value ?? null;
+  const targetValue = (metric: string): number | null => headlineResult?.targets?.find((h: any) => h.metric === metric)?.value ?? null;
+  const { data: workshopResult } = useDashboardData(
+    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()),
+    []
+  );
+  const workshopParticipants = workshopResult?.headlines?.find((h: any) => h.metric === "Total Participants")?.value ?? null;
 
-  // TODO: Replace with real Supabase data
-  const totalStudents = 384;
-  const femaleStudents = 192;
-  const femaleStudentsPct = 50;
-  const maleStudentsPct = 50;
+  const totalStudents = headlineValue("Total Enrolled");
+  const femaleStudentsPct = headlineValue("Female %");
+  const maleStudentsPct = headlineValue("Male %");
 
-  const uniqueHempStudents = 280;
-  const hempEngagementRate = (uniqueHempStudents / totalStudents) * 100;
+  const uniqueHempStudents = null as number | null;
 
   const byInclusion = {
     pwd: missionStudents.filter(s => s.disability === "Yes").length,
@@ -455,36 +464,36 @@ export default function HEMPPage() {
 
   // Calculate female % for HEMP activities
   const careerWorkshopsParticipants = hempParticipations.filter(p => p.activity === "Career Workshops");
-  const careerWorkshopsCount = careerWorkshopsParticipants.length;
+  const careerWorkshopsCount: number | null = workshopParticipants;
   const careerWorkshopsFemale = careerWorkshopsParticipants.filter(p => {
     const student = missionStudents.find(s => s.id === p.studentId);
     return student?.gender === "Female";
   }).length;
-  const careerWorkshopsFemalePercent = careerWorkshopsCount > 0 ? Math.round((careerWorkshopsFemale / careerWorkshopsCount) * 100) : 0;
+  const careerWorkshopsFemalePercent = careerWorkshopsCount ? Math.round((careerWorkshopsFemale / careerWorkshopsCount) * 100) : null;
 
   const internshipsParticipants = hempParticipations.filter(p => p.activity === "Internships");
-  const internshipsCount = internshipsParticipants.length;
+  const internshipsCount: number | null = null;
   const internshipsFemale = internshipsParticipants.filter(p => {
     const student = missionStudents.find(s => s.id === p.studentId);
     return student?.gender === "Female";
   }).length;
-  const internshipsFemalePercent = internshipsCount > 0 ? Math.round((internshipsFemale / internshipsCount) * 100) : 0;
+  const internshipsFemalePercent = internshipsCount ? Math.round((internshipsFemale / internshipsCount) * 100) : null;
 
   const sieParticipants = hempParticipations.filter(p => p.activity === "Student Immersive Experience");
-  const sieCount = sieParticipants.length;
+  const sieCount: number | null = null;
   const sieFemale = sieParticipants.filter(p => {
     const student = missionStudents.find(s => s.id === p.studentId);
     return student?.gender === "Female";
   }).length;
-  const sieFemalePercent = sieCount > 0 ? Math.round((sieFemale / sieCount) * 100) : 0;
+  const sieFemalePercent = sieCount ? Math.round((sieFemale / sieCount) * 100) : null;
 
   const coursesParticipants = hempParticipations.filter(p => p.activity === "Courses");
-  const coursesCount = coursesParticipants.length;
+  const coursesCount: number | null = null;
   const coursesFemale = coursesParticipants.filter(p => {
     const student = missionStudents.find(s => s.id === p.studentId);
     return student?.gender === "Female";
   }).length;
-  const coursesFemalePercent = coursesCount > 0 ? Math.round((coursesFemale / coursesCount) * 100) : 0;
+  const coursesFemalePercent = coursesCount ? Math.round((coursesFemale / coursesCount) * 100) : null;
 
   const studentsByCountry = new Map<string, number>();
   missionStudents.forEach(s => {
@@ -554,9 +563,9 @@ export default function HEMPPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1, justifyContent: "space-between" }}>
               <KPICard
                 label="Total Enrolled"
-                value={totalStudents}
-                femalePct={femaleStudentsPct}
-                malePct={maleStudentsPct}
+                value={totalStudents ?? "In coming data"}
+                femalePct={femaleStudentsPct ?? undefined}
+                malePct={maleStudentsPct ?? undefined}
                 info="Active health professions students across 15 countries."
                 Icon={Users}
                 secondaryText={`Strong foundation for HEMP pipeline growth`}
@@ -593,13 +602,13 @@ export default function HEMPPage() {
                     malePct={venturesCount > 0 ? Math.round(((venturesCount - ventureFemale) / venturesCount) * 100) : 0}
                     info="Founders or co-founders of health ventures."
                     Icon={Zap}
-                    secondaryText={`${Math.round((venturesCount / totalStudents) * 100)}% of student body`}
+                    secondaryText={totalStudents ? `${Math.round((venturesCount / totalStudents) * 100)}% of student body` : "In coming data"}
                   />
                 );
               })()}
               {(() => {
                 const inclusionTotal = byInclusion.pwd + byInclusion.refugee;
-                const inclusionPct = Math.round((inclusionTotal / totalStudents) * 100);
+                const inclusionPct = totalStudents ? Math.round((inclusionTotal / totalStudents) * 100) : null;
                 const inclusionFemale = missionStudents.filter(s => (s.disability === "Yes" || s.humanitarianStatus === "Refugee") && s.gender === "Female").length;
                 return (
                   <KPICard
@@ -630,10 +639,10 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="HEMP Engagement Rate"
-                    value={`${uniqueHempStudents.toLocaleString()}`}
-                    progress={uniqueHempStudents}
-                    progressTarget={totalStudents}
-                    progressLabel={`${Math.round((uniqueHempStudents / totalStudents) * 100)}% of all students`}
+                    value={uniqueHempStudents === null ? "In coming data" : uniqueHempStudents.toLocaleString()}
+                    progress={uniqueHempStudents ?? undefined}
+                    progressTarget={totalStudents ?? undefined}
+                    progressLabel={uniqueHempStudents === null || !totalStudents ? "In coming data" : `${Math.round((uniqueHempStudents / totalStudents) * 100)}% of all students`}
                     info="Students engaged in at least one HEMP activity."
                     Icon={Briefcase}
                     secondaryText={pace.status}
@@ -642,13 +651,13 @@ export default function HEMPPage() {
                 );
               })()}
               {(() => {
-                const pace = calculatePace(careerWorkshopsCount, 1500);
+                const pace = calculatePace(careerWorkshopsCount, null);
                 return (
                   <KPICard
                     label="Career Exposure"
-                    value={careerWorkshopsCount}
-                    progress={careerWorkshopsCount}
-                    progressLabel={`${Math.round((careerWorkshopsCount / 1500) * 100)}%`}
+                    value={careerWorkshopsCount ?? "In coming data"}
+                    progress={careerWorkshopsCount ?? undefined}
+                    progressLabel={"In coming data"}
                     info="Exposure events and workshop participation toward 2030 target."
                     Icon={BookOpen}
                     href="/hemp/career-workshops"
@@ -658,13 +667,13 @@ export default function HEMPPage() {
                 );
               })()}
               {(() => {
-                const pace = calculatePace(internshipsCount, 350);
+                const pace = calculatePace(internshipsCount, targetValue("Internships"));
                 return (
                   <KPICard
                     label="Internships"
-                    value={internshipsCount}
-                    progress={internshipsCount}
-                    progressLabel={`${Math.round((internshipsCount / 350) * 100)}%`}
+                    value={internshipsCount ?? "In coming data"}
+                    progress={internshipsCount ?? undefined}
+                    progressLabel={internshipsCount === null || targetValue("Internships") === null ? "In coming data" : `${Math.round((internshipsCount / (targetValue("Internships") ?? 1)) * 100)}%`}
                     info="Internship placements toward 2030 target."
                     Icon={Briefcase}
                     href="/hemp/internships"
@@ -674,13 +683,13 @@ export default function HEMPPage() {
                 );
               })()}
               {(() => {
-                const pace = calculatePace(sieCount, 200);
+                const pace = calculatePace(sieCount, targetValue("SIE placements"));
                 return (
                   <KPICard
                     label="SIE Placements"
-                    value={sieCount}
-                    progress={sieCount}
-                    progressLabel={`${Math.round((sieCount / 200) * 100)}%`}
+                    value={sieCount ?? "In coming data"}
+                    progress={sieCount ?? undefined}
+                    progressLabel={sieCount === null || targetValue("SIE placements") === null ? "In coming data" : `${Math.round((sieCount / (targetValue("SIE placements") ?? 1)) * 100)}%`}
                     info="SIE programme placements toward 2030 target."
                     Icon={TrendingUp}
                     href="/hemp/sie"
@@ -690,13 +699,13 @@ export default function HEMPPage() {
                 );
               })()}
               {(() => {
-                const pace = calculatePace(coursesCount, 800);
+                const pace = calculatePace(coursesCount, null);
                 return (
                   <KPICard
                     label="Courses"
-                    value={coursesCount}
-                    progress={coursesCount}
-                    progressLabel={`${Math.round((coursesCount / 800) * 100)}%`}
+                    value={coursesCount ?? "In coming data"}
+                    progress={coursesCount ?? undefined}
+                    progressLabel={"In coming data"}
                     info="Course enrollments toward 2030 target."
                     Icon={BookOpen}
                     href="/hemp/course"
