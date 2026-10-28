@@ -1,4 +1,5 @@
 "use client";
+import { FILTER_YEARS } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -190,10 +191,7 @@ export default function HEMPSie() {
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years", filterCountry !== "All Countries", filterRegion !== "All Regions"].filter(Boolean).length;
 
-  const years = useMemo(() =>
-    sieCohorts ? Array.from(new Set(sieCohorts.map(i => i.year))).sort() : [],
-    [sieCohorts]
-  );
+  const years = FILTER_YEARS;
   const countries = useMemo(() =>
     sieCohorts ? Array.from(new Set(sieCohorts.map(i => i.country))).sort() : [],
     [sieCohorts]

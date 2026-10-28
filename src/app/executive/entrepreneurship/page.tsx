@@ -1,4 +1,5 @@
 "use client";
+import { FILTER_YEARS } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -42,7 +43,7 @@ const share = (c: number, t: number) => (t ? Math.round((c / t) * 100) : 0);
 const fmt = (n: number) => Math.round(n).toLocaleString();
 const usd = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : `$${Math.round(n)}`);
 
-const YEARS = [2022, 2023, 2024, 2025, 2026];
+const YEARS = FILTER_YEARS;
 
 /* female icon — matches the Outreach "Who Are We Reaching?" cards */
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
@@ -359,7 +360,7 @@ export default function EntrepreneurshipPage() {
                   </div>
                   <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
                     <FilterSelect label="Year Launched" value={year} onChange={setYear}
-                      options={[{ value: "all" as const, label: "All Years" }, ...YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                      options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
                   </div>
                 </div>
               )}

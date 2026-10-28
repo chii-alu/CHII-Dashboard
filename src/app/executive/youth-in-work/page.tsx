@@ -1,4 +1,5 @@
 "use client";
+import { FILTER_YEARS } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -48,7 +49,7 @@ const WORKCAT_COLOR: Record<string, string> = {
 };
 const JOBCAT_COLOR: Record<string, string> = { New: "#102C5E", Additional: "#479BD6", Improved: "#A81B2D" };
 /* trend reporting window: 2022 → 2026 */
-const TREND_YEARS = [2022, 2023, 2024, 2025, 2026];
+const TREND_YEARS = FILTER_YEARS;
 const EMPLOYER_PALETTE = ["#102C5E", "#479BD6", "#D17A86", "#E0A458", "#A81B2D"];
 
 /* ── helpers ─────────────────────────────────────────── */
@@ -475,7 +476,7 @@ export default function YouthInWorkPage() {
                   </div>
                   <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
                     <FilterSelect label="Year" value={year} onChange={setYear}
-                      options={[{ value: "all" as const, label: "All Years" }, ...YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                      options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
                   </div>
                 </div>
               )}

@@ -1,4 +1,5 @@
 "use client";
+import { FILTER_YEARS } from "@/lib/filter-years";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
@@ -144,7 +145,7 @@ export default function HEMPCareerExposure() {
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== "All Years", filterType !== "All"].filter(Boolean).length;
 
-  const years = Array.from(new Set(healthXSessions.map(i => i.year))).sort();
+  const years = FILTER_YEARS;
 
   const filteredSessions = useMemo(() => {
     return healthXSessions.filter(s => {

@@ -6,7 +6,7 @@ interface MetadataHeaderProps {
   subtitle: string;
   dataSource?: string;
   lastUpdated?: string;
-  participantsCount?: number;
+  participantsCount?: number | null;
   period?: string;
   customContent?: React.ReactNode;
 }
@@ -37,7 +37,7 @@ export function MetadataHeader({
               {participantsCount !== undefined && (
                 <>
                   <span aria-hidden="true">·</span>
-                  <span>{participantsCount} participants tracked</span>
+                  <span>{participantsCount === null ? "In coming data" : `${participantsCount} participants tracked`}</span>
                 </>
               )}
               <span aria-hidden="true">·</span>

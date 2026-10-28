@@ -1,4 +1,5 @@
 "use client";
+import { FILTER_YEARS } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -149,10 +150,7 @@ export default function HEMPCourses() {
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = filterYear !== "All Years" ? 1 : 0;
 
-  const years = useMemo(() =>
-    ghCohorts ? Array.from(new Set(ghCohorts.map(c => c.cohortYear))).sort() : [],
-    [ghCohorts]
-  );
+  const years = FILTER_YEARS;
 
   const filteredCohorts = useMemo(() => {
     if (!ghCohorts) return [];

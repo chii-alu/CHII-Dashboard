@@ -1,4 +1,5 @@
 "use client";
+import { FILTER_YEARS } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -37,7 +38,7 @@ const GENDER_COLOR: Record<Gender, string> = { Female: C_FEMALE, Male: C_MALE, "
 /* Reach & Participation reports gender as Female / Male only */
 const REACH_GENDERS: Gender[] = ["Female", "Male"];
 /* outreach reporting years: 2022 → 2026 */
-const OA_YEARS = [2022, 2023, 2024, 2025, 2026];
+const OA_YEARS = FILTER_YEARS;
 
 const ENGAGEMENT_STATUSES = ["Registered", "Completed"] as const;
 const STATUS_COLOR: Record<string, string> = {
@@ -405,7 +406,7 @@ export default function OutreachPage() {
           </div>
           <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
             <FilterSelect label="Year" value={year} onChange={setYear}
-              options={[{ value: "all", label: "All Years" }, ...OA_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+              options={[{ value: "all", label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
           </div>
         </div>
       )}
@@ -421,7 +422,7 @@ export default function OutreachPage() {
         subtitle="Outreach interventions across CHII's HEMP · HENT · HECO programs"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        participantsCount={participants.length}
+        participantsCount={kpis.total}
         period="2024–2030"
       />
 
