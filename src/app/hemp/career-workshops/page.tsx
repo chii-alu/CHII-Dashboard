@@ -231,7 +231,7 @@ export default function CareerWorkshopsPage() {
     };
     const refugee = pick('refugee_idp');
     const pwd = pick('pwd');
-    if (refugee === null && pwd === null) return null;
+    if (refugee === null || pwd === null) return null;
     const asPct = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 10);
     return [
       { category: 'Refugee', value: asPct(refugee), percentage: asPct(refugee) },
@@ -482,6 +482,7 @@ export default function CareerWorkshopsPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Career workshop participants by health interest" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterHealthInterestYear} onFilterChange={setFilterHealthInterestYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <ChartWithPlaceholder data={healthInterestRows} height={300}>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={healthInterestRows || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -493,6 +494,7 @@ export default function CareerWorkshopsPage() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </ChartWithPlaceholder>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 12, backgroundColor: "#479BD6", borderRadius: 2 }} />
@@ -503,6 +505,7 @@ export default function CareerWorkshopsPage() {
               </Panel>
               <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Career Workshop participants by primary academic programme" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <ChartWithPlaceholder data={academicProgrammeRows} height={300}>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={academicProgrammeRows || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -514,6 +517,7 @@ export default function CareerWorkshopsPage() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </ChartWithPlaceholder>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 12, backgroundColor: "#479BD6", borderRadius: 2 }} />
@@ -527,6 +531,7 @@ export default function CareerWorkshopsPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Cumulative Growth" subtitle="Participants vs 2030 goal & Session trends" info="Total participants growth trajectory and session count over time" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <ChartWithPlaceholder data={SESSIONS_DATA} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={SESSIONS_DATA} margin={{ top: 6, right: 60, bottom: 0, left: -12 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -539,6 +544,7 @@ export default function CareerWorkshopsPage() {
                       <Line yAxisId="right" type="monotone" dataKey="sessions" stroke={BRAND} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Sessions" />
                     </LineChart>
                   </ResponsiveContainer>
+                  </ChartWithPlaceholder>
                   <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 2, backgroundColor: "#479BD6", borderRadius: 1 }} />
@@ -603,8 +609,9 @@ export default function CareerWorkshopsPage() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Satisfaction Score" subtitle="Participant satisfaction scores" info="Average rating 4.0/5" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Satisfaction Score" subtitle="Participant satisfaction scores" info="Average participant rating" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <ChartWithPlaceholder data={RATING_DIST} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={RATING_DIST} margin={{ top: 6, right: 10, bottom: 0, left: -16 }}>
                       <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -616,6 +623,7 @@ export default function CareerWorkshopsPage() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  </ChartWithPlaceholder>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ width: 12, height: 12, backgroundColor: "#479BD6", borderRadius: 2 }} />
@@ -625,6 +633,7 @@ export default function CareerWorkshopsPage() {
                 </div>
               </Panel>
               <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={["All Years", "2021", "2022", "2023", "2024", "2025", "2026"]} filterValue={filterYear} onFilterChange={setFilterYear}>
+                <ChartWithPlaceholder data={null} height={300}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -636,6 +645,7 @@ export default function CareerWorkshopsPage() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ display: "flex", justifyContent: "center", gap: 16, fontSize: 10, color: "#6B7280", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, flexWrap: "wrap" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 8, backgroundColor: "#479BD6", borderRadius: 2 }} />Score (0-5)</span>
                 </div>

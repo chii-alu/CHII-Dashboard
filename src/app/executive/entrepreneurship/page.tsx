@@ -244,11 +244,7 @@ export default function EntrepreneurshipPage() {
     const byGender: any[] = [];
     const byType: any[] = [];
     const quality: any[] = [];
-    const baseT = Math.round(totalJobs * 0.4);
-    const trend = YEARS.map((year, i) => {
-      const Total = Math.round(baseT * (1 + i * 0.3));
-      return { year, Total, Female: Math.round(Total * 0.45) };
-    });
+    const trend: any[] = [];
     const topVentures: any[] = [];
     return {
       totalJobs, composition, priority, byGender, byType, quality, trend, topVentures,
@@ -261,13 +257,8 @@ export default function EntrepreneurshipPage() {
   const founders = useMemo(() => {
     const genderData = (["Female", "Male"] as Gender[]).map(g => ({ name: g, value: scope.filter(x => x.gender === g).length })).filter(d => d.value > 0);
     const inclusionReachData: any[] = [];
-    const scholar = { count: 208, femalePct: 52.9, gender: [{ name: "Female", value: 110 }, { name: "Male", value: 98 }] };
-    const scholarSplit = [
-      { name: "Scholar founders", value: scholar.count },
-      { name: "Non-scholar founders", value: total - scholar.count },
-    ];
     const countries: any[] = [];
-    return { genderData, inclusionReachData, scholar, scholarSplit, countries };
+    return { genderData, inclusionReachData, countries };
   }, [scope, total]);
 
   /* ── Section 5: sectors & innovation ───────────────── */

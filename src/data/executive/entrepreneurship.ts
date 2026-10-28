@@ -50,31 +50,4 @@ function pick<T>(r: () => number, weighted: [T, number][]): T {
   return weighted[weighted.length - 1][0];
 }
 
-function buildVentures(n: number): Venture[] {
-  const r = rng(91);
-  const out: Venture[] = [];
-  for (let i = 0; i < n; i++) {
-    out.push({
-      id: i + 1,
-      gender: pick<Gender>(r, [["Female", 0.44], ["Male", 0.53], ["Non-binary", 0.03]]),
-      stage: pick<Stage>(r, [
-        ["Idea", 0.25], ["Early-stage", 0.35], ["Growth", 0.25], ["Scaling", 0.15],
-      ]),
-      status: pick<Status>(r, [
-        ["Active", 0.75], ["Non-operational", 0.15], ["Closed", 0.1],
-      ]),
-      fundingSource: pick<FundingSource>(r, [
-        ["Personal / bootstrap", 0.42], ["Grant", 0.2], ["Angel / investor", 0.16],
-        ["Accelerator", 0.13], ["Loan", 0.09],
-      ]),
-      formal: r() < 0.58,
-      enablerSupport: r() < 0.47,
-      yearLaunched: pick<number>(r, [[2025, 0.2], [2026, 0.2], [2027, 0.2], [2028, 0.2], [2029, 0.1], [2030, 0.1]]),
-      jobsCreated: Math.round(Math.pow(r(), 1.6) * 9),
-      rating: 1 + Math.round(r() * 4),
-    });
-  }
-  return out;
-}
-
-export const VENTURES: Venture[] = buildVentures(500);
+export const VENTURES: Venture[] = [];

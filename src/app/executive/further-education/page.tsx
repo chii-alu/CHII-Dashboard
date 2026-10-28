@@ -186,7 +186,7 @@ export default function FurtherEducationPage() {
   const d = useMemo(() => {
     const enrolled = scope.filter(s => s.active).length;
     const within = scope.filter(s => s.destination === "Within Africa").length;
-    const countriesOfStudy = new Set(scope.map(s => s.countryOfStudy)).size;
+    const countriesOfStudy = scope.length ? new Set(scope.map(s => s.countryOfStudy)).size : null;
 
     const genderData = countBy(scope, "gender", ["Female", "Male"]);
     const cohortRate: any[] = [];
