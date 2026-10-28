@@ -422,7 +422,7 @@ export default function OutreachPage() {
         dataSource={dataSource}
         lastUpdated={syncedAt}
         participantsCount={participants.length}
-        period="2022–2026"
+        period="2024–2030"
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">

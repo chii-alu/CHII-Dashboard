@@ -171,7 +171,7 @@ export default function WageEmploymentPage() {
         subtitle="CHII Employment Outcomes, Trends, Performance, and Work Quality"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2025-2030"
+        period="2024–2030"
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">

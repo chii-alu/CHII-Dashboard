@@ -641,7 +641,7 @@ export default function AtAGlancePage() {
         subtitle="Where CHII is reaching, across HEMP, HENT &amp; HECO programs"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2022–2026"
+        period="2024–2030"
       />
 
       {/* ── Stats Cards Section ─────────────────────────── */}
