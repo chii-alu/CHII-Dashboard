@@ -233,7 +233,7 @@ function KPICard({
           </>
         ) : (
           <p style={{ fontSize: 9, fontWeight: 600, color: secondaryTextColor || "#6B7280", lineHeight: 1.2, margin: 0, textAlign: "center" }}>
-            {secondaryText || "—"}
+            {secondaryText}
           </p>
         )}
       </div>
@@ -348,7 +348,7 @@ function MapContainer() {
 
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 9, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", marginBottom: 2 }}>Mission Students</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: HEADER_NAVY }}>{selectedCountry.students}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: HEADER_NAVY }}>{selectedCountry.students ?? "In coming data"}</div>
           </div>
 
           <div style={{ overflowX: "auto" }}>
@@ -366,19 +366,19 @@ function MapContainer() {
               <tbody>
                 <tr style={{ borderBottom: "1px solid #E5E7EB" }}>
                   <td style={{ padding: "4px 6px", color: "#6B7280", fontWeight: 600, fontSize: 11 }}>Participants</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{selectedCountry.careerWorkshops || 0}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{selectedCountry.exposureEvents || 0}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{selectedCountry.internships || 0}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{selectedCountry.sie || 0}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{selectedCountry.courses || 0}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
                 </tr>
                 <tr>
                   <td style={{ padding: "4px 6px", color: "#6B7280", fontWeight: 600, fontSize: 11 }}>% of Total</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{selectedCountry.students > 0 ? Math.round((selectedCountry.careerWorkshops || 0) / selectedCountry.students * 100) : 0}%</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{selectedCountry.students > 0 ? Math.round((selectedCountry.exposureEvents || 0) / selectedCountry.students * 100) : 0}%</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{selectedCountry.students > 0 ? Math.round((selectedCountry.internships || 0) / selectedCountry.students * 100) : 0}%</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{selectedCountry.students > 0 ? Math.round((selectedCountry.sie || 0) / selectedCountry.students * 100) : 0}%</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{selectedCountry.students > 0 ? Math.round((selectedCountry.courses || 0) / selectedCountry.students * 100) : 0}%</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
+                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
                 </tr>
               </tbody>
             </table>
@@ -500,7 +500,7 @@ export default function HEMPPage() {
     studentsByCountry.set(s.countryOfResidence, (studentsByCountry.get(s.countryOfResidence) || 0) + 1);
   });
 
-  const countries = 15; // TODO: Use real data from Supabase
+  const countries = headlineValue("Countries Reached");
 
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
@@ -537,14 +537,14 @@ export default function HEMPPage() {
             <div style={{ textAlign: "center" }}>
               <h1 className="text-lg font-black leading-tight" style={{ color: "white", letterSpacing: "0.01em" }}>CHII Health Missions and HEMP Programme Dashboard</h1>
               <p className="text-[13px] mt-2 font-medium" style={{ color: "rgba(215,225,245,0.8)" }}>
-                Programme reach across 15 African countries
+                Programme reach across Africa
               </p>
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2021–2026</span>
                 <span aria-hidden="true">·</span>
-                <span>{countries} countries active</span>
+                <span>{countries === null ? "In coming data" : `${countries} countries active`}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
@@ -566,59 +566,50 @@ export default function HEMPPage() {
                 value={totalStudents ?? "In coming data"}
                 femalePct={femaleStudentsPct ?? undefined}
                 malePct={maleStudentsPct ?? undefined}
-                info="Active health professions students across 15 countries."
+                info="Active health professions students."
                 Icon={Users}
-                secondaryText={`Strong foundation for HEMP pipeline growth`}
+                secondaryText={femaleStudentsPct === null ? "In coming data" : undefined}
               />
               <KPICard
                 label="Countries Reached"
-                value={countries}
-                info="Geographic distribution across Africa. Sub-Saharan expansion ongoing."
+                value={countries ?? "In coming data"}
+                info="Geographic distribution across Africa."
                 Icon={Users}
-                secondaryText={`+2 new partnerships this year`}
+                secondaryText={countries === null ? "In coming data" : undefined}
               />
               {(() => {
-                const completedStudents = missionStudents.filter(s => s.enrollmentStatus === "completed").length;
-                const employmentTarget: number | null = null;
-                const employed: number | null = null;
+                const employmentRate = headlineValue("Employment Rate");
                 return (
                   <KPICard
                     label="Employment Rate"
-                    value={employed === null ? "In coming data" : `${Math.round((employed / completedStudents) * 100)}%`}
+                    value={employmentRate === null ? "In coming data" : `${employmentRate}%`}
                     info="Graduates securing employment or self-employment."
                     Icon={Briefcase}
-                    secondaryText={employed === null ? "In coming data" : `${employed} employed | ${completedStudents - employed} pursuing further study`}
+                    secondaryText={employmentRate === null ? "In coming data" : "Graduates in employment or self-employment"}
                   />
                 );
               })()}
               {(() => {
-                const venturesCount = missionStudents.filter(s => s.hasHealthVenture).length;
-                const ventureFemale = missionStudents.filter(s => s.hasHealthVenture && s.gender === "Female").length;
+                const venturesCount = headlineValue("Students with ventures");
                 return (
                   <KPICard
                     label="Students w/ Ventures"
-                    value={venturesCount}
-                    femalePct={venturesCount > 0 ? Math.round((ventureFemale / venturesCount) * 100) : 0}
-                    malePct={venturesCount > 0 ? Math.round(((venturesCount - ventureFemale) / venturesCount) * 100) : 0}
+                    value={venturesCount ?? "In coming data"}
                     info="Founders or co-founders of health ventures."
                     Icon={Zap}
-                    secondaryText={totalStudents ? `${Math.round((venturesCount / totalStudents) * 100)}% of student body` : "In coming data"}
+                    secondaryText="Health ventures"
                   />
                 );
               })()}
               {(() => {
-                const inclusionTotal = byInclusion.pwd + byInclusion.refugee;
-                const inclusionPct = totalStudents ? Math.round((inclusionTotal / totalStudents) * 100) : null;
-                const inclusionFemale = missionStudents.filter(s => (s.disability === "Yes" || s.humanitarianStatus === "Refugee") && s.gender === "Female").length;
+                const inclusionReach = headlineValue("Inclusion Reach");
                 return (
                   <KPICard
                     label="Inclusion Reach"
-                    value={`${inclusionPct}%`}
-                    femalePct={inclusionTotal > 0 ? Math.round((inclusionFemale / inclusionTotal) * 100) : 0}
-                    malePct={inclusionTotal > 0 ? Math.round(((inclusionTotal - inclusionFemale) / inclusionTotal) * 100) : 0}
+                    value={inclusionReach === null ? "In coming data" : `${Math.round(inclusionReach * 1000) / 10}%`}
                     info="PWD and Refugee students. Deliberate focus on underrepresented populations."
                     Icon={Accessibility}
-                    secondaryText={`${inclusionTotal} students | PWD: ${byInclusion.pwd}, Refugee: ${byInclusion.refugee}`}
+                    secondaryText={inclusionReach === null ? "In coming data" : "PWD and Refugee students"}
                   />
                 );
               })()}
