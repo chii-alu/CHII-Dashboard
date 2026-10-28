@@ -173,7 +173,7 @@ function KPICard({
 
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, flex: 1 }}>
         {Icon && <Icon size={16} color={HEADER_NAVY} style={{ flexShrink: 0, strokeWidth: 2 }} />}
-        <p style={{ fontSize: 28, fontWeight: 800, color: HEADER_NAVY, lineHeight: 1, margin: 0 }}>
+        <p style={{ fontSize: value === "In coming data" ? 13 : 28, fontWeight: 800, color: HEADER_NAVY, lineHeight: 1, margin: 0 }}>
           {typeof value === "number" ? value.toLocaleString() : value}
         </p>
       </div>
@@ -443,6 +443,7 @@ export default function HEMPPage() {
   const totalStudents = headlineValue("Total Enrolled");
   const femaleStudentsPct = headlineValue("Female %");
   const maleStudentsPct = headlineValue("Male %");
+  const inclusionReachValue = headlineValue("Inclusion Reach");
 
   const uniqueHempStudents = null as number | null;
 
@@ -731,15 +732,15 @@ export default function HEMPPage() {
           {[
             {
               title: "Female Participation",
-              figure: null,
+              figure: femaleStudentsPct === null ? null : `${Math.round(femaleStudentsPct * 10) / 10}%`,
               detail: "Female representation",
               copy: "Strong gender diversity across Mission Students and HEMP programs. Inclusive recruitment across health disciplines.",
               accentColor: "#042C53"
             },
             {
               title: "Regional Growth",
-              figure: null,
-              detail: "YoY expansion across countries",
+              figure: countries === null ? null : `${countries}`,
+              detail: "Countries reached",
               copy: "Sub-Saharan Africa reach increased. New partnerships activated.",
               accentColor: "#16A34A"
             },
@@ -752,7 +753,7 @@ export default function HEMPPage() {
             },
             {
               title: "Inclusion Focus",
-              figure: null,
+              figure: inclusionReachValue === null ? null : `${Math.round(inclusionReachValue * 1000) / 10}%`,
               detail: "PWD & Refugee students",
               copy: "Deliberate focus on underrepresented populations.",
               accentColor: "#9333EA"

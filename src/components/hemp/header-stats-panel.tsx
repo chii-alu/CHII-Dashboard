@@ -147,7 +147,7 @@ export function HeaderStatsPanel({
               {/* Icon + Number */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                 <card.icon size={18} style={{ color: BRAND_DK, opacity: 0.85, flexShrink: 0 }} />
-                <p style={{ fontSize: 24, fontWeight: 700, color: BRAND_DK, lineHeight: 1, margin: 0 }}>
+                <p style={{ fontSize: card.num === null ? 13 : 24, fontWeight: 700, color: BRAND_DK, lineHeight: 1, margin: 0 }}>
                   {card.num === null ? "In coming data" : card.displayFmt ? card.displayFmt(card.num) : Math.round(card.num).toLocaleString()}
                 </p>
               </div>

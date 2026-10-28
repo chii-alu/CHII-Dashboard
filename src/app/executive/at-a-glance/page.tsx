@@ -429,7 +429,7 @@ function KPICard({
       {/* Row 2: Icon + value (centered, navy) */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8, flex: 1 }}>
         {Icon && <Icon size={18} color="var(--brand-secondary)" style={{ flexShrink: 0, strokeWidth: 2 }} />}
-        <p style={{ fontSize: 28, fontWeight: 800, color: "var(--brand-secondary)", lineHeight: 1 }}>
+        <p style={{ fontSize: value === null ? 13 : 28, fontWeight: 800, color: "var(--brand-secondary)", lineHeight: 1 }}>
           {value === null ? (kpiLoading ? "" : "In coming data") : typeof value === "number" ? Math.round(animated).toLocaleString() : value}
         </p>
       </div>
