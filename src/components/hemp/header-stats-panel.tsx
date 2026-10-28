@@ -153,13 +153,13 @@ export function HeaderStatsPanel({
               </div>
 
               {/* Optional Progress Bar (with pace indicator) */}
-              {card.pace && card.paceA != null && card.paceT != null && (
+              {card.pace && (
                 <div style={{ height: 4, borderRadius: 2, backgroundColor: LIGHT_BORDER, marginTop: 8, position: "relative" }}>
                   <div style={{
                     height: "100%",
                     borderRadius: 2,
-                    width: `${Math.min((card.paceA / card.paceT) * 100, 100)}%`,
-                    backgroundColor: paceColor(card.paceA, card.paceT)
+                    width: card.paceA != null && card.paceT ? `${Math.min((card.paceA / card.paceT) * 100, 100)}%` : "0%",
+                    backgroundColor: card.paceA != null && card.paceT != null ? paceColor(card.paceA, card.paceT) : LIGHT_BORDER
                   }} />
                   <div style={{ position: "absolute", top: -2, bottom: -2, width: 2, left: `${PACE * 100}%`, backgroundColor: BRAND_DK, borderRadius: 1 }} />
                 </div>

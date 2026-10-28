@@ -233,7 +233,7 @@ export default function CareerWorkshopsPage() {
     const refugee = pick('refugee_idp');
     const pwd = pick('pwd');
     if (refugee === null || pwd === null) return null;
-    const asPct = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 10);
+    const asPct = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
     return [
       { category: 'Refugee', value: asPct(refugee), percentage: asPct(refugee) },
       { category: 'PWD', value: asPct(pwd), percentage: asPct(pwd) },
@@ -349,7 +349,7 @@ export default function CareerWorkshopsPage() {
             },
             {
               label: "Female Participation",
-              num: (() => { const v = headlineValue("Female Participation"); return v === null ? null : Math.round(v * 1000) / 10; })(),
+              num: (() => { const v = headlineValue("Female Participation"); return v === null ? null : Math.round(v * 10) / 10; })(),
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
               sub: "mission students",
@@ -371,7 +371,7 @@ export default function CareerWorkshopsPage() {
             },
             {
               label: "Inclusion Reach",
-              num: (() => { const v = headlineValue("Inclusion Reach"); return v === null ? null : Math.round(v * 1000) / 10; })(),
+              num: (() => { const v = headlineValue("Inclusion Reach"); return v === null ? null : Math.round(v * 10) / 10; })(),
               icon: Users,
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,

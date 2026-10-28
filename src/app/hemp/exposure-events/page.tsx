@@ -187,7 +187,7 @@ export default function ExposureEvents() {
   );
   const actualOf = (metric: string): number | null => interventionData?.headlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const targetOf = (metric: string): number | null => interventionData?.targets?.find((h: any) => h.metric === metric)?.value ?? null;
-  const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 10);
+  const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   const stats: { totalParticipants: number | null; avgRating: string | null; eventCount: number | null } = { totalParticipants: null, avgRating: null, eventCount: null };

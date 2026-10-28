@@ -603,12 +603,22 @@ export default function AtAGlancePage() {
   const refugeeFemalePct = segmentPct('Refugee / IDP', 'female');
   const refugeeMalePct = segmentPct('Refugee / IDP', 'male');
 
-  const insightCards = [
-    { title: "Gender Balance", figure: null, detail: "Female participants", copy: "In coming data", accentColor: "var(--brand-secondary)" },
-    { title: "Regional Growth", figure: null, detail: "Countries reached (Outreach)", copy: "In coming data", accentColor: "#16A34A" },
-    { title: "Employment Success", figure: null, detail: "Participants in wage employment", copy: "In coming data", accentColor: "#9333EA" },
-    { title: "Venture Momentum", figure: null, detail: "Enterprises", copy: "In coming data", accentColor: "#EAB308" }
-  ];
+  // At a Glance insight cards come from the workbook (v_insights), in the order set there.
+  const { data: insightResult } = useDashboardData(
+    () => fetch('/api/insights?dashboard=EXEC').then(r => r.json()),
+    []
+  );
+  const INSIGHT_ACCENTS = ["var(--brand-secondary)", "#16A34A", "#9333EA", "#EAB308"];
+  const insightRows: any[] = insightResult?.insights ?? [];
+  const insightCards = insightRows.length > 0
+    ? insightRows.map((row: any, i: number) => ({
+        title: row.title,
+        figure: row.value_display ?? null,
+        detail: row.description,
+        copy: row.detail,
+        accentColor: INSIGHT_ACCENTS[i % INSIGHT_ACCENTS.length],
+      }))
+    : [{ title: "In coming data", figure: null, detail: "", copy: "", accentColor: "#9CA3AF" }];
 
   /* ─ Country data aggregation for all interventions ─ */
   const countryData = new Map<string, number>();

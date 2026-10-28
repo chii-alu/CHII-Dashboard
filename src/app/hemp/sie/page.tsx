@@ -173,7 +173,7 @@ export default function HEMPSie() {
   );
   const actualOf = (metric: string): number | null => interventionData?.headlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const targetOf = (metric: string): number | null => interventionData?.targets?.find((h: any) => h.metric === metric)?.value ?? null;
-  const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 10);
+  const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   const categories = ["Reach & Engagement", "Exposure & Outcomes", "Quality & Feedback"];
