@@ -239,9 +239,34 @@ function KPICard({
   );
 }
 
-type MapCountry = { country: string; value: number };
+type MapCountry = {
+  country: string;
+  missionStudents: number | null;
+  interventions: Record<string, number>;
+};
 
-function MapContainer({ countries }: { countries: MapCountry[] }) {
+type MapData = {
+  countries: MapCountry[];
+  totals: Record<string, number>;
+  unreported: Record<string, number>;
+};
+
+// Programme columns in the map popup, matching the intervention names in the database.
+const MAP_PROGRAMMES = ["Career Workshops", "Exposure Events", "Internships", "SIE", "Courses"];
+
+// Marker size and label: Mission Students when the workbook has it, otherwise the programme total.
+const markerCount = (c: MapCountry) =>
+  c.missionStudents ?? Object.values(c.interventions).reduce((sum, v) => sum + v, 0);
+
+function MapContainer({
+  countries,
+  totals,
+  unreported,
+}: {
+  countries: MapCountry[];
+  totals: Record<string, number>;
+  unreported: Record<string, number>;
+}) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
@@ -254,8 +279,9 @@ function MapContainer({ countries }: { countries: MapCountry[] }) {
     if (!map.current || !mapReady.current) return;
     markersRef.current.forEach(m => m.remove());
     markersRef.current = [];
-    list.filter(c => c.value > 0).forEach(({ country, value }) => {
-      const count = value;
+    list.filter(c => markerCount(c) > 0).forEach(c => {
+      const country = c.country;
+      const count = markerCount(c);
       const coords = COUNTRY_COORDS[country];
       if (!coords) return;
 
@@ -284,7 +310,7 @@ function MapContainer({ countries }: { countries: MapCountry[] }) {
       el.addEventListener("click", () => {
         const point = map.current!.project([coords[1], coords[0]]);
         map.current!.flyTo({ center: [coords[1], coords[0]], zoom: 4, duration: 1000 });
-        setSelectedCountry({ name: country, students: count });
+        setSelectedCountry(c);
         setPopupPos({ top: point.y + 20, left: point.x + 20 });
       });
 
@@ -350,13 +376,13 @@ function MapContainer({ countries }: { countries: MapCountry[] }) {
       {selectedCountry && popupPos && (
         <div style={{ position: "absolute", top: popupPos.top, left: popupPos.left, backgroundColor: "#fff", borderRadius: 10, padding: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", border: "1px solid #E5E7EB", width: 420, zIndex: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <h2 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: HEADER_NAVY }}>{selectedCountry.name}</h2>
+            <h2 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: HEADER_NAVY }}>{selectedCountry.country}</h2>
             <button onClick={() => { setSelectedCountry(null); setPopupPos(null); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "#9CA3AF", padding: 0, width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
           </div>
 
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 9, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", marginBottom: 2 }}>Mission Students</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: HEADER_NAVY }}>{selectedCountry.students ?? "In coming data"}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: HEADER_NAVY }}>{selectedCountry.missionStudents ?? "In coming data"}</div>
           </div>
 
           <div style={{ overflowX: "auto" }}>
@@ -374,19 +400,23 @@ function MapContainer({ countries }: { countries: MapCountry[] }) {
               <tbody>
                 <tr style={{ borderBottom: "1px solid #E5E7EB" }}>
                   <td style={{ padding: "4px 6px", color: "#6B7280", fontWeight: 600, fontSize: 11 }}>Participants</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>{"In coming data"}</td>
+                  {MAP_PROGRAMMES.map(p => (
+                    <td key={p} style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 500, fontSize: 11 }}>
+                      {selectedCountry.interventions[p] ?? "In coming data"}
+                    </td>
+                  ))}
                 </tr>
                 <tr>
                   <td style={{ padding: "4px 6px", color: "#6B7280", fontWeight: 600, fontSize: 11 }}>% of Total</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
-                  <td style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>{"In coming data"}</td>
+                  {MAP_PROGRAMMES.map(p => {
+                    const value = selectedCountry.interventions[p];
+                    const total = totals[p];
+                    return (
+                      <td key={p} style={{ padding: "4px 6px", color: HEADER_NAVY, fontWeight: 600, fontSize: 11 }}>
+                        {value === undefined || !total ? "In coming data" : `${((value / total) * 100).toFixed(1)}%`}
+                      </td>
+                    );
+                  })}
                 </tr>
               </tbody>
             </table>
@@ -448,7 +478,7 @@ export default function HEMPPage() {
   );
   const workshopParticipants = workshopResult?.headlines?.find((h: any) => h.metric === "Total Participants")?.value ?? null;
   // At a Glance insight cards come from the workbook (v_insights), in the order set there.
-  const { data: mapCountries } = useDashboardData<MapCountry[]>(
+  const { data: mapData } = useDashboardData<MapData>(
     () => fetch('/api/hemp-map').then(r => r.json()),
     []
   );
@@ -647,7 +677,7 @@ export default function HEMPPage() {
 
           {/* Center Column: Map */}
           <div style={{ display: "flex", flexDirection: "column", height: "100%", flex: 1 }}>
-            <MapContainer countries={mapCountries ?? []} />
+            <MapContainer countries={mapData?.countries ?? []} totals={mapData?.totals ?? {}} unreported={mapData?.unreported ?? {}} />
           </div>
 
           {/* Right Column: HEMP Engagement */}
