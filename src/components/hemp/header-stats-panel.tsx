@@ -24,6 +24,8 @@ export interface HeaderStatsPanelProps {
   description?: string;
   cards: HeaderStatCard[];
   nowrap?: boolean;
+  // Fixed number of cards per row. When set, cards wrap into rows of this many.
+  columns?: number;
   // Live progress rows keyed by card label (from useProgress). Cards with no row show "No target set".
   progressRows?: Record<string, ProgressRow>;
 }
@@ -56,6 +58,7 @@ export function HeaderStatsPanel({
   description,
   cards,
   nowrap,
+  columns,
   progressRows,
 }: HeaderStatsPanelProps) {
   // Progress for a card: an explicit card.progress wins, otherwise the row for its label from progressRows.
@@ -80,13 +83,15 @@ export function HeaderStatsPanel({
       </div>
 
       {/* Cards Grid - flex row with auto-wrap and gap */}
-      <div style={{
-        display: "flex",
-        gap: 12,
-        flexWrap: nowrap ? "nowrap" : "wrap",
-        marginBottom: 24,
-        overflowX: nowrap ? "auto" : "visible",
-      }}>
+      <div style={columns
+        ? { display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: 12, marginBottom: 24 }
+        : {
+          display: "flex",
+          gap: 12,
+          flexWrap: nowrap ? "nowrap" : "wrap",
+          marginBottom: 24,
+          overflowX: nowrap ? "auto" : "visible",
+        }}>
         {cards.map((card, idx) => (
           <div key={idx} style={{
             flex: idx === cards.length - 1 && cards.length % 2 === 1 ? "0 1 auto" : "1 1 auto",
