@@ -5,6 +5,7 @@ import type { ProgressRow } from "@/lib/progressInsight";
 export const PROGRESS_NAMES: Record<string, string> = {
   // Executive: Entrepreneurship
   "Active Enterprises": "Enterprises",
+  "Entrepreneurship:Jobs Created": "Jobs created",
   // Executive: Outreach
   "Total Participants": "Total Participants (All Programmes)",
   "Interventions": "Interventions (Types)",
@@ -23,15 +24,17 @@ export const PROGRESS_NAMES: Record<string, string> = {
 
 const warned = new Set<string>();
 
-/** The v_progress row for a card label. In development, logs a warning once per label when no row matches. */
-export function progressFor(rows: Record<string, ProgressRow>, cardLabel: string): ProgressRow | undefined {
-  const name = PROGRESS_NAMES[cardLabel] ?? cardLabel;
+/** The v_progress row for a card label. A section-specific entry ("Section:Label") wins over the plain label.
+ *  In development, logs a warning once per label when no row matches. */
+export function progressFor(rows: Record<string, ProgressRow>, cardLabel: string, section?: string): ProgressRow | undefined {
+  const name = (section && PROGRESS_NAMES[`${section}:${cardLabel}`]) || PROGRESS_NAMES[cardLabel] || cardLabel;
   const row = rows[name];
   // Rows load asynchronously; an empty map means "not loaded yet", not "missing".
   const loaded = Object.keys(rows).length > 0;
-  if (!row && loaded && process.env.NODE_ENV !== "production" && !warned.has(cardLabel)) {
-    warned.add(cardLabel);
-    console.warn(`[progress] No v_progress row for card "${cardLabel}" (looked for "${name}").`);
+  const key = `${section ?? ""}|${cardLabel}`;
+  if (!row && loaded && process.env.NODE_ENV !== "production" && !warned.has(key)) {
+    warned.add(key);
+    console.warn(`[progress] No v_progress row for card "${cardLabel}"${section ? ` in ${section}` : ""} (looked for "${name}").`);
   }
   return row;
 }

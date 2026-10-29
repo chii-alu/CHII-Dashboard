@@ -315,7 +315,7 @@ export default function EntrepreneurshipPage() {
               tooltip="Total entrepreneurs (founders) tracked across the portfolio." />
             <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Enterprises" progress={progressInsight(progressFor(progressRows, "Enterprises"))} num={ent("Enterprises")} sub="started" Icon={Activity}
               tooltip="Enterprises started by participants." />
-            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Jobs Created" progress={progressInsight(progressFor(progressRows, "Jobs Created"))} num={ent("Jobs created")} sub="created" Icon={Briefcase}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Jobs Created" progress={progressInsight(progressFor(progressRows, "Jobs Created", "Entrepreneurship"))} num={ent("Jobs created")} sub="created" Icon={Briefcase}
               tooltip="Jobs created across all enterprises." />
             <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Female-led" progress={progressInsight(progressFor(progressRows, "Female-led"))} num={ent("Female-led")} sub="female-led enterprises" Icon={WomanIcon}
               tooltip="Enterprises led by female founders." />
