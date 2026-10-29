@@ -18,7 +18,7 @@ function byYear(query, year) {
  *  For HEMP programme pages: getHeadlines('HEMP', 'Intervention', { intervention: 'SIE' }). */
 export async function getHeadlines(dashboard, section, { year = null, intervention } = {}) {
   let q = supabase.from('v_metric_values').select('*')
-    .eq('dashboard', dashboard).eq('section', section).eq('is_headline', true)
+    .eq('dashboard', dashboard).eq('section', section).eq('value_type', 'actual').eq('is_headline', true)
   q = byYear(q, year)
   if (intervention) q = q.eq('intervention', intervention)
   return toCards(await run(q))

@@ -68,33 +68,6 @@ export async function getHeadlines(
       }
     });
 
-    // Fetch targets for progress calculation
-    let targetQuery = supabase
-      .from('v_metric_values')
-      .select('metric, value')
-      .eq('dashboard', dashboard)
-      .eq('section', section)
-      .eq('value_type', 'target')
-      .is('item', null)
-      .is('breakdown', null)
-      .is('period', null);
-
-    if (options?.intervention) {
-      targetQuery = targetQuery.eq('intervention', options.intervention);
-    }
-
-    const { data: targets } = await targetQuery;
-
-    targets?.forEach((row) => {
-      const card = grouped.get(row.metric);
-      if (card) {
-        card.target = row.value;
-        if (card.value && card.target) {
-          card.progress = Math.round((card.value / card.target) * 100);
-        }
-      }
-    });
-
     return Array.from(grouped.values());
   } catch (error) {
     console.error('Error fetching headlines:', error);
@@ -438,6 +411,7 @@ export async function getOutreachData() {
       .select('metric, value, segment')
       .eq('dashboard', 'EXEC')
       .eq('section', 'Outreach')
+      .eq('value_type', 'actual')
       .order('metric');
 
     if (error) throw error;

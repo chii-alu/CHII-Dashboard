@@ -12,6 +12,7 @@ export async function GET(request: Request, { params }: { params: { section: str
       .select("*")
       .eq("dashboard", "HEMP")
       .eq("section", section)
+      .eq("value_type", "actual")
       .is("year", null)
       ;
     if (error) {
@@ -22,10 +23,7 @@ export async function GET(request: Request, { params }: { params: { section: str
     const headlines = rows
       .filter((row: any) => row.value_type === "actual")
       .map((row: any) => ({ metric: row.metric, value: row.value }));
-    const targets = rows
-      .filter((row: any) => row.value_type === "target")
-      .map((row: any) => ({ metric: row.metric, value: row.value }));
-    return NextResponse.json({ headlines, targets });
+    return NextResponse.json({ headlines });
   } catch (error: any) {
     console.error("[API] Error fetching HEMP section:", error);
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
