@@ -7,6 +7,7 @@ import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useProgress } from "@/hooks/useProgress";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -194,6 +195,7 @@ const QUALITY_BY_TYPE: any[] = [];
 const RATING_DIST: any[] = [];
 
 export default function CareerWorkshopsPage() {
+  const progressRows = useProgress("HEMP", "Career Workshops");
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   const categories = ["Reach & Engagement", "Quality & Experience", "Partners"];
@@ -322,6 +324,7 @@ export default function CareerWorkshopsPage() {
 
       <div className="max-w-[1440px] mx-auto px-6 py-7">
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Programme Overview"
           nowrap={true}
           cards={[
@@ -332,9 +335,6 @@ export default function CareerWorkshopsPage() {
               displayFmt: (n) => n.toLocaleString(),
               sub: ``,
               tip: "Total participants in career workshops",
-              pace: true,
-              paceA: null,
-              paceT: null,
             },
             {
               label: "Sessions Held",
@@ -343,9 +343,6 @@ export default function CareerWorkshopsPage() {
               displayFmt: (n) => n.toString(),
               sub: ``,
               tip: "Number of sessions held to date",
-              pace: true,
-              paceA: null,
-              paceT: null,
             },
             {
               label: "Female Participation",
@@ -354,9 +351,14 @@ export default function CareerWorkshopsPage() {
               displayFmt: (n) => n + "%",
               sub: "mission students",
               tip: "Percentage of female participants across all students and mission cohort",
-              pace: true,
-              paceA: null,
-              paceT: null,
+            },
+            {
+              label: "Events Delivered",
+              num: headlineValue("Events Delivered"),
+              icon: TrendingUp,
+              displayFmt: (n) => n.toString(),
+              sub: ``,
+              tip: "Number of events delivered",
             },
             {
               label: "Partner Organizations",
@@ -365,9 +367,6 @@ export default function CareerWorkshopsPage() {
               displayFmt: (n) => n.toString(),
               sub: ``,
               tip: "Number of partner organizations",
-              pace: true,
-              paceA: null,
-              paceT: null,
             },
             {
               label: "Inclusion Reach",
@@ -376,9 +375,6 @@ export default function CareerWorkshopsPage() {
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
-              pace: true,
-              paceA: null,
-              paceT: null,
             },
             {
               label: "Quality Score",
@@ -387,9 +383,14 @@ export default function CareerWorkshopsPage() {
               displayFmt: (n) => n.toFixed(1),
               sub: `Out of 5`,
               tip: "Average participant satisfaction rating",
-              pace: true,
-              paceA: null,
-              paceT: null,
+            },
+            {
+              label: "Attendance Rate",
+              num: headlineValue("Attendance Rate"),
+              icon: Users,
+              displayFmt: (n) => `${Math.round(n * 10) / 10}%`,
+              sub: ``,
+              tip: "Share of registered participants who attended",
             },
           ]}
         />

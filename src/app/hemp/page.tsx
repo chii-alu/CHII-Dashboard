@@ -11,6 +11,8 @@ import HeaderDesign from "@/components/layout/header-design";
 import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { COUNTRY_COORDS } from "@/lib/country-coords";
+import { progressInsight, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
+import { useProgress } from "@/hooks/useProgress";
 
 // Fallback data for components
 const missionStudents: any[] = [];
@@ -71,8 +73,17 @@ function calculatePace(current: number | null, target: number | null): { status:
 }
 
 
+const PROGRESS_COLOR: Record<ProgressStatus, string> = {
+  met: "#16A34A",
+  close: HEADER_NAVY,
+  behind: "#F59E0B",
+  "no-data": "#9CA3AF",
+  "no-target": "#9CA3AF",
+};
+
 function KPICard({
   label,
+  insight,
   value,
   femalePct,
   malePct,
@@ -107,6 +118,7 @@ function KPICard({
   paceColor?: string;
   secondaryTextColor?: string;
   programmeText?: string;
+  insight?: ProgressInsight;
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -184,8 +196,19 @@ function KPICard({
         </p>
       )}
 
-      {/* Progress bar is always shown; it stays empty with "In coming data" until both values exist */}
-      {(() => {
+      {insight ? (
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2, alignItems: "center" }}>
+            <span style={{ fontSize: 9, fontWeight: 600, color: "#9CA3AF", flex: 1 }}>{insight.barPct != null ? "Progress to 2030" : ""}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: HEADER_NAVY, textAlign: "right" }}>{insight.caption}</span>
+          </div>
+          {insight.barPct != null && (
+            <div style={{ width: "100%", height: 6, backgroundColor: "#E5E7EB", borderRadius: 2, overflow: "hidden" }}>
+              <div style={{ height: "100%", backgroundColor: PROGRESS_COLOR[insight.status], width: `${insight.barPct}%`, transition: "width 300ms ease" }} />
+            </div>
+          )}
+        </div>
+      ) : (() => {
         const hasProgress = progress != null && progressTarget != null && progressTarget > 0;
         return (
           <div style={{ marginBottom: 4 }}>
@@ -486,6 +509,8 @@ export default function HEMPPage() {
     () => fetch('/api/insights?dashboard=HEMP').then(r => r.json()),
     []
   );
+  // Live progress against target for the stat cards, from v_progress (At a Glance rows).
+  const progressRows = useProgress("HEMP");
   const INSIGHT_ACCENTS = ["#042C53", "#16A34A", "#3B82F6", "#9333EA"];
   const insightRows: any[] = insightResult?.insights ?? [];
   const insights = insightRows.length > 0
@@ -622,6 +647,7 @@ export default function HEMPPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1, justifyContent: "space-between" }}>
               <KPICard
                 label="Total Enrolled"
+                insight={progressInsight(progressRows["Total Enrolled"])}
                 value={totalStudents ?? "In coming data"}
                 femalePct={femaleStudentsPct ?? undefined}
                 malePct={maleStudentsPct ?? undefined}
@@ -631,6 +657,7 @@ export default function HEMPPage() {
               />
               <KPICard
                 label="Countries Reached"
+                insight={progressInsight(progressRows["Countries Reached"])}
                 value={countries ?? "In coming data"}
                 info="Geographic distribution across Africa."
                 Icon={Users}
@@ -641,6 +668,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="Employment Rate"
+                    insight={progressInsight(progressRows["Employment Rate"])}
                     value={employmentRate === null ? "In coming data" : `${employmentRate}%`}
                     info="Graduates securing employment or self-employment."
                     Icon={Briefcase}
@@ -653,6 +681,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="Students w/ Ventures"
+                    insight={progressInsight(progressRows["Students w/ Ventures"])}
                     value={venturesCount ?? "In coming data"}
                     info="Founders or co-founders of health ventures."
                     Icon={Zap}
@@ -665,6 +694,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="Inclusion Reach"
+                    insight={progressInsight(progressRows["Inclusion Reach"])}
                     value={inclusionReach === null ? "In coming data" : `${Math.round(inclusionReach * 10) / 10}%`}
                     info="PWD and Refugee students. Deliberate focus on underrepresented populations."
                     Icon={Accessibility}
@@ -689,6 +719,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="HEMP Engagement Rate"
+                    insight={progressInsight(progressRows["HEMP Engagement Rate"])}
                     value={uniqueHempStudents === null ? "In coming data" : uniqueHempStudents.toLocaleString()}
                     progress={uniqueHempStudents ?? undefined}
                     progressTarget={totalStudents ?? undefined}
@@ -705,6 +736,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="Career Exposure"
+                    insight={progressInsight(progressRows["Career Exposure"])}
                     value={careerWorkshopsCount ?? "In coming data"}
                     progress={careerWorkshopsCount ?? undefined}
                     progressLabel={"In coming data"}
@@ -721,6 +753,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="Internships"
+                    insight={progressInsight(progressRows["Internships"])}
                     value={internshipsCount ?? "In coming data"}
                     progress={internshipsCount ?? undefined}
                     progressLabel={internshipsCount === null || targetValue("Internships") === null ? "In coming data" : `${Math.round((internshipsCount / (targetValue("Internships") ?? 1)) * 100)}%`}
@@ -737,6 +770,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="SIE Placements"
+                    insight={progressInsight(progressRows["SIE placements"])}
                     value={sieCount ?? "In coming data"}
                     progress={sieCount ?? undefined}
                     progressLabel={sieCount === null || targetValue("SIE placements") === null ? "In coming data" : `${Math.round((sieCount / (targetValue("SIE placements") ?? 1)) * 100)}%`}
@@ -753,6 +787,7 @@ export default function HEMPPage() {
                 return (
                   <KPICard
                     label="Courses"
+                    insight={progressInsight(progressRows["Courses"])}
                     value={coursesCount ?? "In coming data"}
                     progress={coursesCount ?? undefined}
                     progressLabel={"In coming data"}

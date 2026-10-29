@@ -9,6 +9,7 @@ import HeaderDesign from "@/components/layout/header-design";
 import { getSieCohortsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { SIE_DISCIPLINES, SIE_EXPOSURE_AREAS } from "@/data/hemp/sie";
+import { useProgress } from "@/hooks/useProgress";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -167,6 +168,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPSie() {
+  const progressRows = useProgress("HEMP", "SIE");
   const { data: interventionData } = useDashboardData(
     () => fetch('/api/hemp-intervention?intervention=SIE').then(r => r.json()),
     []
@@ -428,6 +430,7 @@ export default function HEMPSie() {
 
       <div className="max-w-[1440px] mx-auto px-6 py-7">
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Programme Overview"
           nowrap={false}
           cards={[
@@ -438,9 +441,6 @@ export default function HEMPSie() {
               displayFmt: (n) => n.toLocaleString(),
               sub: `Application volume | ${totalSelected} participants selected`,
               tip: "Total students who applied for SIE",
-              pace: true,
-              paceA: totalApplicants,
-              paceT: targetOf("Total Applicants"),
             },
             {
               label: "Participants Selected",
@@ -449,9 +449,6 @@ export default function HEMPSie() {
               displayFmt: (n) => n.toLocaleString(),
               sub: msTotalEnrolled === null ? "In coming data" : `${msTotalEnrolled} mission students`,
               tip: "Total participants selected toward 2030 target",
-              pace: true,
-              paceA: totalSelected,
-              paceT: targetOf("Participants Selected"),
             },
             {
               label: "Female Participation",
@@ -460,9 +457,6 @@ export default function HEMPSie() {
               displayFmt: (n) => n + "%",
               sub: msFemalePct === null ? "In coming data" : `${msFemalePct}% mission students`,
               tip: "Percentage of female participants across all students and mission cohort",
-              pace: true,
-              paceA: femalePct,
-              paceT: pctOf(targetOf("Female Participation")),
             },
             {
               label: "Inclusion Reach",
@@ -471,9 +465,6 @@ export default function HEMPSie() {
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
-              pace: true,
-              paceA: null,
-              paceT: pctOf(targetOf("Inclusion Reach")),
             },
             {
               label: "NPS Score",
@@ -482,9 +473,6 @@ export default function HEMPSie() {
               displayFmt: (n) => n.toFixed(1),
               sub: `Out of 10 | Based on satisfaction and inclusion`,
               tip: "Composite score based on satisfaction, female participation, inclusion, and employment outcomes",
-              pace: true,
-              paceA: overallPerformanceScore === null ? null : overallPerformanceScore * 10,
-              paceT: null,
             },
             {
               label: "Satisfaction Score",
@@ -493,9 +481,6 @@ export default function HEMPSie() {
               displayFmt: (n) => n.toFixed(1),
               sub: `Out of 5`,
               tip: "Average participant satisfaction rating",
-              pace: true,
-              paceA: avgSatisfaction === null ? null : avgSatisfaction * 20,
-              paceT: null,
             },
           ]}
         />

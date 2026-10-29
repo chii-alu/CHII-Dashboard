@@ -8,6 +8,7 @@ import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { getGHCohortsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useProgress } from "@/hooks/useProgress";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -135,6 +136,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPCourses() {
+  const progressRows = useProgress("HEMP", "Courses");
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   const categories = ["Enrolment & Outcomes", "Academic Performance", "Outcomes"];
@@ -266,6 +268,7 @@ export default function HEMPCourses() {
 
       <div className="max-w-[1440px] mx-auto px-6 py-7">
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Programme Overview"
           nowrap={false}
           cards={[
@@ -276,9 +279,6 @@ export default function HEMPCourses() {
               displayFmt: (n) => n.toLocaleString(),
               sub: "In coming data",
               tip: "Total students enrolled toward 2030 target",
-              pace: true,
-              paceA: totalEnrolled,
-              paceT: null,
             },
             {
               label: "Completion Rate",
@@ -287,9 +287,6 @@ export default function HEMPCourses() {
               displayFmt: (n) => n + "%",
               sub: hasData ? `${totalCompleted} completed the course` : "In coming data",
               tip: "Percentage of enrolled students who completed the course",
-              pace: true,
-              paceA: hasData && totalEnrolled ? Math.round((totalCompleted / totalEnrolled) * 100) : null,
-              paceT: null,
             },
             {
               label: "Graduation Rate",
@@ -298,9 +295,6 @@ export default function HEMPCourses() {
               displayFmt: (n) => n + "%",
               sub: hasData ? `Graduated: ${totalCertified} of ${totalEnrolled} enrolled` : "In coming data",
               tip: "Percentage of enrolled students who completed all graduation requirements (Graduated Enrolment Funnel)",
-              pace: true,
-              paceA: hasData && totalEnrolled ? Math.round((totalCertified / totalEnrolled) * 100) : null,
-              paceT: null,
             },
             {
               label: "Female Participation",
@@ -309,9 +303,6 @@ export default function HEMPCourses() {
               displayFmt: (n) => n + "%",
               sub: msFemalePct === null ? "In coming data" : `${msFemalePct}% mission students`,
               tip: "Percentage of female participants across all students and mission cohort",
-              pace: true,
-              paceA: femalePct,
-              paceT: null,
             },
             {
               label: "Average Score",
@@ -320,9 +311,6 @@ export default function HEMPCourses() {
               displayFmt: (n) => n + "%",
               sub: `Assessment performance`,
               tip: "Average assessment score across cohorts",
-              pace: true,
-              paceA: avgScore,
-              paceT: null,
             },
             {
               label: "Inclusion Reach",
@@ -331,9 +319,6 @@ export default function HEMPCourses() {
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
-              pace: true,
-              paceA: null,
-              paceT: null,
             },
           ]}
         />

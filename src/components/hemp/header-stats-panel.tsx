@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Info, type LucideIcon } from "lucide-react";
+import { progressInsight, type ProgressInsight, type ProgressRow, type ProgressStatus } from "@/lib/progressInsight";
 
 // Color palette - HEMP blue
 const BRAND = "#14306B";
@@ -14,9 +15,8 @@ export interface HeaderStatCard {
   icon: LucideIcon | React.ComponentType<{ size?: number; color?: string; style?: React.CSSProperties }>;
   displayFmt?: (n: number) => string;
   tip?: string;
-  pace?: boolean;
-  paceA?: number | null;
-  paceT?: number | null;
+  // Live progress against target (from /api/progress). When set, its bar and caption replace the sub-text.
+  progress?: ProgressInsight;
 }
 
 export interface HeaderStatsPanelProps {
@@ -24,18 +24,17 @@ export interface HeaderStatsPanelProps {
   description?: string;
   cards: HeaderStatCard[];
   nowrap?: boolean;
+  // Live progress rows keyed by card label (from useProgress). Cards with no row show "No target set".
+  progressRows?: Record<string, ProgressRow>;
 }
 
-const PACE = 5 / 12;
-
-function paceColor(a: number, t: number): string {
-  const pace = PACE;
-  const r = t > 0 ? (a / t) / pace : 1;
-  if (r >= 1) return "#16A34A";
-  if (r >= 0.95) return "#84CC16";
-  if (r >= 0.8) return "#F59E0B";
-  return "#DC2626";
-}
+const PROGRESS_COLOR: Record<ProgressStatus, string> = {
+  met: "#16A34A",
+  close: BRAND_DK,
+  behind: "#F59E0B",
+  "no-data": "#9CA3AF",
+  "no-target": "#9CA3AF",
+};
 
 /**
  * HeaderStatsPanel - Standardized header statistics cards for HEMP pages
@@ -56,8 +55,13 @@ export function HeaderStatsPanel({
   title,
   description,
   cards,
-  nowrap
+  nowrap,
+  progressRows,
 }: HeaderStatsPanelProps) {
+  // Progress for a card: an explicit card.progress wins, otherwise the row for its label from progressRows.
+  const insightOf = (card: HeaderStatCard): ProgressInsight | null =>
+    card.progress ?? (progressRows ? progressInsight(progressRows[card.label]) : null);
+
   const [hoveredIconIdx, setHoveredIconIdx] = useState<number | null>(null);
 
   return (
@@ -152,21 +156,23 @@ export function HeaderStatsPanel({
                 </p>
               </div>
 
-              {/* Optional Progress Bar (with pace indicator) */}
-              {card.pace && (
-                <div style={{ height: 4, borderRadius: 2, backgroundColor: LIGHT_BORDER, marginTop: 8, position: "relative" }}>
+              {/* Progress bar against target; hidden when the card has no target */}
+              {insightOf(card)?.barPct != null && (
+                <div style={{ height: 4, borderRadius: 2, backgroundColor: LIGHT_BORDER, marginTop: 8, overflow: "hidden" }}>
                   <div style={{
                     height: "100%",
                     borderRadius: 2,
-                    width: card.paceA != null && card.paceT ? `${Math.min((card.paceA / card.paceT) * 100, 100)}%` : "0%",
-                    backgroundColor: card.paceA != null && card.paceT != null ? paceColor(card.paceA, card.paceT) : LIGHT_BORDER
+                    width: `${insightOf(card)!.barPct}%`,
+                    backgroundColor: PROGRESS_COLOR[insightOf(card)!.status],
+                    transition: "width 300ms ease",
                   }} />
-                  <div style={{ position: "absolute", top: -2, bottom: -2, width: 2, left: `${PACE * 100}%`, backgroundColor: BRAND_DK, borderRadius: 1 }} />
                 </div>
               )}
 
-              {/* Optional Sub-text */}
-              {card.sub && <p style={{ fontSize: 9.5, color: `rgba(14, 68, 124, 0.55)`, marginTop: 4, margin: 0 }}>{card.sub}</p>}
+              {/* Caption: live progress text when available, otherwise the card's sub-text */}
+              {(insightOf(card)?.caption ?? card.sub) && (
+                <p style={{ fontSize: 9.5, color: `rgba(14, 68, 124, 0.55)`, marginTop: 4, margin: 0 }}>{insightOf(card)?.caption ?? card.sub}</p>
+              )}
             </div>
           </div>
         ))}

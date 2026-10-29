@@ -8,6 +8,7 @@ import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { getInternshipsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useProgress } from "@/hooks/useProgress";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -135,6 +136,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPInternships() {
+  const progressRows = useProgress("HEMP", "Internships");
   const { data: interventionData } = useDashboardData(
     () => fetch('/api/hemp-intervention?intervention=Internships').then(r => r.json()),
     []
@@ -269,6 +271,7 @@ export default function HEMPInternships() {
 
       <div className="max-w-[1440px] mx-auto px-6 py-7">
 <HeaderStatsPanel
+        progressRows={progressRows}
           title="Programme Overview"
           nowrap={false}
           cards={[
@@ -279,9 +282,6 @@ export default function HEMPInternships() {
               displayFmt: (n) => n.toLocaleString(),
               sub: placementsSecured === null ? "In coming data" : `Application volume | ${placementsSecured} placements secured`,
               tip: "Total students who applied for internships",
-              pace: true,
-              paceA: totalApplicants,
-              paceT: targetOf("Total Applicants"),
             },
             {
               label: "Placements Secured",
@@ -290,9 +290,6 @@ export default function HEMPInternships() {
               displayFmt: (n) => n.toLocaleString(),
               sub: msTotalEnrolled === null ? "In coming data" : `${msTotalEnrolled} mission students`,
               tip: "Total internship placements secured",
-              pace: true,
-              paceA: placementsSecured,
-              paceT: targetOf("Placements Secured"),
             },
             {
               label: "Female Participation",
@@ -301,9 +298,6 @@ export default function HEMPInternships() {
               displayFmt: (n) => n + "%",
               sub: msFemalePct === null ? "In coming data" : `${msFemalePct}% mission students`,
               tip: "Percentage of female participants",
-              pace: true,
-              paceA: femalePct,
-              paceT: pctOf(targetOf("Female Participation")),
             },
             {
               label: "Inclusion Reach",
@@ -312,9 +306,6 @@ export default function HEMPInternships() {
               displayFmt: (n) => n + "%",
               sub: "In coming data",
               tip: "Percentage of students with disabilities and refugee background",
-              pace: true,
-              paceA: null,
-              paceT: pctOf(targetOf("Inclusion Reach")),
             },
             {
               label: "Employment Conversions",
@@ -323,9 +314,6 @@ export default function HEMPInternships() {
               displayFmt: (n) => n + "%",
               sub: "In coming data",
               tip: "Percentage securing employment after internship",
-              pace: true,
-              paceA: conversionRate,
-              paceT: pctOf(targetOf("Employment Conversions")),
             },
             {
               label: "Employer Rating",
@@ -334,9 +322,6 @@ export default function HEMPInternships() {
               displayFmt: (n) => n.toFixed(1),
               sub: `Out of 10 | Based on employer feedback`,
               tip: "Average employer satisfaction rating",
-              pace: true,
-              paceA: avgEmployerRating === null ? null : avgEmployerRating * 10,
-              paceT: targetOf("Employer Rating"),
             },
           ]}
         />
