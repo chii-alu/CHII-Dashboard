@@ -210,9 +210,6 @@ export default function HEMPCareerExposure() {
               displayFmt: (n) => n.toLocaleString(),
               sub: `From ${filteredSessions.length} sessions`,
               tip: "Total students reached through Career Exposure sessions",
-              pace: true,
-              paceA: totalParticipants,
-              paceT: 500,
             },
             {
               label: "Female Participation",
@@ -221,9 +218,6 @@ export default function HEMPCareerExposure() {
               displayFmt: (n) => n + "%",
               sub: `${femaleParticipants} female participants`,
               tip: "Percentage of female participants",
-              pace: true,
-              paceA: femalePct,
-              paceT: 50,
             },
             {
               label: "Completion Rate",
@@ -232,9 +226,6 @@ export default function HEMPCareerExposure() {
               displayFmt: (n) => n + "%",
               sub: `Average across sessions`,
               tip: "Average session completion rate",
-              pace: true,
-              paceA: avgCompletion,
-              paceT: 100,
             },
             {
               label: "Learning Quality",
@@ -243,9 +234,6 @@ export default function HEMPCareerExposure() {
               displayFmt: (n) => n.toFixed(1),
               sub: `Out of 5`,
               tip: "Average satisfaction/quality score",
-              pace: true,
-              paceA: avgScore * 20,
-              paceT: 100,
             },
             {
               label: "Partner Organizations",
@@ -254,9 +242,6 @@ export default function HEMPCareerExposure() {
               displayFmt: (n) => n.toLocaleString(),
               sub: `Cross-sector collaborations`,
               tip: "Total partner organizations engaged through sessions",
-              pace: true,
-              paceA: totalPartnerships,
-              paceT: 80,
             },
             {
               label: "Sessions Held",
@@ -265,9 +250,6 @@ export default function HEMPCareerExposure() {
               displayFmt: (n) => n.toLocaleString(),
               sub: `Unique Career Exposure events`,
               tip: "Number of Career Exposure sessions organised",
-              pace: true,
-              paceA: filteredSessions.length,
-              paceT: 40,
             },
           ]}
         />

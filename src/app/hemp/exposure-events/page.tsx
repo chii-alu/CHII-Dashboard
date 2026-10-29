@@ -7,6 +7,7 @@ import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
+import { useProgress } from "@/hooks/useProgress";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -181,6 +182,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function ExposureEvents() {
+  const progressRows = useProgress("HEMP", "Exposure Events");
   const { data: interventionData } = useDashboardData(
     () => fetch('/api/hemp-intervention?intervention=Exposure%20Events').then(r => r.json()),
     []
@@ -257,6 +259,7 @@ export default function ExposureEvents() {
 
       <div className="max-w-[1440px] mx-auto px-6 py-7">
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Programme Overview"
           nowrap={true}
           cards={[
@@ -267,9 +270,6 @@ export default function ExposureEvents() {
               displayFmt: (n) => n.toLocaleString(),
               sub: ``,
               tip: "Total participants across all events toward 2030 target",
-              pace: true,
-              paceA: stats.totalParticipants,
-              paceT: null,
             },
             {
               label: "Female Participation",
@@ -278,9 +278,6 @@ export default function ExposureEvents() {
               displayFmt: (n) => n + "%",
               sub: "mission students",
               tip: "Percentage of female participants across all students and mission cohort",
-              pace: true,
-              paceA: null,
-              paceT: pctOf(targetOf("Female Participation")),
             },
             {
               label: "Quality Score",
@@ -289,9 +286,6 @@ export default function ExposureEvents() {
               displayFmt: (n) => n.toFixed(1),
               sub: `Out of 5`,
               tip: "Average participant satisfaction rating",
-              pace: true,
-              paceA: stats.avgRating === null ? null : parseFloat(stats.avgRating) * 20,
-              paceT: null,
             },
             {
               label: "Partner Organizations",
@@ -300,9 +294,6 @@ export default function ExposureEvents() {
               displayFmt: (n) => n.toLocaleString(),
               sub: `Unique partnerships`,
               tip: "Number of collaborating organizations",
-              pace: true,
-              paceA: null,
-              paceT: null,
             },
             {
               label: "Events Delivered",
@@ -311,9 +302,6 @@ export default function ExposureEvents() {
               displayFmt: (n) => n.toLocaleString(),
               sub: `Total exposure events`,
               tip: "Total number of events delivered",
-              pace: true,
-              paceA: stats.eventCount,
-              paceT: null,
             },
             {
               label: "Inclusion Reach",
@@ -322,9 +310,6 @@ export default function ExposureEvents() {
               displayFmt: (n) => n + "%",
               sub: totalPWD === null ? "In coming data" : `PWD: ${totalPWD} | Refugee: ${totalRefugees}`,
               tip: "Percentage of participants with disabilities and refugee background",
-              pace: true,
-              paceA: null,
-              paceT: pctOf(targetOf("Inclusion Reach")),
             },
           ]}
         />
