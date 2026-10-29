@@ -325,6 +325,7 @@ export default function CareerWorkshopsPage() {
       <div className="max-w-[1440px] mx-auto px-6 py-7">
         <HeaderStatsPanel
         progressRows={progressRows}
+          columns={4}
           title="Programme Overview"
           nowrap={true}
           cards={[
