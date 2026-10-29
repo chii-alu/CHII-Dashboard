@@ -1,4 +1,6 @@
 "use client";
+import { useProgress } from "@/hooks/useProgress";
+import { progressInsight } from "@/lib/progressInsight";
 import { FILTER_YEARS } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -121,6 +123,8 @@ const WE_SECTIONS: { n: number; label: string }[] = [
 ];
 
 export default function WageEmploymentPage() {
+  // Live progress against target for the stat cards, from v_progress (Executive rows).
+  const progressRows = useProgress("EXEC");
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
@@ -178,17 +182,17 @@ export default function WageEmploymentPage() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="Wage Employed" num={null} sub="participants in work" Icon={Briefcase}
+            <StatsKpiCard label="Wage Employed" progress={progressInsight(progressRows["Waged Employed"])} num={null} sub="participants in work" Icon={Briefcase}
               tooltip="Total CHII participants currently in wage employment within the active filters." />
-            <StatsKpiCard label="Female Wage Employed" num={kpis.female} sub={`${kpis.femalePct}% of employed`} Icon={WomanIcon}
+            <StatsKpiCard label="Female Wage Employed" progress={progressInsight(progressRows["Female Wage Employed"])} num={kpis.female} sub={`${kpis.femalePct}% of employed`} Icon={WomanIcon}
               tooltip="Number and share of female participants in wage employment." />
-            <StatsKpiCard label="Median Salary" num={kpis.medSalary} displayFmt={(n) => `$${(n / 1000).toFixed(1)}k`} sub="monthly" Icon={ArrowUpRight}
+            <StatsKpiCard label="Median Salary" progress={progressInsight(progressRows["Median Salary"])} num={kpis.medSalary} displayFmt={(n) => `$${(n / 1000).toFixed(1)}k`} sub="monthly" Icon={ArrowUpRight}
               tooltip="Median monthly salary of wage-employed participants." />
-            <StatsKpiCard label="Decent Work Rate" num={kpis.decentPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={ShieldCheck}
+            <StatsKpiCard label="Decent Work Rate" progress={progressInsight(progressRows["Decent Work Rate"])} num={kpis.decentPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={ShieldCheck}
               tooltip="Share of employed participants in roles meeting decent-work criteria." />
-            <StatsKpiCard label="Non-clinical Roles" num={kpis.techPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={Cpu}
+            <StatsKpiCard label="Non-clinical Roles" progress={progressInsight(progressRows["Non-clinical Roles"])} num={kpis.techPct} displayFmt={(n) => `${Math.round(n)}%`} sub="of employed" Icon={Cpu}
               tooltip="Share of employed participants working in non-clinical roles." />
-            <StatsKpiCard label="Median Time to Job" num={kpis.medMonths} displayFmt={(n) => `${Math.round(n)} mo`} sub="to first job" Icon={Clock}
+            <StatsKpiCard label="Median Time to Job" progress={progressInsight(progressRows["Median Time to Job"])} num={kpis.medMonths} displayFmt={(n) => `${Math.round(n)} mo`} sub="to first job" Icon={Clock}
               tooltip="Median number of months from completing a program to first wage employment." />
           </div>
 
