@@ -2,11 +2,13 @@
 import { useEffect, useState } from "react";
 import type { ProgressRow } from "@/lib/progressInsight";
 
-export function useProgress(dashboard: string, intervention?: string) {
+export function useProgress(dashboard: string, intervention?: string, section?: string, metricGroup?: string) {
   const [byMetric, setByMetric] = useState<Record<string, ProgressRow>>({});
   useEffect(() => {
     const params = new URLSearchParams({ dashboard });
     if (intervention) params.set("intervention", intervention);
+    if (section) params.set("section", section);
+    if (metricGroup) params.set("metricGroup", metricGroup);
     const load = () =>
       fetch(`/api/progress?${params}`, { cache: "no-store" })
         .then((res) => res.json())
@@ -19,6 +21,6 @@ export function useProgress(dashboard: string, intervention?: string) {
     load();
     const timer = setInterval(load, 60_000);
     return () => clearInterval(timer);
-  }, [dashboard, intervention]);
+  }, [dashboard, intervention, section, metricGroup]);
   return byMetric;
 }

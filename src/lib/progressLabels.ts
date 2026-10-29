@@ -5,7 +5,6 @@ import type { ProgressRow } from "@/lib/progressInsight";
 export const PROGRESS_NAMES: Record<string, string> = {
   // Executive: Entrepreneurship
   "Active Enterprises": "Enterprises",
-  "Jobs Created": "Jobs created",
   // Executive: Outreach
   "Total Participants": "Total Participants (All Programmes)",
   "Interventions": "Interventions (Types)",

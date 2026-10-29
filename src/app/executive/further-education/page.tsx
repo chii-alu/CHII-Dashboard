@@ -151,7 +151,7 @@ const FE_SECTIONS: { n: number; label: string }[] = [
 
 export default function FurtherEducationPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC");
+  const progressRows = useProgress("EXEC", undefined, "Further Education");
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [activeSection, setActiveSection] = useState<number>(1);

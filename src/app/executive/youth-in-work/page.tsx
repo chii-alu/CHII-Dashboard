@@ -240,7 +240,7 @@ const YIW_SECTIONS: { n: number; label: string }[] = [
 ═══════════════════════════════════════════════════════ */
 export default function YouthInWorkPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC");
+  const progressRows = useProgress("EXEC", undefined, "Youth in Work", "Youth In Work Metrics");
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
@@ -316,12 +316,12 @@ export default function YouthInWorkPage() {
 
   const kpis = useMemo(() => ({
     total: totals.totalParticipants ?? null,
-    employed: null,
+    employed: totals.employed ?? null,
     interns: totals.inInternships ?? null,
-    founders: null,
+    founders: totals.founders ?? null,
     jobsCreated: totals.jobsCreated ?? null,
-    femalePct: null,
-    africaPct: null,
+    femalePct: totals.femalePct ?? null,
+    africaPct: totals.africaPct ?? null,
   }), [totals]);
 
   /* ── Section 1: work pathways ──────────────────────── */

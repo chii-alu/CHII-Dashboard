@@ -125,7 +125,7 @@ const WE_SECTIONS: { n: number; label: string }[] = [
 
 export default function WageEmploymentPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC");
+  const progressRows = useProgress("EXEC", undefined, "Wage Employment");
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
