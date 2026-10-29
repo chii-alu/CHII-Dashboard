@@ -11,17 +11,29 @@ export async function GET(
 ) {
   try {
     const section = decodeURIComponent(params.section);
+    // Optional: only rows of one metric_group, e.g. ?metricGroup=Entrepreneurship%20Metrics
+    const metricGroup = new URL(request.url).searchParams.get("metricGroup");
     const supabase = getSupabaseServer();
 
     const [values, sync] = await Promise.all([
-      supabase
-        .from("v_metric_values")
-        .select("*")
-        .eq("dashboard", "EXEC")
-        .eq("section", section)
-        .is("year", null)
-        .eq("value_type", "actual")
-        .order("metric"),
+      (metricGroup
+        ? supabase
+            .from("v_metric_values")
+            .select("*")
+            .eq("dashboard", "EXEC")
+            .eq("section", section)
+            .eq("metric_group", metricGroup)
+            .is("year", null)
+            .eq("value_type", "actual")
+            .order("metric")
+        : supabase
+            .from("v_metric_values")
+            .select("*")
+            .eq("dashboard", "EXEC")
+            .eq("section", section)
+            .is("year", null)
+            .eq("value_type", "actual")
+            .order("metric")),
       supabase
         .from("v_last_sync")
         .select("last_synced, workbook")

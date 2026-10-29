@@ -161,7 +161,7 @@ export default function EntrepreneurshipPage() {
   const syncedAt = useSyncedAt("EXEC");
   const [entHeadlines, setEntHeadlines] = useState<any[] | null>(null);
   useEffect(() => {
-    fetch("/api/exec-section/Entrepreneurship")
+    fetch("/api/exec-section/Entrepreneurship?metricGroup=Entrepreneurship%20Metrics")
       .then(r => r.json())
       .then(result => setEntHeadlines(Array.isArray(result.headlines) ? result.headlines : []))
       .catch(() => setEntHeadlines([]));
@@ -311,17 +311,17 @@ export default function EntrepreneurshipPage() {
         {/* ════ OVERVIEW ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
-            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Entrepreneurs" progress={progressInsight(progressFor(progressRows, "Entrepreneurs"))} num={null} sub="founders tracked" Icon={Rocket}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Entrepreneurs" progress={progressInsight(progressFor(progressRows, "Entrepreneurs"))} num={ent("Entrepreneurs")} sub="founders tracked" Icon={Rocket}
               tooltip="Total entrepreneurs (founders) tracked across the portfolio." />
-            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Enterprises" progress={progressInsight(progressFor(progressRows, "Enterprises"))} num={ent("Enterprise Started Per Year")} sub="started" Icon={Activity}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Enterprises" progress={progressInsight(progressFor(progressRows, "Enterprises"))} num={ent("Enterprises")} sub="started" Icon={Activity}
               tooltip="Enterprises started by participants." />
             <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Jobs Created" progress={progressInsight(progressFor(progressRows, "Jobs Created"))} num={ent("Jobs created")} sub="created" Icon={Briefcase}
               tooltip="Jobs created across all enterprises." />
             <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Female-led" progress={progressInsight(progressFor(progressRows, "Female-led"))} num={ent("Female-led")} sub="female-led enterprises" Icon={WomanIcon}
               tooltip="Enterprises led by female founders." />
-            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Capital Secured" progress={progressInsight(progressFor(progressRows, "Capital Secured"))} num={null} sub="raised to date" Icon={Banknote}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Capital Secured" progress={progressInsight(progressFor(progressRows, "Capital Secured"))} num={ent("Capital Secured")} displayFmt={(n) => `$${Math.round(n).toLocaleString()}`} sub="raised to date" Icon={Banknote}
               tooltip="Total capital raised by enterprises across the portfolio." />
-            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Market Extension" progress={progressInsight(progressFor(progressRows, "Market Extension"))} num={null} sub="entered new markets" Icon={Globe}
+            <StatsKpiCard missingText={entLoaded ? "In coming data" : ""} label="Market Extension" progress={progressInsight(progressFor(progressRows, "Market Extension"))} num={ent("Market Extension")} sub="entered new markets" Icon={Globe}
               tooltip="Enterprises that expanded into new markets or geographies." />
           </div>
 
