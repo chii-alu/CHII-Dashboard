@@ -663,7 +663,7 @@ export default function AtAGlancePage() {
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, flexShrink: 0, textAlign: "center" }}>Outreach & Access</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-            <KPICard label="Total Beneficiaries" value={totalBeneficiaries} femalePct={femaleShare} malePct={maleShare} info="Total individuals reached across all CHII outreach programs." Icon={Users} href="/executive/outreach" />
+            <KPICard label="Total Outreach" value={totalBeneficiaries} femalePct={femaleShare} malePct={maleShare} info="Total individuals reached across all CHII outreach programs." Icon={Users} href="/executive/outreach" />
             <KPICard label="Youth w/ Disability" value={youthDisability} femalePct={disabilityFemalePct} malePct={disabilityMalePct} info="Youth with disability reached through outreach." Icon={Users} href="/executive/outreach" />
             <KPICard label="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={refugeeMalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach" />
             <KPICard label="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={enrolledMalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach" />
