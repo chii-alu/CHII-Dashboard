@@ -155,7 +155,7 @@ const SECTIONS: { n: number; label: string }[] = [
 
 export default function EntrepreneurshipPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC");
+  const progressRows = useProgress("EXEC", undefined, "Entrepreneurship", "Entrepreneurship Metrics");
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");

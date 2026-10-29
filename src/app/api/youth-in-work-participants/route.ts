@@ -41,39 +41,20 @@ export async function GET() {
       }
     });
 
-    // Fetch "Jobs Created (Total)" from "At a Glance" section
-    const { data: atGlanceData, error: atGlanceError } = await supabase
-      .from("v_metric_values")
-      .select("*")
-      .eq("dashboard", "EXEC")
-      .eq("section", "At a Glance")
-      .is("year", null)
-      .eq("value_type", "actual")
-      .eq("metric", "Jobs Created (Total)")
-      .eq("segment", "all")
-      .limit(1);
-
-    if (!atGlanceError && atGlanceData && atGlanceData.length > 0) {
-      metricsMap.set("Jobs Created (Total)", atGlanceData[0].value);
-    }
-
-    // Get only available metrics from Supabase (don't add hardcoded values)
-    const totalParticipants = metricsMap.get("Participants") || 0;
-    const inInternships = metricsMap.get("In Internships") || 0;
-
     const participants: unknown[] = [];
 
-    // Only return metrics that actually exist in Supabase
-    const metrics: any = {};
-    if (metricsMap.has("Participants")) {
-      metrics.totalParticipants = totalParticipants;
-    }
-    if (metricsMap.has("In Internships")) {
-      metrics.inInternships = inInternships;
-    }
-    if (metricsMap.has("Jobs Created (Total)")) {
-      metrics.jobsCreated = metricsMap.get("Jobs Created (Total)");
-    }
+    // Card numbers: only the 'Youth In Work Metrics' group, actual values, all segments.
+    const cardRows = (data ?? []).filter((r: any) => r.metric_group === "Youth In Work Metrics" && r.segment === "all");
+    const cardValue = (metric: string) => cardRows.find((r: any) => r.metric === metric)?.value ?? null;
+    const metrics: any = {
+      totalParticipants: cardValue("Participants"),
+      inInternships: cardValue("In Internships"),
+      employed: cardValue("In Employment (Wage)"),
+      founders: cardValue("Enterprise (Self-employment)"),
+      jobsCreated: cardValue("Jobs Created"),
+      femalePct: cardValue("Female Share (%)"),
+      africaPct: cardValue("Based in Africa (%)"),
+    };
     const byLabel = (metric: string, label: string) =>
       data?.find((r: any) => r.metric === metric && r.segment === "all" && r.label === label)?.value ?? null;
     const bySegment = (metric: string, segment: string) =>
