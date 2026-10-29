@@ -20,6 +20,7 @@ export async function GET(
         .eq("dashboard", "EXEC")
         .eq("section", section)
         .is("year", null)
+        .eq("value_type", "actual")
         .order("metric"),
       supabase
         .from("v_last_sync")

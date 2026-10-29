@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Info, type LucideIcon } from "lucide-react";
 import { progressInsight, type ProgressInsight, type ProgressRow, type ProgressStatus } from "@/lib/progressInsight";
+import { progressFor } from "@/lib/progressLabels";
 
 // Color palette - HEMP blue
 const BRAND = "#14306B";
@@ -63,7 +64,7 @@ export function HeaderStatsPanel({
 }: HeaderStatsPanelProps) {
   // Progress for a card: an explicit card.progress wins, otherwise the row for its label from progressRows.
   const insightOf = (card: HeaderStatCard): ProgressInsight | null =>
-    card.progress ?? (progressRows ? progressInsight(progressRows[card.label]) : null);
+    card.progress ?? (progressRows ? progressInsight(progressFor(progressRows, card.label)) : null);
 
   const [hoveredIconIdx, setHoveredIconIdx] = useState<number | null>(null);
 

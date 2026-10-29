@@ -18,6 +18,7 @@ export async function GET(
       .eq("dashboard", "HENT")
       .eq("section", section)
       .is("year", null)
+      .eq("value_type", "actual")
       .order("metric");
 
     if (error) {

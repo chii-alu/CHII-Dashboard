@@ -25,9 +25,6 @@ export async function GET(request: Request) {
     const headlines = actual
       .filter((row: any) => row.segment === "all" && !row.label)
       .map((row: any) => ({ metric: row.metric, value: row.value }));
-    const targets = (data ?? [])
-      .filter((row: any) => row.value_type === "target" && row.year === null && row.segment === "all" && !row.label)
-      .map((row: any) => ({ metric: row.metric, value: row.value }));
 
     const breakdowns: Record<string, { name: string; count: number | null }[]> = {};
     actual
@@ -36,7 +33,7 @@ export async function GET(request: Request) {
         (breakdowns[row.metric] ??= []).push({ name: row.label, count: row.value });
       });
     const segments = yearly.map((row: any) => ({ metric: row.metric, segment: row.segment, year: row.year, value: row.value }));
-    return NextResponse.json({ headlines, targets, breakdowns, segments });
+    return NextResponse.json({ headlines, breakdowns, segments });
   } catch (error: any) {
     console.error("[API] Error fetching HEMP intervention:", error);
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });

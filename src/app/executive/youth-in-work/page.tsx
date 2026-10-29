@@ -1,6 +1,7 @@
 "use client";
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight } from "@/lib/progressInsight";
+import { progressFor } from "@/lib/progressLabels";
 import { FILTER_YEARS } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
@@ -424,19 +425,19 @@ export default function YouthInWorkPage() {
         {/* ════ EXECUTIVE SNAPSHOT ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 12 }}>
-            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Participants" progress={progressInsight(progressRows["Participants"])} num={kpis.total} sub="students + alumni" Icon={Users}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Participants" progress={progressInsight(progressFor(progressRows, "Participants"))} num={kpis.total} sub="students + alumni" Icon={Users}
               tooltip="Total youth tracked across the CHII ecosystem." />
-            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="In Employment" progress={progressInsight(progressRows["In Employment (Wage)"])} num={kpis.employed} sub="primary employment" Icon={Briefcase}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="In Employment" progress={progressInsight(progressFor(progressRows, "In Employment"))} num={kpis.employed} sub="primary employment" Icon={Briefcase}
               tooltip="Youth in wage employment, including those at supported enterprises." />
-            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="In Internships" progress={progressInsight(progressRows["In Internships"])} num={kpis.interns} sub="active internships" Icon={GraduationCap}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="In Internships" progress={progressInsight(progressFor(progressRows, "In Internships"))} num={kpis.interns} sub="active internships" Icon={GraduationCap}
               tooltip="Youth currently in internship placements." />
-            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Enterprise" progress={progressInsight(progressRows["Enterprise (Self-employment)"])} num={kpis.founders} sub="running enterprises" Icon={Rocket}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Enterprise" progress={progressInsight(progressFor(progressRows, "Enterprise"))} num={kpis.founders} sub="running enterprises" Icon={Rocket}
               tooltip="Participants founding or co-running an enterprise." />
-            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Jobs Created" progress={progressInsight(progressRows["Jobs Created"])} num={kpis.jobsCreated} sub="by supported enterprises" Icon={Hammer}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Jobs Created" progress={progressInsight(progressFor(progressRows, "Jobs Created"))} num={kpis.jobsCreated} sub="by supported enterprises" Icon={Hammer}
               tooltip="Positions created by enterprises CHII participants founded." />
-            <StatsKpiCard missingText={metricsLoaded ? "–" : ""} label="Female" progress={progressInsight(progressRows["Female Share (%)"])} num={kpis.femalePct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="of participants" Icon={WomanIcon}
+            <StatsKpiCard missingText={metricsLoaded ? "–" : ""} label="Female" progress={progressInsight(progressFor(progressRows, "Female"))} num={kpis.femalePct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="of participants" Icon={WomanIcon}
               tooltip="Share of female participants." />
-            <StatsKpiCard missingText={metricsLoaded ? "–" : ""} label="Based in Africa" progress={progressInsight(progressRows["Based in Africa (%)"])} num={kpis.africaPct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="on the continent" Icon={Globe}
+            <StatsKpiCard missingText={metricsLoaded ? "–" : ""} label="Based in Africa" progress={progressInsight(progressFor(progressRows, "Based in Africa"))} num={kpis.africaPct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="on the continent" Icon={Globe}
               tooltip="Share of youth currently based in Africa." />
           </div>
 
