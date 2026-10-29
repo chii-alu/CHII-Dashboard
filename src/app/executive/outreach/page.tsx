@@ -1,4 +1,6 @@
 "use client";
+import { useProgress } from "@/hooks/useProgress";
+import { progressInsight } from "@/lib/progressInsight";
 import { FILTER_YEARS } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
@@ -179,6 +181,8 @@ const OA_SECTIONS: { n: number; label: string }[] = [
    PAGE
 ═══════════════════════════════════════════════════════ */
 export default function OutreachPage() {
+  // Live progress against target for the stat cards, from v_progress (Executive rows).
+  const progressRows = useProgress("EXEC");
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
@@ -251,6 +255,9 @@ export default function OutreachPage() {
       return true;
     }),
   [program, institution, population, year, intervention, participants]);
+
+  /* ── Female participants: database headline (actual) ── */
+  const femaleParticipants = supabaseData?.find((m: any) => m.metric === 'Female Participants')?.value ?? null;
 
   /* ── KPIs ─────────────────────────────────────────── */
   const kpis = useMemo(() => {
@@ -431,17 +438,17 @@ export default function OutreachPage() {
         {/* ════ SECTION 1 — EXECUTIVE OVERVIEW ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 12 }}>
-            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Total Participants" num={kpis.total} sub="People reached in scope" Icon={Users}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Total Participants" progress={progressInsight(progressRows["Total Participants (All Programmes)"])} num={kpis.total} sub="People reached in scope" Icon={Users}
               tooltip="Unique participants engaged across CHII outreach interventions within the current filters." />
-            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Interventions" num={kpis.interventionCount} sub="Active outreach programs" Icon={Layers}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Interventions" progress={progressInsight(progressRows["Interventions (Types)"])} num={kpis.interventionCount} sub="Active outreach programs" Icon={Layers}
               tooltip="Distinct outreach interventions in scope (HealthX, Masterclasses, Mentorship, Hackathons, and more)." />
-            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Mission Students" num={kpis.missionCount} sub="Also degree / mission students" Icon={BookOpen}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Mission Students" progress={progressInsight(progressRows["Mission Students"])} num={kpis.missionCount} sub="Also degree / mission students" Icon={BookOpen}
               tooltip="Number of participants who are also mission (degree) students." />
-            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Female Share" num={kpis.femalePct} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={WomanIcon}
-              tooltip="Share of female participants across outreach interventions in scope." />
-            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Refugee / IDP" num={inclusion.refugee} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Shield}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Female Participants" progress={progressInsight(progressRows["Female Participants"])} num={femaleParticipants} displayFmt={(n) => Math.round(n).toLocaleString()} sub="Across outreach programmes" Icon={WomanIcon}
+              tooltip="Female participants across outreach interventions in scope." />
+            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Refugee / IDP" progress={progressInsight(progressRows["Refugee / IDP (%)"])} num={inclusion.refugee} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Shield}
               tooltip="Share of participants who are refugees or internally displaced persons." />
-            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Persons w/ Disability" num={inclusion.pwd} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Accessibility}
+            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Persons w/ Disability" progress={progressInsight(progressRows["Persons with Disability (%)"])} num={inclusion.pwd} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Accessibility}
               tooltip="Share of participants who are persons with disability." />
           </div>
 

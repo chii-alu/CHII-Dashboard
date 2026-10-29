@@ -1,6 +1,15 @@
 "use client";
 import { useState, useEffect, type ComponentType } from "react";
 import { benchColor } from "@/theme/tokens";
+import type { ProgressInsight, ProgressStatus } from "@/lib/progressInsight";
+
+const PROGRESS_COLOR: Record<ProgressStatus, string> = {
+  met: "#16A34A",
+  close: "#B5D4F4",
+  behind: "#F59E0B",
+  "no-data": "#9CA3AF",
+  "no-target": "#9CA3AF",
+};
 
 export function useCountUp(target: number, duration = 1000): number {
   const [val, setVal] = useState(0);
@@ -36,6 +45,8 @@ interface Props {
   bench?: number;
   /** Text shown when `num` is null. Defaults to "In coming data". */
   missingText?: string;
+  /** Live progress against target (from useProgress). Shows a bar and caption; replaces the target line. */
+  progress?: ProgressInsight;
 }
 
 export default function StatsKpiCard({
@@ -52,6 +63,7 @@ export default function StatsKpiCard({
   pct,
   bench,
   missingText = "In coming data",
+  progress,
 }: Props) {
   const animated = useCountUp(num ?? 0);
   const [showTip, setShowTip] = useState(false);
@@ -129,8 +141,20 @@ export default function StatsKpiCard({
         </p>
       </div>
 
+      {/* Live progress against target: bar (when a target exists) and caption */}
+      {progress && (
+        <div style={{ marginTop: 7 }}>
+          {progress.barPct != null && (
+            <div style={{ height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 2, width: `${progress.barPct}%`, backgroundColor: PROGRESS_COLOR[progress.status], transition: "width 300ms ease" }} />
+            </div>
+          )}
+          <p style={{ fontSize: 9.5, color: lbl, opacity: 0.85, letterSpacing: "0.02em", marginTop: 4 }}>{progress.caption}</p>
+        </div>
+      )}
+
       {/* Performance against target — the only place the app reports variance */}
-      {hasTarget && (
+      {!progress && hasTarget && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, marginTop: 7 }}>
           <span
             style={{

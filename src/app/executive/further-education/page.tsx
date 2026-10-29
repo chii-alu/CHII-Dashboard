@@ -1,4 +1,6 @@
 "use client";
+import { useProgress } from "@/hooks/useProgress";
+import { progressInsight } from "@/lib/progressInsight";
 import { FILTER_YEARS } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -147,6 +149,8 @@ const FE_SECTIONS: { n: number; label: string }[] = [
 ═══════════════════════════════════════════════════════ */
 
 export default function FurtherEducationPage() {
+  // Live progress against target for the stat cards, from v_progress (Executive rows).
+  const progressRows = useProgress("EXEC");
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [activeSection, setActiveSection] = useState<number>(1);
@@ -303,17 +307,17 @@ export default function FurtherEducationPage() {
         {/* ════ OVERVIEW ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
-            <StatsKpiCard label="In Further Education" num={null} sub="graduates" Icon={GraduationCap}
+            <StatsKpiCard label="In Further Education" progress={progressInsight(progressRows["In Further Education"])} num={null} sub="graduates" Icon={GraduationCap}
               tooltip="Graduates pursuing further education." />
-            <StatsKpiCard label="Female Graduates" num={null} sub="female students" Icon={WomanIcon}
+            <StatsKpiCard label="Female Graduates" progress={progressInsight(progressRows["Female Graduates"])} num={null} sub="female students" Icon={WomanIcon}
               tooltip="Female graduates in further education." />
-            <StatsKpiCard label="Master's & Above" num={null} displayFmt={(n) => `${n}%`} sub="postgraduate" Icon={BookOpen}
+            <StatsKpiCard label="Master's & Above" progress={progressInsight(progressRows["Master's & Above"])} num={null} displayFmt={(n) => `${n}%`} sub="postgraduate" Icon={BookOpen}
               tooltip="Share pursuing master's degrees or higher." />
-            <StatsKpiCard label="Scholarship-Funded" num={null} displayFmt={(n) => `${n}%`} sub="funded share" Icon={Wallet}
+            <StatsKpiCard label="Scholarship-Funded" progress={progressInsight(progressRows["Scholarship-Funded"])} num={null} displayFmt={(n) => `${n}%`} sub="funded share" Icon={Wallet}
               tooltip="Share on a scholarship or otherwise funded place." />
-            <StatsKpiCard label="Further Study Rate" num={null} displayFmt={(n) => `${n}%`} sub="of all graduates" Icon={TrendingUp}
+            <StatsKpiCard label="Further Study Rate" progress={progressInsight(progressRows["Further Study Rate"])} num={null} displayFmt={(n) => `${n}%`} sub="of all graduates" Icon={TrendingUp}
               tooltip="Share of CHII graduates who progress to further study." />
-            <StatsKpiCard label="Countries of Study" num={d.countriesOfStudy} sub="destinations" Icon={Globe}
+            <StatsKpiCard label="Countries of Study" progress={progressInsight(progressRows["Countries of Study"])} num={d.countriesOfStudy} sub="destinations" Icon={Globe}
               tooltip="Distinct countries where graduates pursue further study." />
           </div>
 
