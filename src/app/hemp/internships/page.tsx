@@ -272,6 +272,7 @@ export default function HEMPInternships() {
       <div className="max-w-[1440px] mx-auto px-6 py-7">
 <HeaderStatsPanel
         progressRows={progressRows}
+        columns={4}
           title="Programme Overview"
           nowrap={false}
           cards={[
@@ -322,6 +323,14 @@ export default function HEMPInternships() {
               displayFmt: (n) => n.toFixed(1),
               sub: `Out of 10 | Based on employer feedback`,
               tip: "Average employer satisfaction rating",
+            },
+            {
+              label: "Partners",
+              num: actualOf("Partners"),
+              icon: Briefcase,
+              displayFmt: (n) => n.toLocaleString(),
+              sub: ``,
+              tip: "Partner organisations offering internships",
             },
           ]}
         />
