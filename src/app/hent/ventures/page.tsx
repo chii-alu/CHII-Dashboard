@@ -4,8 +4,15 @@ import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import { DonutRing } from "@/components/charts/donut-chart";
-import { ventures as ALL_VENTURES } from "@/data/ventures";
-import { founders } from "@/data/founders";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
+type Row = Record<string, any>;
+const ALL_VENTURES: Row[] = [];
+const founders: Row[] = [];
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [ALL_VENTURES, founders].some(list => list.length > 0);
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -172,6 +179,13 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HENTVentures() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: ventureHeadlines } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    ventureHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const categories = ["Growth & Jobs", "Portfolio Composition", "Geography & Engagement", "Portfolio Health"];
@@ -266,7 +280,7 @@ export default function HENTVentures() {
           cards={[
             {
               label: "Portfolio Size",
-              num: filteredActuals.ventures,
+              num: headline("Portfolio Size"),
               icon: Briefcase,
               sub: `${Math.round((filteredActuals.ventures / TARGETS.ventures) * 100)}% of ${TARGETS.ventures}`,
               pace: true,
@@ -276,7 +290,7 @@ export default function HENTVentures() {
             },
             {
               label: "Employment Impact",
-              num: filteredActuals.jobs,
+              num: headline("Employment Impact"),
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
               sub: `${Math.round((filteredActuals.jobs / TARGETS.jobs) * 100)}% of target · Avg ${avgJobsPerVenture}/venture`,
@@ -287,7 +301,7 @@ export default function HENTVentures() {
             },
             {
               label: "Capital Deployed",
-              num: filteredActuals.funds,
+              num: headline("Capital Deployed"),
               icon: DollarSign,
               displayFmt: fmt$,
               sub: `${Math.round((filteredActuals.funds / TARGETS.funds) * 100)}% of target · ${venturesFunded} funded`,
@@ -298,7 +312,7 @@ export default function HENTVentures() {
             },
             {
               label: "Portfolio Health",
-              num: retentionRate,
+              num: headline("Portfolio Health"),
               icon: TrendingUp,
               displayFmt: (n) => n + "%",
               sub: `Retention · ${activeVentures} active`,
@@ -309,7 +323,7 @@ export default function HENTVentures() {
             },
             {
               label: "Founder Diversity",
-              num: filteredVentures.length > 0 ? Math.round((femaleVentures / filteredVentures.length) * 100) : 0,
+              num: headline("Founder Diversity"),
               icon: WomanIcon,
               displayFmt: (n) => n + "%",
               sub: `Female-led · ${femaleVentures} of ${filteredVentures.length} ventures`,
@@ -320,7 +334,7 @@ export default function HENTVentures() {
             },
             {
               label: "Revenue Generated",
-              num: totalRevenue,
+              num: headline("Revenue Generated"),
               icon: DollarSign,
               displayFmt: fmt$,
               sub: `${filteredVentures.length > 0 ? fmt$(Math.round(totalRevenue / filteredVentures.length)) : "$0"}/venture avg`,
@@ -421,6 +435,10 @@ export default function HENTVentures() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Ventures Funded" subtitle="Ventures that have received capital" info="Number of ventures that have received capital vs unfunded">
+                <ChartWithPlaceholder data={hasHentData ? [
+                    { name: "Funded", value: venturesFunded },
+                    { name: "Unfunded", value: filteredVentures.length - venturesFunded },
+                  ] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Funded", value: venturesFunded },
@@ -435,11 +453,17 @@ export default function HENTVentures() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#2D6A4F" }} /> Value</span>
                 </div>
               </Panel>
               <Panel title="Avg Jobs per Venture" subtitle="Employment intensity by stage" info="Average employment impact across different venture stages">
+                <ChartWithPlaceholder data={hasHentData ? [
+                    { name: "Expose", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Expose").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Expose").length, 1)) },
+                    { name: "Build", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Build").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Build").length, 1)) },
+                    { name: "Scale", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Scale").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Scale").length, 1)) },
+                  ] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Expose", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Expose").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Expose").length, 1)) },
@@ -455,11 +479,13 @@ export default function HENTVentures() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#26A69A" }} /> Value</span>
                 </div>
               </Panel>
               <Panel title="Partnerships Built" subtitle="Cross-sector partnerships trend" info="Cross-sector partnerships built by ventures over time">
+                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), partnerships: filteredVentures.filter(v => v.cohort === y && v.partnerships > 0).reduce((s, v) => s + v.partnerships, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={years.map(y => ({ year: String(y), partnerships: filteredVentures.filter(v => v.cohort === y && v.partnerships > 0).reduce((s, v) => s + v.partnerships, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -470,8 +496,10 @@ export default function HENTVentures() {
                     <Line type="monotone" dataKey="partnerships" stroke="#FF5722" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Partnerships" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Revenue Generated" subtitle="Venture revenue trend over time" info="Total venture revenue generated over time">
+                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -482,8 +510,14 @@ export default function HENTVentures() {
                     <Line type="monotone" dataKey="revenue" stroke="#26A69A" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Revenue" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Ventures by Stage" subtitle="Expose · Build · Scale distribution" info="Distribution of ventures across development stages" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
+                <ChartWithPlaceholder data={hasHentData ? [
+                    { name: "Expose", value: filteredVentures.filter(v => sg(v.stage) === "Expose").length },
+                    { name: "Build", value: filteredVentures.filter(v => sg(v.stage) === "Build").length },
+                    { name: "Scale", value: filteredVentures.filter(v => sg(v.stage) === "Scale").length },
+                  ] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Expose", value: filteredVentures.filter(v => sg(v.stage) === "Expose").length },
@@ -499,11 +533,13 @@ export default function HENTVentures() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
                 </div>
               </Panel>
               <Panel title="Jobs Trend" subtitle="Employment growth over time" info="Annual trend of employment opportunities created" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
+                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -514,8 +550,14 @@ export default function HENTVentures() {
                     <Line type="monotone" dataKey="jobs" stroke={GREEN} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Jobs Created" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Performance Against Targets" subtitle="Current progress vs annual targets" info="Current progress vs annual targets for ventures, jobs, and funds">
+                <ChartWithPlaceholder data={hasHentData ? [
+                    { name: "Ventures", actual: filteredActuals.ventures, target: TARGETS.ventures },
+                    { name: "Jobs", actual: Math.round(filteredActuals.jobs / 100), target: Math.round(TARGETS.jobs / 100) },
+                    { name: "Funds", actual: Math.round(filteredActuals.funds / 10000), target: Math.round(TARGETS.funds / 10000) },
+                  ] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Ventures", actual: filteredActuals.ventures, target: TARGETS.ventures },
@@ -530,12 +572,18 @@ export default function HENTVentures() {
                     <Bar dataKey="target" fill="#26A69A" barSize={40} radius={[4, 4, 0, 0]} name="Target" />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#2D6A4F" }} /> Actual</span>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#26A69A" }} /> Target</span>
                 </div>
               </Panel>
               <Panel title="Female-Led & Accelerator Status" subtitle="Ventures breakdown by characteristics" info="Breakdown of ventures by female leadership and accelerator participation">
+                <ChartWithPlaceholder data={hasHentData ? [
+                    { name: "Female-Led", value: filteredVentures.filter(v => v.teamGender === "Female").length },
+                    { name: "In Accelerators", value: filteredVentures.filter(v => v.accelerator).length },
+                    { name: "Active & Female-Led", value: filteredVentures.filter(v => v.status === "Active" && v.teamGender === "Female").length },
+                  ] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Female-Led", value: filteredVentures.filter(v => v.teamGender === "Female").length },
@@ -551,6 +599,7 @@ export default function HENTVentures() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#FF5722" }} /> Value</span>
                 </div>
@@ -576,6 +625,10 @@ export default function HENTVentures() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Ventures by Sector" subtitle="Distribution across sectors" info="Distribution of portfolio ventures by business sector" filterOptions={["All Years", ...years.map(String)]} filterValue={filterCompYear} onFilterChange={setFilterCompYear}>
+                <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.sector))).map(s => ({
+                    name: s,
+                    value: filteredVentures.filter(v => v.sector === s).length
+                  })).sort((a, b) => b.value - a.value).slice(0, 5) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={Array.from(new Set(filteredVentures.map(v => v.sector))).map(s => ({
                     name: s,
@@ -590,11 +643,17 @@ export default function HENTVentures() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
                 </div>
               </Panel>
               <Panel title="Gender Distribution" subtitle="Founder diversity metrics" info="Founder diversity metrics across gender">
+                <ChartWithPlaceholder data={hasHentData ? [{
+                    name: "Founders",
+                    Male: founders.filter(f => f.gender !== "Female").length,
+                    Female: founders.filter(f => f.gender === "Female").length
+                  }] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart layout="vertical" data={[{
                     name: "Founders",
@@ -609,6 +668,7 @@ export default function HENTVentures() {
                     <Bar dataKey="Female" fill={GREEN_RAMP[1]} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[0] }} /> Male</span>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[1] }} /> Female</span>
@@ -628,6 +688,7 @@ export default function HENTVentures() {
                 />
               </Panel>
               <Panel title="Ventures by Cohort" subtitle="Portfolio distribution by entry year" info="Portfolio distribution across entry years">
+                <ChartWithPlaceholder data={hasHentData ? VENTURE_YEARS.map(y => ({ year: String(y), count: filteredVentures.filter(v => v.cohort === y).length })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={VENTURE_YEARS.map(y => ({ year: String(y), count: filteredVentures.filter(v => v.cohort === y).length }))} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -639,6 +700,7 @@ export default function HENTVentures() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#26A69A" }} /> Ventures</span>
                 </div>
@@ -664,6 +726,10 @@ export default function HENTVentures() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Funding by Country" subtitle="Capital distribution across regions" info="Capital distribution across regions and countries" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGeoYear} onFilterChange={setFilterGeoYear}>
+                <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
+                    name: c,
+                    value: filteredVentures.filter(v => v.country === c).reduce((s, v) => s + v.funding, 0)
+                  })).sort((a, b) => b.value - a.value).slice(0, 8) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
                     name: c,
@@ -676,11 +742,16 @@ export default function HENTVentures() {
                     <Bar dataKey="value" fill={GREEN} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
                 </div>
               </Panel>
               <Panel title="Ventures by Country" subtitle="Portfolio distribution" info="Portfolio distribution across regions and countries" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGeoYear} onFilterChange={setFilterGeoYear}>
+                <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
+                    name: c,
+                    value: filteredVentures.filter(v => v.country === c).length
+                  })).sort((a, b) => b.value - a.value).slice(0, 8) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
                     name: c,
@@ -695,6 +766,7 @@ export default function HENTVentures() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
                 </div>
@@ -720,6 +792,7 @@ export default function HENTVentures() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Funding Trend" subtitle="Capital deployment over time" info="Annual capital deployment to ventures over time" filterOptions={["All Years", ...years.map(String)]} filterValue={filterHealthYear} onFilterChange={setFilterHealthYear}>
+                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), funding: filteredVentures.filter(v => v.cohort === y && v.funding > 0).reduce((s, v) => s + v.funding, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={years.map(y => ({ year: String(y), funding: filteredVentures.filter(v => v.cohort === y && v.funding > 0).reduce((s, v) => s + v.funding, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -730,8 +803,10 @@ export default function HENTVentures() {
                     <Line type="monotone" dataKey="funding" stroke={GREEN} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Funding Deployed" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Revenue Trend" subtitle="Growth over time" info="Annual venture revenue growth over time" filterOptions={["All Years", ...years.map(String)]} filterValue={filterHealthYear} onFilterChange={setFilterHealthYear}>
+                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -742,6 +817,7 @@ export default function HENTVentures() {
                     <Line type="monotone" dataKey="revenue" stroke={GREEN} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Revenue Generated" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>

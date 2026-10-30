@@ -2,14 +2,21 @@
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the cards show "In coming data".
+type Row = Record<string, any>;
+const studyTrips: Row[] = [];
+const founders: Row[] = [];
+const hackathons: Row[] = [];
+const masterclasses: Row[] = [];
+const mentorshipPrograms: Row[] = [];
+const ALL_VENTURES: Row[] = [];
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [studyTrips, founders, hackathons, masterclasses, mentorshipPrograms, ALL_VENTURES].some(list => list.length > 0);
 import PortalFooter from "@/components/layout/portal-footer";
 import HeaderDesign from "@/components/layout/header-design";
-import { studyTrips } from "@/data/study-trips";
-import { founders } from "@/data/founders";
-import { hackathons } from "@/data/hackathons";
-import { masterclasses } from "@/data/masterclasses";
-import { mentorshipPrograms } from "@/data/mentorships";
-import { ventures as ALL_VENTURES } from "@/data/ventures";
 import { Award, Briefcase, Handshake, Lightbulb, MapPin, Presentation, Rocket, TrendingUp, Users, Zap, Info, type LucideIcon, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { useState, useMemo } from "react";
 import {
@@ -173,6 +180,13 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 // ──────────────────────────────────────────────────────────
 
 export default function HENTOverview() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: overviewHeadlines } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    overviewHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const categories = [
@@ -331,7 +345,7 @@ export default function HENTOverview() {
           cards={[
             {
               label: "Total Participants",
-              num: TOTAL_PART,
+              num: headline("Total Participants"),
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
               sub: "All programmes",
@@ -339,7 +353,7 @@ export default function HENTOverview() {
             },
             {
               label: "PWD-led Ventures",
-              num: PWD_LED_VENTURES,
+              num: headline("PWD-led Ventures"),
               icon: Users,
               displayFmt: (n) => n.toLocaleString(),
               sub: "Ventures with a PWD founder",
@@ -347,14 +361,14 @@ export default function HENTOverview() {
             },
             {
               label: "Active Ventures",
-              num: ALL_VENTURES.length,
+              num: headline("Active Ventures"),
               icon: Briefcase,
               sub: "Active ventures",
               tip: "Portfolio ventures currently active in the HENT portfolio",
             },
             {
               label: "Jobs Created",
-              num: TOTAL_JOBS,
+              num: headline("Jobs Created"),
               icon: TrendingUp,
               displayFmt: (n) => n.toLocaleString(),
               sub: "Total employment",
@@ -362,7 +376,7 @@ export default function HENTOverview() {
             },
             {
               label: "Total Funding",
-              num: TOTAL_FUNDING,
+              num: headline("Total Funding"),
               icon: Zap,
               displayFmt: fmt$,
               sub: "Capital deployed",
@@ -370,14 +384,14 @@ export default function HENTOverview() {
             },
             {
               label: "Female-Led",
-              num: femaleVentures,
+              num: headline("Female-Led"),
               icon: WomanIcon,
               sub: "Ventures",
               tip: "Number of ventures with female founder or co-founder",
             },
             {
               label: "NPS Score",
-              num: NPS_SCORE,
+              num: headline("NPS Score"),
               icon: Award,
               sub: "Satisfaction",
               tip: "Net Promoter Score - measure of participant satisfaction (average 0-10 scale)",
@@ -627,6 +641,7 @@ export default function HENTOverview() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Participants by Programme" subtitle="Distribution across programme types" info="Distribution of participants across masterclasses, hackathons, mentorship, and study trips" filterOptions={["All Years", ...years.map(String)]} filterValue={filterReachYear} onFilterChange={setFilterReachYear}>
+                <ChartWithPlaceholder data={hasHentData ? programData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={programData} margin={{ top: 25, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -639,6 +654,7 @@ export default function HENTOverview() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   {programData.map((d, i) => (
                     <span key={d.name} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: d.fill }} /> {d.name}</span>
@@ -646,6 +662,11 @@ export default function HENTOverview() {
                 </div>
               </Panel>
               <Panel title="Inclusivity Metrics" subtitle="PWD, Refugee, and Female representation" info="Distribution of participants from underrepresented groups">
+                <ChartWithPlaceholder data={hasHentData ? [
+                    { name: "PWD", count: pwdCount, pct: founders.length > 0 ? Math.round((pwdCount / founders.length) * 100) : 0, fill: GREEN_RAMP[0] },
+                    { name: "Refugee", count: refugeeCount, pct: founders.length > 0 ? Math.round((refugeeCount / founders.length) * 100) : 0, fill: GREEN_RAMP[2] },
+                    { name: "Female-Led", count: femaleVentures, pct: ALL_VENTURES.length > 0 ? Math.round((femaleVentures / ALL_VENTURES.length) * 100) : 0, fill: GREEN_RAMP[3] },
+                  ] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "PWD", count: pwdCount, pct: founders.length > 0 ? Math.round((pwdCount / founders.length) * 100) : 0, fill: GREEN_RAMP[0] },
@@ -666,6 +687,7 @@ export default function HENTOverview() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   {[
                     { name: "PWD", fill: GREEN_RAMP[0] },
@@ -697,6 +719,12 @@ export default function HENTOverview() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Innovation Funnel" subtitle="Hackathon participants through to ventures" info="Conversion of participants through hackathons to startups to portfolio ventures" filterOptions={["All Years", ...years.map(String)]} filterValue={filterInnovationFunnelYear} onFilterChange={setFilterInnovationFunnelYear}>
+                <ChartWithPlaceholder data={hasHentData ? [
+                    { name: "Participants", value: hackPart },
+                    { name: "Projects", value: hackProjects },
+                    { name: "Startups", value: hackStart },
+                    { name: "Portfolio", value: ALL_VENTURES.length },
+                  ] : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[
                     { name: "Participants", value: hackPart },
@@ -713,11 +741,13 @@ export default function HENTOverview() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: CHART_COLOR_1 }} /> Value</span>
                 </div>
               </Panel>
               <Panel title="Female-Led Ventures Trend" subtitle="Year-over-year progress" info="Annual trend of ventures with female founders or co-founders" filterOptions={["All Years", ...years.map(String)]} filterValue={filterVenturesFemaleYear} onFilterChange={setFilterVenturesFemaleYear}>
+                <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), count: ALL_VENTURES.filter(v => v.cohort === c && v.teamGender === "Female").length })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={cohorts.map(c => ({ year: String(c), count: ALL_VENTURES.filter(v => v.cohort === c && v.teamGender === "Female").length }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -728,6 +758,7 @@ export default function HENTOverview() {
                     <Line type="monotone" dataKey="count" stroke={CHART_COLOR_2} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Female-Led" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
@@ -751,6 +782,7 @@ export default function HENTOverview() {
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Capital by Fund Type" subtitle="Charitable, Venture, and Catalytic distribution" info="Funding distribution across Charitable, Venture Fund, and Catalytic sources" filterOptions={["All Years", ...years.map(String)]} filterValue={filterFundingYear} onFilterChange={setFilterFundingYear}>
+                <ChartWithPlaceholder data={hasHentData ? fundTypeData : null} height={280}>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart layout="vertical" data={fundTypeData} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -762,11 +794,13 @@ export default function HENTOverview() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: CHART_COLOR_2 }} /> Value</span>
                 </div>
               </Panel>
               <Panel title="Funding Trend" subtitle="Capital deployed annually" info="Annual funding disbursement to ventures showing acceleration or sustainability" filterOptions={["All Years", ...years.map(String)]} filterValue={filterFundingTrendYear} onFilterChange={setFilterFundingTrendYear}>
+                <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), funding: ALL_VENTURES.filter(v => v.cohort === c && v.funding > 0).reduce((s, v) => s + v.funding, 0) })) : null} height={280}>
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={cohorts.map(c => ({ year: String(c), funding: ALL_VENTURES.filter(v => v.cohort === c && v.funding > 0).reduce((s, v) => s + v.funding, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -777,11 +811,23 @@ export default function HENTOverview() {
                     <Line type="monotone" dataKey="funding" stroke={CHART_COLOR_4} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Funding Deployed" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
 
             <div style={{ marginTop: 16 }}>
               <Panel title="Funding by Venture Stage" subtitle="Capital distribution across Expose, Build, and Scale stages" info="How capital flows to ventures at different stages of development, from initial exposure through scaling">
+                <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => {
+                    const exposeVentures = ALL_VENTURES.filter(v => v.cohort === c && sg(v.stage) === "Expose");
+                    const buildVentures = ALL_VENTURES.filter(v => v.cohort === c && sg(v.stage) === "Build");
+                    const scaleVentures = ALL_VENTURES.filter(v => v.cohort === c && sg(v.stage) === "Scale");
+                    return {
+                      year: String(c),
+                      "Expose": exposeVentures.reduce((s, v) => s + v.funding, 0),
+                      "Build": buildVentures.reduce((s, v) => s + v.funding, 0),
+                      "Scale": scaleVentures.reduce((s, v) => s + v.funding, 0),
+                    };
+                  }) : null} height={280}>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={cohorts.map(c => {
                     const exposeVentures = ALL_VENTURES.filter(v => v.cohort === c && sg(v.stage) === "Expose");
@@ -803,6 +849,7 @@ export default function HENTOverview() {
                     <Bar dataKey="Scale" stackId="stage" fill={GREEN_RAMP[4]} barSize={26} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[0] }} /> Expose</span>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[2] }} /> Build</span>
@@ -830,6 +877,7 @@ export default function HENTOverview() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Total Jobs Created" subtitle="Employment by female-led and other ventures" info="Annual employment opportunities created, broken down by female-led and other ventures" filterOptions={["All Years", ...years.map(String)]} filterValue={filterEmploymentYear} onFilterChange={setFilterEmploymentYear}>
+                <ChartWithPlaceholder data={hasHentData ? femaleAndYouthJobsByYear : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={femaleAndYouthJobsByYear} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -840,12 +888,14 @@ export default function HENTOverview() {
                     <Bar dataKey="Other Jobs" stackId="jobs" fill={GREEN_RAMP[2]} barSize={26} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[0] }} /> Female-Led Jobs</span>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[2] }} /> Other Jobs</span>
                 </div>
               </Panel>
               <Panel title="Job Creation Trend" subtitle="Growth over time" info="Annual trend of employment opportunities created" filterOptions={["All Years", ...years.map(String)]} filterValue={filterEmploymentTrendYear} onFilterChange={setFilterEmploymentTrendYear}>
+                <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), jobs: ALL_VENTURES.filter(v => v.cohort === c).reduce((s, v) => s + v.jobsTotal, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={cohorts.map(c => ({ year: String(c), jobs: ALL_VENTURES.filter(v => v.cohort === c).reduce((s, v) => s + v.jobsTotal, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -856,6 +906,7 @@ export default function HENTOverview() {
                     <Line type="monotone" dataKey="jobs" stroke={CHART_COLOR_3} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Jobs Created" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
@@ -878,6 +929,7 @@ export default function HENTOverview() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="NPS Distribution" subtitle="Founder satisfaction breakdown" info="Breakdown of founder satisfaction scores (Promoters, Passives, Detractors)" filterOptions={["All Years", ...years.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
+                <ChartWithPlaceholder data={hasHentData ? npsData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={npsData} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -890,6 +942,7 @@ export default function HENTOverview() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   {npsData.map((d) => (
                     <span key={d.range} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: d.fill }} /> {d.range}</span>
@@ -897,6 +950,7 @@ export default function HENTOverview() {
                 </div>
               </Panel>
               <Panel title="Founder Satisfaction Breakdown" subtitle="NPS distribution" info="Breakdown of founder satisfaction scores (Promoters, Passives, Detractors)" filterOptions={["All Years", ...years.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
+                <ChartWithPlaceholder data={hasHentData ? npsData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={npsData} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -909,6 +963,7 @@ export default function HENTOverview() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   {npsData.map((d) => (
                     <span key={d.range} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: d.fill }} /> {d.range}</span>
