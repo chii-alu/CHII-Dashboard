@@ -2,7 +2,7 @@
 // Health Expert in Residence Programme page: six stat cards, participants per session, experts by area, feedback ratings.
 import { useState } from "react";
 import { Users, BookOpen, Briefcase, TrendingUp, type LucideIcon } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -10,7 +10,7 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useProgress } from "@/hooks/useProgress";
-import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, formatPercent } from "@/components/heco/heco-shared";
+import { HECO_BAR, HECO_GRID, HECO_NAVY, HECO_BRAND, HECO_BRAND_DK, HECO_LIGHT_BORDER, Panel, ProgrammeBanner, formatPercent } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Health Expert in Residence Programme";
 // Section tabs, each with the subheading shown under its tab.
@@ -91,9 +91,10 @@ export default function HierPage() {
                 key={category.name}
                 onClick={() => setActiveCategory(category.name)}
                 style={{
-                  fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
-                  border: `1px solid ${on ? HECO_NAVY : "rgba(20,48,107,0.15)"}`,
-                  backgroundColor: on ? HECO_NAVY : "white", color: on ? "white" : "#6B7280",
+                  fontSize: 11, fontWeight: on ? 700 : 600, padding: "8px 14px", borderRadius: 20, cursor: "pointer",
+                  border: `1px solid ${on ? HECO_BRAND : HECO_LIGHT_BORDER}`,
+                  backgroundColor: on ? HECO_BRAND : "white", color: on ? "white" : HECO_BRAND_DK,
+                  transition: "all 0.2s ease",
                 }}
               >
                 {category.name}
@@ -104,9 +105,9 @@ export default function HierPage() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-            <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: HECO_NAVY, flexShrink: 0 }} />
+            <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: HECO_BRAND, flexShrink: 0 }} />
             <div>
-              <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: HECO_NAVY, lineHeight: 1.2, margin: 0 }}>{active.name}</p>
+              <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: HECO_BRAND_DK, lineHeight: 1.2, margin: 0 }}>{active.name}</p>
               <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>{active.blurb}</p>
             </div>
           </div>
@@ -115,7 +116,7 @@ export default function HierPage() {
         {activeCategory === CATEGORIES[0].name && (
           <>
         <section className="space-y-4">
-          <Panel title="Participants per session or event" subtitle="Participants in each session, over time">
+          <Panel title="Participants per session or event" subtitle="Participants in each session, over time" legend={[{ label: "Participants", color: "#479BD6" }]}>
             <ChartWithPlaceholder data={perSession} height={300}>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={perSession ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
@@ -138,7 +139,7 @@ export default function HierPage() {
           <>
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
-            <Panel title="Experts by area of expertise" subtitle="Number of experts in each area">
+            <Panel title="Experts by area of expertise" subtitle="Number of experts in each area" legend={[{ label: "Experts", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={expertAreas} height={320}>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={expertAreas ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 150 }}>
@@ -153,15 +154,14 @@ export default function HierPage() {
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
             </Panel>
-            <Panel title="Participant feedback ratings" subtitle="From Poor to Excellent">
+            <Panel title="Participant feedback ratings" subtitle="From Poor to Excellent" legend={[{ label: "Poor", color: "#D45F2C" }, { label: "Fair", color: "#F5A76D" }, { label: "Good", color: "#EAB308" }, { label: "Very Good", color: "#479BD6" }, { label: "Excellent", color: "#14306B" }]}>
               <ChartWithPlaceholder data={feedback} height={320}>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={feedback ?? []} layout="vertical" margin={{ top: 6, right: 20, bottom: 0, left: 20 }}>
                     <XAxis type="number" hide />
                     <YAxis dataKey="name" type="category" hide />
                     <Tooltip />
-                    <Legend />
-                    {RATINGS.map((rating, i) => (
+                      {RATINGS.map((rating, i) => (
                       <Bar key={rating} dataKey={rating} stackId="feedback" fill={RATING_COLOURS[i]} />
                     ))}
                   </BarChart>

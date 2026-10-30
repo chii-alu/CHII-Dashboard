@@ -1,7 +1,7 @@
 "use client";
 // HECO At a Glance: the HEMP At a Glance layout, with HEMP's card list for now.
 import { useState } from "react";
-import { Users, Briefcase, TrendingUp, BookOpen, Accessibility, Zap, Info } from "lucide-react";
+import { Users, Briefcase, GraduationCap, FileText, Info } from "lucide-react";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { useProgress } from "@/hooks/useProgress";
 import { progressFor } from "@/lib/progressLabels";
@@ -18,21 +18,13 @@ const INSIGHT_ACCENTS = ["#042C53", "#16A34A", "#3B82F6", "#9333EA"];
 
 type CardSpec = { label: string; icon: any; format: "count" | "percent"; info: string; href?: string };
 
-const LEFT_CARDS: CardSpec[] = [
-  { label: "Total Enrolled", icon: Users, format: "count", info: "Active health professions students." },
-  { label: "Female %", icon: Users, format: "percent", info: "Share of enrolled students who are female." },
-  { label: "Countries Reached", icon: Users, format: "count", info: "Geographic distribution across Africa." },
-  { label: "Employment Rate", icon: Briefcase, format: "percent", info: "Graduates securing employment or self-employment." },
-  { label: "Students w/ Ventures", icon: Zap, format: "count", info: "Founders or co-founders of health ventures." },
-  { label: "Inclusion Reach", icon: Accessibility, format: "percent", info: "PWD and Refugee students." },
-];
-const RIGHT_CARDS: CardSpec[] = [
-  { label: "HEMP Engagement Rate", icon: Briefcase, format: "percent", info: "Students engaged in at least one HEMP activity." },
-  { label: "Career Exposure", icon: BookOpen, format: "count", info: "Exposure events and workshop participation." },
-  { label: "Internships", icon: Briefcase, format: "count", info: "Internship placements.", href: "/heco" },
-  { label: "SIE Placements", icon: TrendingUp, format: "count", info: "SIE programme placements." },
-  { label: "Courses", icon: BookOpen, format: "count", info: "Course enrollments." },
-  { label: "Event Registrations", icon: Users, format: "count", info: "Registrations for events." },
+const CARDS: CardSpec[] = [
+  { label: "Total Beneficiaries Reached", icon: Users, format: "count", info: "Everyone reached across all five interventions, each person counted once." },
+  { label: "Countries Reached", icon: Users, format: "count", info: "African countries with at least one beneficiary." },
+  { label: "PSF Fellows Graduated", icon: GraduationCap, format: "count", info: "Public Sector Fellowship fellows who graduated, against the target of 72." },
+  { label: "Female Participation (%)", icon: Users, format: "percent", info: "Share of women across all interventions." },
+  { label: "Partner Organisations Engaged", icon: Briefcase, format: "count", info: "Governments, hospitals, institutions and funders engaged across every programme." },
+  { label: "Research Outputs", icon: FileText, format: "count", info: "Research papers produced." },
 ];
 
 function KpiCard({ spec, value, insight }: { spec: CardSpec; value: number | null; insight: ProgressInsight }) {
@@ -102,8 +94,8 @@ export default function HecoAtAGlance() {
             <HecoMap />
           </div>
           <div>
-            <h2 style={{ fontSize: 11, fontWeight: 800, color: HECO_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, textAlign: "center" }}>HEMP Engagement</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>{column(RIGHT_CARDS)}</div>
+            <h2 style={{ fontSize: 11, fontWeight: 800, color: HECO_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, textAlign: "center" }}>Programme Overview</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>{column(CARDS)}</div>
           </div>
         </div>
       </div>
