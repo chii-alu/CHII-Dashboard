@@ -1,5 +1,6 @@
 "use client";
 // Health Expert in Residence Programme page: six stat cards, participants per session, experts by area, feedback ratings.
+import { useState } from "react";
 import { Users, BookOpen, Briefcase, TrendingUp, type LucideIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
@@ -9,9 +10,14 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useProgress } from "@/hooks/useProgress";
-import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionLabel, formatPercent } from "@/components/heco/heco-shared";
+import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, formatPercent } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Health Expert in Residence Programme";
+// Section tabs, each with the subheading shown under its tab.
+const CATEGORIES = [
+  { name: "Sessions and Participants", blurb: "Participants reached in each session or event" },
+  { name: "Experts and Feedback", blurb: "Expertise areas and participant feedback" },
+];
 // Feedback ratings from lowest to highest, one segment each in the stacked bar.
 const RATINGS = ["Poor", "Fair", "Good", "Very Good", "Excellent"];
 const RATING_COLOURS = ["#D45F2C", "#F5A76D", "#EAB308", "#479BD6", "#14306B"];
@@ -34,6 +40,8 @@ export default function HierPage() {
   const dataSource = useDataSource("HECO");
   const syncedAt = useSyncedAt("HECO");
   const progressRows = useProgress("HECO", PROGRAMME);
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].name);
+  const active = CATEGORIES.find(c => c.name === activeCategory) ?? CATEGORIES[0];
   const { data: programme } = useDashboardData<Programme>(
     () => fetch(`/api/dashboard-intervention?dashboard=HECO&intervention=${encodeURIComponent(PROGRAMME)}`).then(r => r.json()),
     []
@@ -75,8 +83,38 @@ export default function HierPage() {
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-7">
         <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
 
+        <div className="flex flex-wrap items-center gap-2">
+          {CATEGORIES.map(category => {
+            const on = activeCategory === category.name;
+            return (
+              <button
+                key={category.name}
+                onClick={() => setActiveCategory(category.name)}
+                style={{
+                  fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
+                  border: `1px solid ${on ? HECO_NAVY : "rgba(20,48,107,0.15)"}`,
+                  backgroundColor: on ? HECO_NAVY : "white", color: on ? "white" : "#6B7280",
+                }}
+              >
+                {category.name}
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: HECO_NAVY, flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: HECO_NAVY, lineHeight: 1.2, margin: 0 }}>{active.name}</p>
+              <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>{active.blurb}</p>
+            </div>
+          </div>
+        </div>
+
+        {activeCategory === CATEGORIES[0].name && (
+          <>
         <section className="space-y-4">
-          <SectionLabel>Sessions and participants</SectionLabel>
           <Panel title="Participants per session or event" subtitle="Participants in each session, over time">
             <ChartWithPlaceholder data={perSession} height={300}>
               <ResponsiveContainer width="100%" height={300}>
@@ -93,9 +131,12 @@ export default function HierPage() {
             </ChartWithPlaceholder>
           </Panel>
         </section>
+          </>
+        )}
 
+        {activeCategory === CATEGORIES[1].name && (
+          <>
         <section className="space-y-4">
-          <SectionLabel>Experts and feedback</SectionLabel>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
             <Panel title="Experts by area of expertise" subtitle="Number of experts in each area">
               <ChartWithPlaceholder data={expertAreas} height={320}>
@@ -129,6 +170,8 @@ export default function HierPage() {
             </Panel>
           </div>
         </section>
+          </>
+        )}
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">

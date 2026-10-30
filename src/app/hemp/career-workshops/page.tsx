@@ -531,7 +531,7 @@ export default function CareerWorkshopsPage() {
               </Panel>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginTop: 16 }}>
               <Panel title="Cumulative Growth" subtitle="Participants vs 2030 goal & Session trends" info="Total participants growth trajectory and session count over time" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={SESSIONS_DATA} height={250}>
