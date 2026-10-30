@@ -1,4 +1,5 @@
 ﻿"use client";
+import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
@@ -165,6 +166,8 @@ const KPI_TILES = [
 
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function HackathonsPage() {
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -310,6 +313,7 @@ export default function HackathonsPage() {
 
         {/* KPI strip */}
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Hackathons Metrics"
           cards={[
             { label: "Total Hackathons", num: headline("Total Hackathons"), displayFmt: (n) => String(Math.round(n)), icon: Briefcase, tip: "Innovation events conducted across all years." },

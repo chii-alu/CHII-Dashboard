@@ -1,4 +1,5 @@
 "use client";
+import { useProgress } from "@/hooks/useProgress";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import PortalNav from "@/components/layout/portal-nav";
@@ -179,6 +180,8 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HENTVentures() {
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: ventureHeadlines } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -276,6 +279,7 @@ export default function HENTVentures() {
 
         {/* ════ TOP STATS HEADER ════ */}
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Portfolio Overview"
           cards={[
             {

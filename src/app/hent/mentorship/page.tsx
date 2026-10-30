@@ -1,4 +1,5 @@
 "use client";
+import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown, ChartTip } from "@/components/ui/hent";
@@ -298,6 +299,8 @@ type TypeVal  = "All" | "Mentorship" | "Fellowship" | "One-Year Fellowship" | "A
 type GenderVal = "All" | "Female" | "Male";
 
 export default function MentorshipPage() {
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -462,6 +465,7 @@ export default function MentorshipPage() {
 
         {/* KPI strip */}
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Mentorship & Fellowship Metrics"
           cards={[
             { label: "Total Fellows", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Participants in mentorship and fellowship programs." },

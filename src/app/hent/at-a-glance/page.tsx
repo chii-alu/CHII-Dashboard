@@ -1,4 +1,7 @@
 "use client";
+import { progressInsight, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
+import { progressFor } from "@/lib/progressLabels";
+import { useProgress } from "@/hooks/useProgress";
 import { useEffect, useRef, useState } from "react";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { Users, Briefcase, TrendingUp, Zap, Target, Award, Handshake, Info, ChevronRight, type LucideIcon } from "lucide-react";
@@ -32,13 +35,18 @@ const initMapboxToken = async () => {
 const fetchSection = (section: string) =>
   fetch(`/api/hent-section/${encodeURIComponent(section)}`).then(r => r.json());
 
-function KPICard({ label, value, unit, info, Icon, secondaryText }: {
+const PROGRESS_COLOR: Record<ProgressStatus, string> = {
+  met: "#16A34A", close: "#2D6A4F", behind: "#F59E0B", "no-data": "#9CA3AF", "no-target": "#9CA3AF",
+};
+
+function KPICard({ label, value, unit, info, Icon, secondaryText, insight }: {
   label: string;
   value: number | null;
   unit?: string;
   info?: string;
   Icon?: LucideIcon;
   secondaryText?: string;
+  insight?: ProgressInsight;
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -92,11 +100,22 @@ function KPICard({ label, value, unit, info, Icon, secondaryText }: {
         </p>
       </div>
 
-      <div style={{ display: "flex", gap: 3, paddingTop: 4, borderTop: "1px solid #E5E7EB", justifyContent: "flex-start", alignItems: "center", minHeight: 14 }}>
-        <p style={{ fontSize: 9, fontWeight: 600, color: "#6B7280", lineHeight: 1.2, margin: 0, textAlign: "center", width: "100%" }}>
-          {secondaryText || "—"}
-        </p>
-      </div>
+      {insight ? (
+        <div style={{ paddingTop: 4, borderTop: "1px solid #E5E7EB" }}>
+          {insight.barPct != null && (
+            <div style={{ height: 6, borderRadius: 2, backgroundColor: "#E5E7EB", overflow: "hidden", marginBottom: 4 }}>
+              <div style={{ height: "100%", width: `${insight.barPct}%`, backgroundColor: PROGRESS_COLOR[insight.status], transition: "width 300ms ease" }} />
+            </div>
+          )}
+          <p style={{ fontSize: 9, fontWeight: 600, color: "#6B7280", lineHeight: 1.2, margin: 0, textAlign: "center" }}>{insight.caption}</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 3, paddingTop: 4, borderTop: "1px solid #E5E7EB", justifyContent: "flex-start", alignItems: "center", minHeight: 14 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, color: "#6B7280", lineHeight: 1.2, margin: 0, textAlign: "center", width: "100%" }}>
+            {secondaryText || "—"}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -198,6 +217,8 @@ function HentMap({ countries }: { countries: HentCountry[] }) {
 }
 
 export default function HENTAtAGlance() {
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT");
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const { data: headlines } = useDashboardData(() => fetchSection("At a Glance").then(r => r.headlines || []), []);
@@ -268,13 +289,13 @@ export default function HENTAtAGlance() {
         <div style={{ display: "grid", gridTemplateColumns: "210px minmax(0, 1fr) 210px", gap: 24, alignItems: "stretch" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "center" }}>Participation</h2>
-            <KPICard label="Total Participants" value={totalParticipants} Icon={Users} info="Total participants across all HENT programmes." />
-            <KPICard label="Countries Reached" value={headline("Countries Reached")} Icon={Target} info="Countries where HENT participants are based." />
-            <KPICard label="Ventures Supported" value={headline("Ventures Supported")} Icon={Briefcase} info="Ventures receiving HENT support." />
-            <KPICard label="Ventures Funded" value={headline("Ventures Funded")} Icon={Award} info="Ventures that received capital." />
-            <KPICard label="Total Jobs Created" value={headline("Total Jobs Created")} Icon={TrendingUp} info="Jobs created across HENT ventures." />
-            <KPICard label="Capital Deployed" value={headline("Capital Deployed")} Icon={Zap} info="Capital deployed to HENT ventures." />
-            <KPICard label="Employment Rate" value={headline("Employment Rate")} unit="%" Icon={Briefcase} info="Share of participants in employment." />
+            <KPICard label="Total Participants" insight={progressInsight(progressFor(progressRows, "Total Participants"))} value={totalParticipants} Icon={Users} info="Total participants across all HENT programmes." />
+            <KPICard label="Countries Reached" insight={progressInsight(progressFor(progressRows, "Countries Reached"))} value={headline("Countries Reached")} Icon={Target} info="Countries where HENT participants are based." />
+            <KPICard label="Ventures Supported" insight={progressInsight(progressFor(progressRows, "Ventures Supported"))} value={headline("Ventures Supported")} Icon={Briefcase} info="Ventures receiving HENT support." />
+            <KPICard label="Ventures Funded" insight={progressInsight(progressFor(progressRows, "Ventures Funded"))} value={headline("Ventures Funded")} Icon={Award} info="Ventures that received capital." />
+            <KPICard label="Total Jobs Created" insight={progressInsight(progressFor(progressRows, "Total Jobs Created"))} value={headline("Total Jobs Created")} Icon={TrendingUp} info="Jobs created across HENT ventures." />
+            <KPICard label="Capital Deployed" insight={progressInsight(progressFor(progressRows, "Capital Deployed"))} value={headline("Capital Deployed")} Icon={Zap} info="Capital deployed to HENT ventures." />
+            <KPICard label="Employment Rate" insight={progressInsight(progressFor(progressRows, "Employment Rate"))} value={headline("Employment Rate")} unit="%" Icon={Briefcase} info="Share of participants in employment." />
           </div>
 
           <HentMap countries={hentCountries || []} />
@@ -282,7 +303,7 @@ export default function HENTAtAGlance() {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", textAlign: "center" }}>HENT ENGAGEMENT</h2>
             {PROGRAMMES.map(name => (
-              <KPICard key={name} label={name} value={headline(name)} Icon={Users} />
+              <KPICard key={name} label={name} insight={progressInsight(progressFor(progressRows, name))} value={headline(name)} Icon={Users} />
             ))}
           </div>
         </div>
