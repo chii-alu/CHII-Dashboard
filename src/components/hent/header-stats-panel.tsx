@@ -9,7 +9,7 @@ const LIGHT_BORDER = "rgba(14, 70, 51, 0.12)";
 
 export interface HeaderStatCard {
   label: string;
-  num: number;
+  num: number | null;
   sub?: string;
   icon: LucideIcon | React.ComponentType<{ size?: number; color?: string; style?: React.CSSProperties }>;
   displayFmt?: (n: number) => string;
@@ -143,8 +143,8 @@ export function HeaderStatsPanel({
               {/* Icon + Number */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                 <card.icon size={18} style={{ color: BRAND_DK, opacity: 0.85, flexShrink: 0 }} />
-                <p style={{ fontSize: 24, fontWeight: 700, color: BRAND_DK, lineHeight: 1, margin: 0 }}>
-                  {card.displayFmt ? card.displayFmt(card.num) : Math.round(card.num).toLocaleString()}
+                <p style={{ fontSize: card.num === null ? 13 : 24, fontWeight: 700, color: card.num === null ? "#9CA3AF" : BRAND_DK, lineHeight: 1, margin: 0 }}>
+                  {card.num === null ? "In coming data" : card.displayFmt ? card.displayFmt(card.num) : Math.round(card.num).toLocaleString()}
                 </p>
               </div>
 

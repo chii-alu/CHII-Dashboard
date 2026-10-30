@@ -222,12 +222,17 @@ export default function HENTAtAGlance() {
   const femaleShare = segmentPct("Total Participants", "female");
   const maleShare = segmentPct("Total Participants", "male");
 
-  const insights = [
-    { title: "Gender Balance", detail: "Female representation", copy: "Gender split of HENT participants across programmes.", accentColor: "#042C53" },
-    { title: "Regional Growth", detail: "YoY expansion across HENT countries", copy: "Regional reach of HENT programmes over time.", accentColor: "#16A34A" },
-    { title: "Employment Success", detail: "Participants in employment", copy: "Share of HENT participants moving into employment.", accentColor: "#3B82F6" },
-    { title: "Venture Momentum", detail: "Ventures supported and funded", copy: "Growth of HENT ventures, jobs and capital.", accentColor: "#9333EA" },
-  ];
+  // Insight cards come from the workbook (v_insights), in the order set there.
+  const { data: insightResult } = useDashboardData<{ insights: any[] }>(
+    () => fetch("/api/insights?dashboard=HENT").then(r => r.json()),
+    []
+  );
+  const insightRows = insightResult?.insights ?? [];
+  const insights = insightRows.length > 0
+    ? insightRows.map((row: any) => ({ title: row.title, figure: row.value_display ?? null, detail: row.description, copy: row.detail }))
+    : [
+        { title: "In coming data", figure: null, detail: "", copy: "" },
+      ];
 
   return (
     <div style={{ backgroundColor: "#f8fafc" }}>
@@ -314,8 +319,8 @@ export default function HENTAtAGlance() {
                 borderRight: i < 3 ? "1px solid #E5E7EB" : "none"
               }}
             >
-              <p style={{ fontSize: 14, fontWeight: 800, color: "#042C53", lineHeight: 1.2, margin: 0, marginTop: 8 }}>
-                {NOT_AVAILABLE}
+              <p style={{ fontSize: insight.figure ? 28 : 14, fontWeight: 800, color: "#042C53", lineHeight: 1.2, margin: 0, marginTop: 8 }}>
+                {insight.figure ?? NOT_AVAILABLE}
               </p>
               <p style={{ fontSize: 13, fontWeight: 700, color: "#042C53", lineHeight: 1.2, margin: 0 }}>
                 {insight.title}

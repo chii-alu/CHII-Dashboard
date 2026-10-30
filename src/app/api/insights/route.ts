@@ -4,14 +4,14 @@ import { getSupabaseServer } from "@/lib/supabaseServer";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const DASHBOARDS = ["HEMP", "EXEC", "HECO"];
+const DASHBOARDS = ["HEMP", "EXEC", "HECO", "HENT"];
 
 // Insight cards for a dashboard's At a Glance page, in the order set in the workbook.
 export async function GET(request: Request) {
   try {
     const dashboard = new URL(request.url).searchParams.get("dashboard") ?? "";
     if (!DASHBOARDS.includes(dashboard)) {
-      return NextResponse.json({ error: "dashboard must be HEMP, EXEC or HECO" }, { status: 400 });
+      return NextResponse.json({ error: "dashboard must be HEMP, EXEC, HECO or HENT" }, { status: 400 });
     }
     const { data, error } = await getSupabaseServer()
       .from("v_insights")

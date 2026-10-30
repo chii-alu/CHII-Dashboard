@@ -1,4 +1,6 @@
 ﻿"use client";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
@@ -30,12 +32,19 @@ import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import OutreachFilters, { FilterSelect as OFilterSelect } from "@/components/filters/filter-popover";
 import { DonutRing } from "@/components/charts/donut-chart";
-import {
-  masterclasses,
-  MC_TOPICS, RATING_CRITERIA,
-  type MCTopic,
-} from "@/data/masterclasses";
-import { ventures as ALL_VENTURES } from "@/data/ventures";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
+type Row = Record<string, any>;
+
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [masterclasses, ALL_VENTURES].some(list => list.length > 0);
+
+// HENT sample datasets are removed; the lists below stay empty until HENT rows load.
+type MCTopic = string;
+const masterclasses: any[] = [];
+const MC_TOPICS: string[] = [];
+const RATING_CRITERIA: string[] = [];
+const ALL_VENTURES: any[] = [];
 
 // â”€â”€â”€ Palette (green family, distinct by hue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const NAVY      = "#0F4C3A"; // brand green (footer)
@@ -182,6 +191,13 @@ function Stars({ score }: { score: number }) {
 
 // â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function MasterclassesPage() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: headlineRows } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [yearFilter,  setYearFilter]  = useState<"All"|"2022"|"2023"|"2024"|"2025"|"2026">("All");
@@ -322,11 +338,11 @@ export default function MasterclassesPage() {
         <HeaderStatsPanel
           title="Masterclasses Metrics"
           cards={[
-            { label: "Total Masterclasses", num: tot.sessions, displayFmt: (n) => String(Math.round(n)), icon: Briefcase, tip: "Capacity-building sessions delivered across all periods.", sub: `${Math.round((tot.sessions / 20) * 100)}% of 20 target`, pace: true, paceA: tot.sessions, paceT: 20 },
-            { label: "Total Attendees", num: tot.attendees, displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Cumulative participant attendance across all sessions.", sub: `${Math.round((tot.attendees / 797) * 100)}% of 797 target`, pace: true, paceA: tot.attendees, paceT: 797 },
-            { label: "Ventures Represented", num: tot.ventures, displayFmt: (n) => Math.round(n).toLocaleString(), icon: TrendingUp, tip: "Unique ventures with founder/team attendance.", sub: `${Math.round((tot.ventures / 200) * 100)}% of 200 target`, pace: true, paceA: tot.ventures, paceT: 200 },
-            { label: "Female Participants", num: femalePct, displayFmt: (n) => `${Math.round(n)}%`, icon: WomanIcon, tip: `${tot.female} female attendees out of ${tot.attendees} total.`, sub: "Gender diversity target: 50%", pace: true, paceA: tot.female, paceT: tot.attendees / 2 },
-            { label: "Alumni Participants", num: 100 - studentPct, displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: `${alumniTot} alumni attendees out of ${tot.attendees} total.`, sub: "Alumni engagement goal: 40%", pace: true, paceA: alumniTot, paceT: tot.attendees * 0.4 },
+            { label: "Total Masterclasses", num: headline("Total Masterclasses"), displayFmt: (n) => String(Math.round(n)), icon: Briefcase, tip: "Capacity-building sessions delivered across all periods." },
+            { label: "Total Attendees", num: headline("Total Attendees"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Cumulative participant attendance across all sessions." },
+            { label: "Ventures Represented", num: headline("Ventures Represented"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: TrendingUp, tip: "Unique ventures with founder/team attendance." },
+            { label: "Female Participants", num: headline("Female Participants"), displayFmt: (n) => `${Math.round(n)}%`, icon: WomanIcon, tip: "Share of female attendees." },
+            { label: "Alumni Participants", num: headline("Alumni Participants"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Share of alumni attendees." },
           ]}
         />
 
@@ -444,6 +460,7 @@ export default function MasterclassesPage() {
             <ChartCard title="Attendance by Session"
               sub="Attendees per masterclass in chronological order"
               accent={ORANGE_MC}>
+              <ChartWithPlaceholder data={hasHentData ? attendanceTrend.slice(0, 12) : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
                 <BarChart data={attendanceTrend.slice(0, 12)} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -454,12 +471,14 @@ export default function MasterclassesPage() {
                   <Bar dataKey="Attendees" fill={ORANGE_MC} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Attendees", ORANGE_MC]]} />
             </ChartCard>
 
             <ChartCard title="Attendance by Gender per Year"
               sub="Female vs male participants  -  yearly comparison"
               accent={VIOLET_MC}>
+              <ChartWithPlaceholder data={hasHentData ? genderTrend : null} height={176}>
               <ResponsiveContainer width="100%" height={176}>
                 <BarChart data={genderTrend} barCategoryGap="30%" barGap={2}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -470,6 +489,7 @@ export default function MasterclassesPage() {
                   <Bar dataKey="Male"   fill={SKY}       radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Female", VIOLET_MC], ["Male", SKY]]} />
             </ChartCard>
           </div>
@@ -479,6 +499,7 @@ export default function MasterclassesPage() {
             <ChartCard title="Cumulative Attendee Growth"
               sub="Running total of participants  -  shows programme reach expansion"
               accent={VIOLET_MC}>
+              <ChartWithPlaceholder data={hasHentData ? growthData : null} height={180}>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={growthData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -489,12 +510,14 @@ export default function MasterclassesPage() {
                     stroke={VIOLET_MC} strokeWidth={2.5} dot={{ r: 4, fill: VIOLET_MC, strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Cumulative attendees", VIOLET_MC]]} />
             </ChartCard>
 
             <ChartCard title="Completion Rate by Session"
               sub="Percentage of registered attendees who completed each masterclass"
               accent={TEAL}>
+              <ChartWithPlaceholder data={hasHentData ? completionData.slice(0, 12) : null} height={200}>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={completionData.slice(0, 12)} barCategoryGap="30%" margin={{ top: 0, right: 8, left: 0, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -505,6 +528,7 @@ export default function MasterclassesPage() {
                   <Bar dataKey="Completion %" fill={TEAL} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-center">
                 <div>
                   <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{tot.completion}%</p>
@@ -572,6 +596,12 @@ export default function MasterclassesPage() {
             </ChartCard>
 
             <ChartCard title="Social Inclusion Groups" sub="MCF scholars, PWD, refugee-displaced" accent={AMBER_MC}>
+              <ChartWithPlaceholder data={hasHentData ? socialData.map((s, i) => ({
+                    name: s.name,
+                    value: s.value,
+                    percentage: tot.attendees > 0 ? Math.round((s.value / tot.attendees) * 100) : 0,
+                    idx: i,
+                  })) : null} height={240}>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart
                   data={socialData.map((s, i) => ({
@@ -607,6 +637,7 @@ export default function MasterclassesPage() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid rgba(0,33,71,0.06)`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                 {socialData.map((d, i) => (
                   <span key={d.name} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}>
@@ -629,6 +660,7 @@ export default function MasterclassesPage() {
             <ChartCard title="Attendance by Session"
               sub="Attendees per masterclass in chronological order"
               accent={ORANGE_MC}>
+              <ChartWithPlaceholder data={hasHentData ? attendanceTrend.slice(0, 12) : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
                 <BarChart data={attendanceTrend.slice(0, 12)} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -639,12 +671,14 @@ export default function MasterclassesPage() {
                   <Bar dataKey="Attendees" fill={ORANGE_MC} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Attendees", ORANGE_MC]]} />
             </ChartCard>
 
             <ChartCard title="Attendance by Gender per Year"
               sub="Female vs male participants  -  yearly comparison"
               accent={VIOLET_MC}>
+              <ChartWithPlaceholder data={hasHentData ? genderTrend : null} height={176}>
               <ResponsiveContainer width="100%" height={176}>
                 <BarChart data={genderTrend} barCategoryGap="30%" barGap={2}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -655,6 +689,7 @@ export default function MasterclassesPage() {
                   <Bar dataKey="Male"   fill={SKY}       radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Female", VIOLET_MC], ["Male", SKY]]} />
             </ChartCard>
           </div>
@@ -670,6 +705,7 @@ export default function MasterclassesPage() {
             <ChartCard title="Cumulative Attendee Growth"
               sub="Running total of participants  -  shows programme reach expansion"
               accent={VIOLET_MC}>
+              <ChartWithPlaceholder data={hasHentData ? growthData : null} height={180}>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={growthData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -680,12 +716,14 @@ export default function MasterclassesPage() {
                     stroke={VIOLET_MC} strokeWidth={2.5} dot={{ r: 4, fill: VIOLET_MC, strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Cumulative attendees", VIOLET_MC]]} />
             </ChartCard>
 
             <ChartCard title="Completion Rate by Session"
               sub="Percentage of registered attendees who completed each masterclass"
               accent={TEAL}>
+              <ChartWithPlaceholder data={hasHentData ? completionData.slice(0, 12) : null} height={200}>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={completionData.slice(0, 12)} barCategoryGap="30%" margin={{ top: 0, right: 8, left: 0, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -696,6 +734,7 @@ export default function MasterclassesPage() {
                   <Bar dataKey="Completion %" fill={TEAL} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-center">
                 <div>
                   <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{tot.completion}%</p>

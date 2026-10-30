@@ -1,4 +1,6 @@
 "use client";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, ChartTip, ChartLegend, useCountUp } from "@/components/ui";
@@ -7,7 +9,6 @@ import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import OutreachFilters, { FilterSelect as OFilterSelect } from "@/components/filters/filter-popover";
 import { DonutRing } from "@/components/charts/donut-chart";
-import { ventures as ALL_VENTURES } from "@/data/ventures";
 import { Banknote, CheckCircle2, ChevronDown, Rocket, Target, TrendingUp, Users } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
@@ -15,6 +16,13 @@ import {
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import type { Stage } from "@/types";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
+type Row = Record<string, any>;
+const ALL_VENTURES: Row[] = [];
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [ALL_VENTURES].some(list => list.length > 0);
+
 
 // ─── Theme (HENT green) ──────────────────────────────────────────────────────
 const HERO    = "#2D6A4F";
@@ -127,6 +135,13 @@ function derive(rows: typeof ALL_VENTURES) {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function VentureFundingPage() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: headlineRows } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [fCohort, setFCohort] = useState("All Cohorts");
@@ -220,7 +235,7 @@ export default function VentureFundingPage() {
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> {COHORTS[0]}–{COHORTS[COHORTS.length - 1]}</span>
                 <span aria-hidden="true">·</span>
-                <span>{D.funded.length} ventures funded · {fmt$(D.totalFunding)} deployed</span>
+                <span>{hasHentData ? `${D.funded.length} ventures funded · ${fmt$(D.totalFunding)} deployed` : "In coming data"}</span>
               </div>
             </div>
           </div>
@@ -236,7 +251,7 @@ export default function VentureFundingPage() {
           cards={[
             {
               label: "Capital Deployed",
-              num: D.totalFunding,
+              num: headline("Capital Deployed"),
               displayFmt: fmt$,
               icon: Banknote,
               sub: `${Math.round((D.totalFunding / 910_904) * 100)}% of $910.9K target`,
@@ -247,7 +262,7 @@ export default function VentureFundingPage() {
             },
             {
               label: "Ventures Funded",
-              num: D.funded.length,
+              num: headline("Ventures Funded"),
               displayFmt: (n) => String(Math.round(n)),
               icon: Rocket,
               sub: `${Math.round((D.funded.length / 400) * 100)}% of 400 target`,
@@ -258,10 +273,10 @@ export default function VentureFundingPage() {
             },
             {
               label: "Milestone Rate",
-              num: D.milestoneRate,
+              num: headline("Milestone Rate"),
               displayFmt: (n) => `${Math.round(n)}%`,
               icon: CheckCircle2,
-              sub: `Average delivery · ${D.funded.length} funded ventures`,
+              sub: hasHentData ? `Average delivery · ${D.funded.length} funded ventures` : "In coming data",
               pace: true,
               paceA: D.milestoneRate,
               paceT: 100,
@@ -269,10 +284,10 @@ export default function VentureFundingPage() {
             },
             {
               label: "Progressed to Scale",
-              num: D.progressed,
+              num: headline("Progressed to Scale"),
               displayFmt: (n) => String(Math.round(n)),
               icon: TrendingUp,
-              sub: `${D.funded.length > 0 ? Math.round((D.progressed / D.funded.length) * 100) : 0}% of funded ventures`,
+              sub: hasHentData && D.funded.length > 0 ? `${Math.round((D.progressed / D.funded.length) * 100)}% of funded ventures` : "In coming data",
               pace: true,
               paceA: D.progressed,
               paceT: Math.max(D.funded.length > 0 ? Math.round(D.funded.length * 0.5) : 1, 1),
@@ -280,7 +295,7 @@ export default function VentureFundingPage() {
             },
             {
               label: "Jobs Created",
-              num: D.jobs,
+              num: headline("Jobs Created"),
               displayFmt: (n) => Math.round(n).toLocaleString(),
               icon: Users,
               sub: `${Math.round((D.jobs / 2_000) * 100)}% of 2,000 target`,
@@ -358,6 +373,7 @@ export default function VentureFundingPage() {
 
             <ChartCard title="Capital by Milestone" sub="Funding deployed against each milestone purpose"
               info="Every tranche of catalytic funding is released against a milestone. This shows how much capital each milestone purpose — validation, prototyping, customer discovery, pilots, early growth — has absorbed.">
+              <ChartWithPlaceholder data={hasHentData ? D.byMilestone : null} height={240}>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={D.byMilestone} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barCategoryGap="24%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
@@ -369,8 +385,9 @@ export default function VentureFundingPage() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div className="mt-4 flex flex-wrap justify-center gap-3">
-                {D.byMilestone.map(d => (
+                {(hasHentData ? D.byMilestone : []).map(d => (
                   <div key={d.name} className="flex items-center gap-1.5 text-[10px]">
                     <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: MILESTONE_HEX[d.name as Milestone] }} />
                     <span className="text-gray-700 font-medium">{d.name.split(" ").map(w => w[0]).join("")}</span>
@@ -382,19 +399,23 @@ export default function VentureFundingPage() {
 
             <ChartCard title="Catalytic Funding" sub="Portfolio distribution across catalytic funding milestones"
               info="Distribution of ventures across catalytic funding journey stages.">
+              {hasHentData ? (
               <DonutRing
-                data={D.funnel.map(f => ({ name: f.label, value: f.value }))}
-                colors={{
-                  "Ventures in portfolio": "#1B4332",
-                  "Received catalytic funding": "#2D6A4F",
-                  "Milestones met (≥50%)": "#40916C",
-                  "Progressed to Scale": "#5BB4A0"
-                }}
-                total={filtered.length}
-                totalLabel="Ventures"
-                height={340}
-                legendPercent
-              />
+                  data={D.funnel.map(f => ({ name: f.label, value: f.value }))}
+                  colors={{
+                    "Ventures in portfolio": "#1B4332",
+                    "Received catalytic funding": "#2D6A4F",
+                    "Milestones met (≥50%)": "#40916C",
+                    "Progressed to Scale": "#5BB4A0"
+                  }}
+                  total={filtered.length}
+                  totalLabel="Ventures"
+                  height={340}
+                  legendPercent
+                />
+              ) : (
+                <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>
+              )}
             </ChartCard>
           </div>
         </section>
@@ -406,6 +427,7 @@ export default function VentureFundingPage() {
 
             <ChartCard title="Capital Deployed per Cohort" sub="Amount disbursed and ventures funded each year"
               info="Catalytic funding disbursed to each venture cohort. Useful for spotting whether recent cohorts are being funded at the same rate as earlier ones.">
+              <ChartWithPlaceholder data={hasHentData ? D.byCohort : null} height={220}>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={D.byCohort} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -415,11 +437,13 @@ export default function VentureFundingPage() {
                   <Bar dataKey="Deployed" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Capital deployed", "#1B4332"]]} />
             </ChartCard>
 
             <ChartCard title="Cumulative Capital Deployed" sub="Running total of catalytic funding across cohorts"
               info="Running total of all catalytic capital deployed to date. A steepening line means funding is accelerating.">
+              <ChartWithPlaceholder data={hasHentData ? D.byCohort : null} height={220}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={D.byCohort} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -430,6 +454,7 @@ export default function VentureFundingPage() {
                     dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Cumulative capital", "#1F9E9E"]]} />
             </ChartCard>
           </div>
@@ -618,6 +643,12 @@ export default function VentureFundingPage() {
 
               {/* Sector bars */}
               <div style={{ marginBottom: 12 }}>
+                <ChartWithPlaceholder data={hasHentData ? bySectorByYear.map((s, i) => ({
+                      name: s.name,
+                      value: s.value,
+                      selected: selectedSector === s.name,
+                      idx: i,
+                    })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={bySectorByYear.length * 32 + 40}>
                   <BarChart
                     data={bySectorByYear.map((s, i) => ({
@@ -658,6 +689,7 @@ export default function VentureFundingPage() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   {bySectorByYear.map((entry, idx) => (
                     <span key={entry.name} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[idx % GREEN_RAMP.length] }} /> {entry.name}</span>
