@@ -1,7 +1,6 @@
 "use client";
 import { PortalThemeProvider, ChartCard, SectionHeader, InfoDot, Funnel, BarList, ChartTip, ChartLegend } from "@/components/ui";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
 import SectionPills from "@/components/filters/section-pills";
@@ -185,7 +184,6 @@ export default function CraPage() {
   return (
     <PortalThemeProvider portal="heco">
     <div className="min-h-screen" style={{ backgroundColor: "var(--bg-page)" }}>
-      <PortalNav portal="heco" />
 
       {/* ── HEADER ─── */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-2">
