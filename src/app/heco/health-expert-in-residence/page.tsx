@@ -1,6 +1,6 @@
 "use client";
-import ProgrammeTemplate from "@/components/heco/programme-template";
+import HierPage from "@/components/heco/hier-page";
 
 export default function Page() {
-  return <ProgrammeTemplate dashboard="HECO" intervention="Health Expert in Residence Programme" title="Health Expert in Residence Programme" subtitle="Health experts placed within public institutions" />;
+  return <HierPage />;
 }

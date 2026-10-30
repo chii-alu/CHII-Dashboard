@@ -1,6 +1,6 @@
 "use client";
-import ProgrammeTemplate from "@/components/heco/programme-template";
+import PsfPage from "@/components/heco/psf-page";
 
 export default function Page() {
-  return <ProgrammeTemplate dashboard="HECO" intervention="Public Sector Fellowship" title="Public Sector Fellowship" subtitle="Public sector fellows building capacity in health systems" />;
+  return <PsfPage />;
 }

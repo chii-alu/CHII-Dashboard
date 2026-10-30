@@ -27,13 +27,16 @@ export async function GET(request: Request) {
     if (!["HEMP", "HECO"].includes(dashboard)) {
       return NextResponse.json({ error: "dashboard must be HEMP or HECO" }, { status: 400 });
     }
-    const { data, error } = await getSupabaseServer()
+    const intervention = new URL(request.url).searchParams.get("intervention");
+    let query = getSupabaseServer()
       .from("v_metric_values")
       .select("intervention, item, country, breakdown, value")
       .eq("dashboard", dashboard)
       .eq("section", "Map")
       .eq("segment", "all")
       .eq("value_type", "actual");
+    if (intervention) query = query.eq("intervention", intervention);
+    const { data, error } = await query;
     if (error) {
       console.error("[API] Supabase error for dashboard map:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });

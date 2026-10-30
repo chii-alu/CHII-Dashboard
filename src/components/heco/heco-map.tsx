@@ -23,14 +23,14 @@ async function initMapboxToken() {
 const markerCount = (c: MapCountry) =>
   c.missionStudents ?? Object.values(c.interventions).reduce((sum, v) => sum + v, 0);
 
-export default function HecoMap() {
+export default function HecoMap({ intervention }: { intervention?: string }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const ready = useRef(false);
   const { data } = useDashboardData<MapData>(
-    () => fetch("/api/dashboard-map?dashboard=HECO").then(r => r.json()),
-    []
+    () => fetch(`/api/dashboard-map?dashboard=HECO${intervention ? `&intervention=${encodeURIComponent(intervention)}` : ""}`).then(r => r.json()),
+    [intervention]
   );
 
   const draw = (countries: MapCountry[]) => {
