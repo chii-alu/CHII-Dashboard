@@ -365,6 +365,14 @@ export default function HEMPInternships() {
               tip: "Average employer satisfaction rating",
             },
             {
+              label: "Student Intern Rating",
+              num: actualOf("Student Intern Rating"),
+              icon: TrendingUp,
+              displayFmt: (n) => n.toFixed(1),
+              sub: ``,
+              tip: "Average rating given by students who completed an internship",
+            },
+            {
               label: "Partners",
               num: actualOf("Partners"),
               icon: Briefcase,
