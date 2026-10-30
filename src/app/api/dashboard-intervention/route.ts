@@ -38,7 +38,7 @@ export async function GET(request: Request) {
       .forEach((row: any) => {
         (breakdowns[row.metric] ??= []).push({ name: row.label, count: row.value });
       });
-    const segments = yearly.map((row: any) => ({ metric: row.metric, segment: row.segment, year: row.year, value: row.value }));
+    const segments = yearly.map((row: any) => ({ metric: row.metric, segment: row.segment, year: row.year, label: row.label ?? null, value: row.value }));
     return NextResponse.json({ headlines, breakdowns, segments });
   } catch (error: any) {
     console.error("[API] Error fetching HEMP intervention:", error);

@@ -1,6 +1,6 @@
 "use client";
-import ProgrammeTemplate from "@/components/heco/programme-template";
+import ResearchPage from "@/components/heco/research-page";
 
 export default function Page() {
-  return <ProgrammeTemplate dashboard="HECO" intervention="Research Activities" title="Research Activities" subtitle="Health ecosystem research and evidence generation" />;
+  return <ResearchPage />;
 }
