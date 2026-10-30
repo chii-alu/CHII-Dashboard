@@ -26,6 +26,11 @@ export const PROGRESS_NAMES: Record<string, string> = {
 
 const warned = new Set<string>();
 
+/** The database name for a card label (the label itself when it isn't mapped). */
+export function progressName(cardLabel: string, section?: string): string {
+  return (section && PROGRESS_NAMES[`${section}:${cardLabel}`]) || PROGRESS_NAMES[cardLabel] || cardLabel;
+}
+
 /** The v_progress row for a card label. A section-specific entry ("Section:Label") wins over the plain label.
  *  In development, logs a warning once per label when no row matches. */
 export function progressFor(rows: Record<string, ProgressRow>, cardLabel: string, section?: string): ProgressRow | undefined {
