@@ -20,7 +20,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const yearly = (data ?? []).filter((row: any) => row.value_type === "actual" && row.segment !== "all");
+    // Yearly rows: any segment with a year, plus non-'all' segments (e.g. refugee_idp, pwd, female).
+    const yearly = (data ?? []).filter((row: any) => row.value_type === "actual" && (row.segment !== "all" || row.year !== null));
     const actual = (data ?? []).filter((row: any) => row.value_type === "actual" && row.year === null);
     const headlines = actual
       .filter((row: any) => row.segment === "all" && !row.label)

@@ -20,6 +20,8 @@ export const PROGRESS_NAMES: Record<string, string> = {
   "Wage Employed": "Waged Employed",
   // HEMP home
   "SIE Placements": "SIE placements",
+  "Students w/ Ventures": "Students with ventures",
+  "HEMP Engagement Rate": "HEMP engagement rate",
 };
 
 const warned = new Set<string>();
