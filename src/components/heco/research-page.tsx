@@ -1,7 +1,8 @@
 "use client";
+import { useState } from "react";
 // Research Activities page: six stat cards, papers by topic, grant pipeline, masterclass attendance per session.
 import { FlaskConical, FileText, HandCoins, Building2, Users, type LucideIcon } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -9,9 +10,13 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useProgress } from "@/hooks/useProgress";
-import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionLabel } from "@/components/heco/heco-shared";
+import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionTabs } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Research Activities";
+const CATEGORIES = [
+  { name: "Research Output and Funding", blurb: "Papers by research topic and the grant pipeline" },
+  { name: "Masterclass Training", blurb: "Training attendance, kept separate from research" },
+];
 // Grant pipeline stages, in order, one segment each in the stacked bar.
 const STAGES = ["Applied", "Under Review", "Awarded", "Rejected"];
 const STAGE_COLOURS = ["#479BD6", "#EAB308", "#16A34A", "#D45F2C"];
@@ -34,6 +39,7 @@ export default function ResearchPage() {
   const dataSource = useDataSource("HECO");
   const syncedAt = useSyncedAt("HECO");
   const progressRows = useProgress("HECO", PROGRAMME);
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].name);
   const { data: programme } = useDashboardData<Programme>(
     () => fetch(`/api/dashboard-intervention?dashboard=HECO&intervention=${encodeURIComponent(PROGRAMME)}`).then(r => r.json()),
     []
@@ -74,10 +80,12 @@ export default function ResearchPage() {
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-7">
         <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
 
-        <section className="space-y-4">
-          <SectionLabel>Research output and funding</SectionLabel>
+        <SectionTabs categories={CATEGORIES} active={activeCategory} onChange={setActiveCategory} />
+
+        {activeCategory === "Research Output and Funding" && (
+          <>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
-            <Panel title="Papers by research topic" subtitle="Number of papers in each topic">
+            <Panel title="Papers by research topic" subtitle="Number of papers in each topic" legend={[{ label: "Papers", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={topics} height={320}>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={topics ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 150 }}>
@@ -92,15 +100,14 @@ export default function ResearchPage() {
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
             </Panel>
-            <Panel title="Grant pipeline" subtitle="Applied, under review, awarded and rejected">
+            <Panel title="Grant pipeline" subtitle="Applied, under review, awarded and rejected" legend={[{ label: "Applied", color: "#479BD6" }, { label: "Under Review", color: "#EAB308" }, { label: "Awarded", color: "#16A34A" }, { label: "Rejected", color: "#D45F2C" }]}>
               <ChartWithPlaceholder data={pipeline} height={320}>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={pipeline ?? []} layout="vertical" margin={{ top: 6, right: 20, bottom: 0, left: 20 }}>
                     <XAxis type="number" hide />
                     <YAxis dataKey="name" type="category" hide />
                     <Tooltip />
-                    <Legend />
-                    {STAGES.map((stage, i) => (
+                      {STAGES.map((stage, i) => (
                       <Bar key={stage} dataKey={stage} stackId="pipeline" fill={STAGE_COLOURS[i]} />
                     ))}
                   </BarChart>
@@ -108,11 +115,12 @@ export default function ResearchPage() {
               </ChartWithPlaceholder>
             </Panel>
           </div>
-        </section>
+          </>
+        )}
 
-        <section className="space-y-4">
-          <SectionLabel>Masterclass training</SectionLabel>
-          <Panel title="Masterclass attendance per session" subtitle="Training attendance, kept separate from research output">
+        {activeCategory === "Masterclass Training" && (
+          <>
+          <Panel title="Masterclass attendance per session" subtitle="Training attendance, kept separate from research output" legend={[{ label: "Attendees", color: "#479BD6" }]}>
             <ChartWithPlaceholder data={attendance} height={300}>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={attendance ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
@@ -127,7 +135,8 @@ export default function ResearchPage() {
               </ResponsiveContainer>
             </ChartWithPlaceholder>
           </Panel>
-        </section>
+          </>
+        )}
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">

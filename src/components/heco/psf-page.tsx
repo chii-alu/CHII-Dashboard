@@ -10,8 +10,7 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
-import HecoMap from "@/components/heco/heco-map";
-import { HECO_NAVY, formatPercent } from "@/components/heco/heco-shared";
+import { HECO_NAVY, HECO_HERO, HECO_BRAND, HECO_BRAND_DK, HECO_LIGHT_BORDER, formatPercent, Panel } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Public Sector Fellowship";
 // Section tabs, each with the subheading shown under its tab.
@@ -30,18 +29,6 @@ const CARDS: { label: string; icon: LucideIcon; percent?: boolean; tip: string }
   { label: "Countries Represented", icon: Globe, tip: "Countries the fellows come from" },
   { label: "Female Fellows", icon: Users, percent: true, tip: "Share of fellows who are female" },
 ];
-
-function Panel({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
-  return (
-    <div style={{ backgroundColor: "white", borderRadius: 10, border: `1px solid ${LIGHT_BORDER}`, overflow: "hidden" }}>
-      <div style={{ backgroundColor: HECO_NAVY, padding: "12px 20px" }}>
-        <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "white" }}>{title}</p>
-        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", marginTop: 2 }}>{subtitle}</p>
-      </div>
-      <div style={{ padding: "16px 18px" }}>{children}</div>
-    </div>
-  );
-}
 
 export default function PsfPage() {
   const dataSource = useDataSource("HECO");
@@ -82,7 +69,7 @@ export default function PsfPage() {
   return (
     <div style={{ backgroundColor: "#f8fafc" }}>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-2">
-        <header style={{ position: "relative", overflow: "hidden", backgroundColor: HECO_NAVY, borderRadius: 12, minHeight: 120, display: "flex", alignItems: "center" }}>
+        <header style={{ position: "relative", overflow: "hidden", backgroundColor: HECO_HERO, borderRadius: 12, minHeight: 120, display: "flex", alignItems: "center" }}>
           <HeaderDesign />
           <div className="px-4 sm:px-6 py-6" style={{ position: "relative", zIndex: 10, width: "100%" }}>
             <div style={{ textAlign: "center" }}>
@@ -109,9 +96,10 @@ export default function PsfPage() {
                 key={category.name}
                 onClick={() => setActiveCategory(category.name)}
                 style={{
-                  fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
-                  border: `1px solid ${on ? HECO_NAVY : "rgba(20,48,107,0.15)"}`,
-                  backgroundColor: on ? HECO_NAVY : "white", color: on ? "white" : "#6B7280",
+                  fontSize: 11, fontWeight: on ? 700 : 600, padding: "8px 14px", borderRadius: 20, cursor: "pointer",
+                  border: `1px solid ${on ? HECO_BRAND : HECO_LIGHT_BORDER}`,
+                  backgroundColor: on ? HECO_BRAND : "white", color: on ? "white" : HECO_BRAND_DK,
+                  transition: "all 0.2s ease",
                 }}
               >
                 {category.name}
@@ -122,9 +110,9 @@ export default function PsfPage() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-            <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: HECO_NAVY, flexShrink: 0 }} />
+            <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: HECO_BRAND, flexShrink: 0 }} />
             <div>
-              <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: HECO_NAVY, lineHeight: 1.2, margin: 0 }}>{active.name}</p>
+              <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: HECO_BRAND_DK, lineHeight: 1.2, margin: 0 }}>{active.name}</p>
               <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>{active.blurb}</p>
             </div>
           </div>
@@ -133,7 +121,7 @@ export default function PsfPage() {
         {activeCategory === "Reach & Engagement" && (
           <>
         <section className="space-y-4">
-          <Panel title="Applicant funnel by cohort" subtitle="Applied, accepted and graduated, by cohort">
+          <Panel title="Applicant funnel by cohort" subtitle="Applied, accepted and graduated, by cohort" legend={[{ label: "Cohort 1", color: "#479BD6" }, { label: "Cohort 2", color: "#14306B" }]}>
             <ChartWithPlaceholder data={null} height={300}>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={[]}><CartesianGrid vertical={false} stroke={LIGHT_BORDER} /><XAxis dataKey="stage" /><YAxis /><Tooltip /><Bar dataKey="count" fill={BAR} /></BarChart>
@@ -143,13 +131,8 @@ export default function PsfPage() {
         </section>
 
         <section className="space-y-4">
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
-            <Panel title="Fellows map" subtitle="Where the fellows come from">
-              <div style={{ display: "flex", minHeight: 420 }}>
-                <HecoMap intervention={PROGRAMME} />
-              </div>
-            </Panel>
-            <Panel title="Fellows by country" subtitle="Exact counts per country">
+          <div>
+            <Panel title="Fellows by country" subtitle="Exact counts per country" legend={[{ label: "Fellows", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={countryBars} height={420}>
                 <ResponsiveContainer width="100%" height={420}>
                   <BarChart data={countryBars ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 120 }}>
@@ -172,8 +155,7 @@ export default function PsfPage() {
         {activeCategory === "Capstone Projects" && (
           <>
         <section className="space-y-4">
-          <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: HECO_NAVY }}>Capstone projects</p>
-          <Panel title="Capstone projects by problem area" subtitle="Number of capstone projects in each problem area">
+          <Panel title="Capstone projects by problem area" subtitle="Number of capstone projects in each problem area" legend={[{ label: "Projects", color: "#479BD6" }]}>
             <ChartWithPlaceholder data={capstoneBars} height={320}>
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={capstoneBars ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 180 }}>

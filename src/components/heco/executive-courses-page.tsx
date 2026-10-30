@@ -1,7 +1,8 @@
 "use client";
+import { useState } from "react";
 // Executive Courses page: six stat cards, enrolment per course, participants by sector, course satisfaction ratings.
 import { BookOpen, Users, CheckCircle2, Building2, TrendingUp, type LucideIcon } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -9,9 +10,13 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useProgress } from "@/hooks/useProgress";
-import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionLabel, formatPercent } from "@/components/heco/heco-shared";
+import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionTabs, formatPercent } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Executive Courses";
+const CATEGORIES = [
+  { name: "Enrolment and Participants", blurb: "Enrolment per course and participants by sector" },
+  { name: "Course Satisfaction", blurb: "Participant ratings of the courses" },
+];
 // Satisfaction ratings from lowest to highest, one segment each in the stacked bar.
 const RATINGS = ["Poor", "Fair", "Good", "Very Good", "Excellent"];
 const RATING_COLOURS = ["#D45F2C", "#F5A76D", "#EAB308", "#479BD6", "#14306B"];
@@ -34,6 +39,7 @@ export default function ExecutiveCoursesPage() {
   const dataSource = useDataSource("HECO");
   const syncedAt = useSyncedAt("HECO");
   const progressRows = useProgress("HECO", PROGRAMME);
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].name);
   const { data: programme } = useDashboardData<Programme>(
     () => fetch(`/api/dashboard-intervention?dashboard=HECO&intervention=${encodeURIComponent(PROGRAMME)}`).then(r => r.json()),
     []
@@ -75,10 +81,12 @@ export default function ExecutiveCoursesPage() {
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-7">
         <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
 
-        <section className="space-y-4">
-          <SectionLabel>Enrolment and participants</SectionLabel>
+        <SectionTabs categories={CATEGORIES} active={activeCategory} onChange={setActiveCategory} />
+
+        {activeCategory === "Enrolment and Participants" && (
+          <>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
-            <Panel title="Enrolment per course" subtitle="Participants enrolled in each course">
+            <Panel title="Enrolment per course" subtitle="Participants enrolled in each course" legend={[{ label: "Enrolled", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={enrolment} height={300}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={enrolment ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
@@ -93,7 +101,7 @@ export default function ExecutiveCoursesPage() {
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
             </Panel>
-            <Panel title="Participants by sector or organisation type" subtitle="Government, NGO, private and others">
+            <Panel title="Participants by sector or organisation type" subtitle="Government, NGO, private and others" legend={[{ label: "Participants", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={sectors} height={300}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={sectors ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 120 }}>
@@ -109,18 +117,18 @@ export default function ExecutiveCoursesPage() {
               </ChartWithPlaceholder>
             </Panel>
           </div>
-        </section>
+          </>
+        )}
 
-        <section className="space-y-4">
-          <SectionLabel>Course satisfaction</SectionLabel>
-          <Panel title="Course satisfaction ratings" subtitle="From Poor to Excellent">
+        {activeCategory === "Course Satisfaction" && (
+          <>
+          <Panel title="Course satisfaction ratings" subtitle="From Poor to Excellent" legend={[{ label: "Poor", color: "#D45F2C" }, { label: "Fair", color: "#F5A76D" }, { label: "Good", color: "#EAB308" }, { label: "Very Good", color: "#479BD6" }, { label: "Excellent", color: "#14306B" }]}>
             <ChartWithPlaceholder data={satisfaction} height={200}>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={satisfaction ?? []} layout="vertical" margin={{ top: 6, right: 20, bottom: 0, left: 20 }}>
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" hide />
                   <Tooltip />
-                  <Legend />
                   {RATINGS.map((rating, i) => (
                     <Bar key={rating} dataKey={rating} stackId="satisfaction" fill={RATING_COLOURS[i]} />
                   ))}
@@ -128,7 +136,8 @@ export default function ExecutiveCoursesPage() {
               </ResponsiveContainer>
             </ChartWithPlaceholder>
           </Panel>
-        </section>
+          </>
+        )}
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">

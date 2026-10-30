@@ -1,7 +1,8 @@
 "use client";
+import { useState } from "react";
 // Public Sector Innovation Hackathon page: six stat cards, hackathon funnel, projects by problem area, participation by round split by gender.
 import { Users, FileText, Lightbulb, Rocket, HandCoins, type LucideIcon } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -9,9 +10,13 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useProgress } from "@/hooks/useProgress";
-import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionLabel, formatPercent } from "@/components/heco/heco-shared";
+import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionTabs, formatPercent } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Public Sector Innovation Hackathon";
+const CATEGORIES = [
+  { name: "Funnel and Projects", blurb: "Teams entered, winners and projects by problem area" },
+  { name: "Participation by Round", blurb: "Female and male participants in each hackathon round" },
+];
 const FUNNEL = ["Teams Entered", "Round 1 Winners", "Final Winners"];
 const GENDER_COLOURS = { Female: "#D45F2C", Male: "#479BD6" };
 
@@ -34,6 +39,7 @@ export default function HackathonPage() {
   const dataSource = useDataSource("HECO");
   const syncedAt = useSyncedAt("HECO");
   const progressRows = useProgress("HECO", PROGRAMME);
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].name);
   const { data: programme } = useDashboardData<Programme>(
     () => fetch(`/api/dashboard-intervention?dashboard=HECO&intervention=${encodeURIComponent(PROGRAMME)}`).then(r => r.json()),
     []
@@ -83,10 +89,12 @@ export default function HackathonPage() {
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-7">
         <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
 
-        <section className="space-y-4">
-          <SectionLabel>Hackathon funnel and projects</SectionLabel>
+        <SectionTabs categories={CATEGORIES} active={activeCategory} onChange={setActiveCategory} />
+
+        {activeCategory === "Funnel and Projects" && (
+          <>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
-            <Panel title="Hackathon funnel" subtitle="Teams entered, round 1 winners and final winners">
+            <Panel title="Hackathon funnel" subtitle="Teams entered, round 1 winners and final winners" legend={[{ label: "Teams", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={funnel} height={320}>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={funnel ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
@@ -101,7 +109,7 @@ export default function HackathonPage() {
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
             </Panel>
-            <Panel title="Projects by problem area" subtitle="Each problem area is a problem taken from a PSF fellow">
+            <Panel title="Projects by problem area" subtitle="Each problem area is a problem taken from a PSF fellow" legend={[{ label: "Projects", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={problemAreas} height={320}>
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={problemAreas ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 150 }}>
@@ -117,11 +125,12 @@ export default function HackathonPage() {
               </ChartWithPlaceholder>
             </Panel>
           </div>
-        </section>
+          </>
+        )}
 
-        <section className="space-y-4">
-          <SectionLabel>Participation by round</SectionLabel>
-          <Panel title="Participation by hackathon round, split by gender" subtitle="Female and male participants in each round">
+        {activeCategory === "Participation by Round" && (
+          <>
+          <Panel title="Participation by hackathon round, split by gender" subtitle="Female and male participants in each round" legend={[{ label: "Female", color: "#D45F2C" }, { label: "Male", color: "#479BD6" }]}>
             <ChartWithPlaceholder data={byRound} height={300}>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={byRound ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
@@ -129,14 +138,14 @@ export default function HackathonPage() {
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                   <Tooltip />
-                  <Legend />
                   <Bar dataKey="Female" stackId="gender" fill={GENDER_COLOURS.Female} />
                   <Bar dataKey="Male" stackId="gender" fill={GENDER_COLOURS.Male} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartWithPlaceholder>
           </Panel>
-        </section>
+          </>
+        )}
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
