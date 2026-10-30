@@ -36,8 +36,6 @@ import { DonutRing } from "@/components/charts/donut-chart";
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
 
-// True once any sample list has rows. Charts show "In coming data" until then.
-const hasHentData = [masterclasses, ALL_VENTURES].some(list => list.length > 0);
 
 // HENT sample datasets are removed; the lists below stay empty until HENT rows load.
 type MCTopic = string;
@@ -45,6 +43,8 @@ const masterclasses: any[] = [];
 const MC_TOPICS: string[] = [];
 const RATING_CRITERIA: string[] = [];
 const ALL_VENTURES: any[] = [];
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [masterclasses, ALL_VENTURES].some(list => list.length > 0);
 
 // â”€â”€â”€ Palette (green family, distinct by hue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const NAVY      = "#0F4C3A"; // brand green (footer)
@@ -322,7 +322,7 @@ export default function MasterclassesPage() {
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2023–2026</span>
               <span aria-hidden="true">·</span>
-              <span>{masterclasses.length} sessions tracked</span>
+              <span>{hasHentData ? `${masterclasses.length} sessions tracked` : "In coming data"}</span>
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
             </div>
@@ -531,15 +531,15 @@ export default function MasterclassesPage() {
               </ChartWithPlaceholder>
               <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-center">
                 <div>
-                  <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{tot.completion}%</p>
+                  <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{hasHentData ? `${tot.completion}%` : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Avg completion</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold" style={{ color: EMERALD_MC }}>{filtered.filter(m => m.completionRate >= 90).length}</p>
+                  <p className="text-lg font-bold" style={{ color: EMERALD_MC }}>{hasHentData ? filtered.filter(m => m.completionRate >= 90).length : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Sessions ≥90%</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold" style={{ color: AMBER_MC }}>{filtered.filter(m => m.completionRate < 80).length}</p>
+                  <p className="text-lg font-bold" style={{ color: AMBER_MC }}>{hasHentData ? filtered.filter(m => m.completionRate < 80).length : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Sessions &lt;80%</p>
                 </div>
               </div>
@@ -737,15 +737,15 @@ export default function MasterclassesPage() {
               </ChartWithPlaceholder>
               <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-center">
                 <div>
-                  <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{tot.completion}%</p>
+                  <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{hasHentData ? `${tot.completion}%` : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Avg completion</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold" style={{ color: EMERALD_MC }}>{filtered.filter(m => m.completionRate >= 90).length}</p>
+                  <p className="text-lg font-bold" style={{ color: EMERALD_MC }}>{hasHentData ? filtered.filter(m => m.completionRate >= 90).length : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Sessions ≥90%</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold" style={{ color: AMBER_MC }}>{filtered.filter(m => m.completionRate < 80).length}</p>
+                  <p className="text-lg font-bold" style={{ color: AMBER_MC }}>{hasHentData ? filtered.filter(m => m.completionRate < 80).length : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Sessions &lt;80%</p>
                 </div>
               </div>

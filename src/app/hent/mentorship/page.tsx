@@ -1,4 +1,6 @@
 "use client";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown, ChartTip } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartLegend } from "@/components/ui/hent";
@@ -11,10 +13,19 @@ import { Star, Award, Users, Target, Zap, Briefcase, TrendingUp, CheckCircle2, I
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import { DonutRing } from "@/components/charts/donut-chart";
-import {
-  mentorshipPrograms, MF_CRITERIA, MF_QUAL_AREAS,
-  type MFCriterion, type MFQualArea,
-} from "@/data/mentorships";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
+type Row = Record<string, any>;
+
+
+// HENT sample datasets are removed; the lists below stay empty until HENT rows load.
+type MFCriterion = string;
+type MFQualArea = string;
+const mentorshipPrograms: any[] = [];
+const MF_CRITERIA: string[] = [];
+const MF_QUAL_AREAS: string[] = [];
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [mentorshipPrograms].some(list => list.length > 0);
 
 // Color palette - HENT green (matching ventures)
 const HERO = "#2D6A4F";
@@ -287,6 +298,13 @@ type TypeVal  = "All" | "Mentorship" | "Fellowship" | "One-Year Fellowship" | "A
 type GenderVal = "All" | "Female" | "Male";
 
 export default function MentorshipPage() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: headlineRows } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const categories = ["Program Delivery & Performance", "Participant Profile", "Learning & Outcomes"];
@@ -429,7 +447,7 @@ export default function MentorshipPage() {
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> 2022–2026</span>
                 <span aria-hidden="true">·</span>
-                <span>{mentorshipPrograms.length} programmes tracked</span>
+                <span>{hasHentData ? `${mentorshipPrograms.length} programmes tracked` : "In coming data"}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
@@ -446,10 +464,10 @@ export default function MentorshipPage() {
         <HeaderStatsPanel
           title="Mentorship & Fellowship Metrics"
           cards={[
-            { label: "Total Fellows", num: tot.fellows, displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, sub: `${Math.round((tot.fellows / 1000) * 100)}% of 1,000`, pace: true, paceA: tot.fellows, paceT: 1000, tip: "Participants in mentorship and fellowship programs." },
-            { label: "Mentor Engagements", num: tot.mentors, displayFmt: (n) => String(Math.round(n)), icon: Award, sub: `${Math.round((tot.mentors / 500) * 100)}% of 500`, pace: true, paceA: tot.mentors, paceT: 500, tip: "Mentorship slots deployed across programs." },
-            { label: "Female Fellows", num: femalePct, displayFmt: (n) => `${Math.round(n)}%`, icon: Star, sub: `${femalePct}% · ${tot.female}/${tot.fellows}`, pace: true, paceA: femalePct, paceT: 50, tip: "Percentage of female participation across all programs." },
-            { label: "Avg Completion Rate", num: tot.completion, displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, sub: `${tot.completion}% target`, pace: true, paceA: tot.completion, paceT: 85, tip: "Average completion rate across all programs." },
+            { label: "Total Fellows", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Participants in mentorship and fellowship programs." },
+            { label: "Mentor Engagements", num: headline("Mentor Engagements"), displayFmt: (n) => String(Math.round(n)), icon: Award, tip: "Mentorship slots deployed across programs." },
+            { label: "Female Fellows", num: headline("Female Fellows"), displayFmt: (n) => `${Math.round(n)}%`, icon: Star, tip: "Percentage of female participation across all programs." },
+            { label: "Avg Completion Rate", num: headline("Avg Completion Rate"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Average completion rate across all programs." },
           ]}
         />
 
@@ -588,6 +606,10 @@ export default function MentorshipPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Criterion Ratings Distribution"
                 subtitle="Average score per criterion across programmes">
+                <ChartWithPlaceholder data={hasHentData ? MF_CRITERIA.map(c => ({
+                      name: c,
+                      score: filtered.length ? (filtered.reduce((s, p) => s + p.scores[c], 0) / filtered.length) : 0,
+                    })) : null} height={240}>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart
                     data={MF_CRITERIA.map(c => ({
@@ -604,6 +626,7 @@ export default function MentorshipPage() {
                     <Bar dataKey="score" fill={PRIMARY} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Average Score</span>
                 </div>
@@ -611,6 +634,11 @@ export default function MentorshipPage() {
 
               <Panel title="Gender Comparison by Criterion"
                 subtitle="Female-majority vs male-majority programme ratings">
+                <ChartWithPlaceholder data={hasHentData ? MF_CRITERIA.map(c => ({
+                      name: c,
+                      Female: fProgs.length ? (fProgs.reduce((s, p) => s + p.scores[c], 0) / fProgs.length) : 0,
+                      Male: mProgs.length ? (mProgs.reduce((s, p) => s + p.scores[c], 0) / mProgs.length) : 0,
+                    })) : null} height={240}>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart
                     data={MF_CRITERIA.map(c => ({
@@ -629,6 +657,7 @@ export default function MentorshipPage() {
                     <Bar dataKey="Male" fill={SKY} radius={[0, 4, 4, 0]} stackId="a" />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: VIOLET }} /> Female</span>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Male</span>
@@ -668,6 +697,7 @@ export default function MentorshipPage() {
               </Panel>
               <Panel title="Social Inclusion Groups"
                 subtitle="MCF scholars, PWD, refugee-displaced">
+                <ChartWithPlaceholder data={hasHentData ? socialData : null} height={240}>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={socialData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }} barCategoryGap="30%">
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
@@ -691,6 +721,7 @@ export default function MentorshipPage() {
                     <Bar dataKey="value" fill={EMERALD} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: EMERALD }} /> Inclusion Groups</span>
                 </div>
@@ -745,6 +776,7 @@ export default function MentorshipPage() {
 
               <Panel title="Gender Participation Trend"
                 subtitle="Female vs male fellows by year">
+                <ChartWithPlaceholder data={hasHentData ? genderTrend : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={genderTrend} barCategoryGap="30%" barGap={2}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
@@ -755,6 +787,7 @@ export default function MentorshipPage() {
                     <Bar dataKey="Male"   fill={SKY}    radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: VIOLET }} /> Female</span>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Male</span>
@@ -763,6 +796,7 @@ export default function MentorshipPage() {
 
               <Panel title="Venture Stage Distribution"
                 subtitle="Expose, Build, Scale by cohort year">
+                <ChartWithPlaceholder data={hasHentData ? stageTrend : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={stageTrend} barCategoryGap="30%" barGap={2}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
@@ -774,6 +808,7 @@ export default function MentorshipPage() {
                     <Bar dataKey="Scale"  fill={INDIGO}  radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Expose</span>
                   <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Build</span>
@@ -783,6 +818,7 @@ export default function MentorshipPage() {
 
               <Panel title="Cumulative Fellow Growth"
                 subtitle="Running total expansion over time">
+                <ChartWithPlaceholder data={hasHentData ? growthData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={growthData} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -793,10 +829,15 @@ export default function MentorshipPage() {
                     <Line type="monotone" dataKey="Cumulative Fellows" stroke={EMERALD} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Cumulative fellows" />
                   </LineChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
 
               <Panel title="Completion Rate by Program"
                 subtitle="Percentage of enrolled fellows completing">
+                <ChartWithPlaceholder data={hasHentData ? [...filtered].sort((a, b) => a.date.localeCompare(b.date)).map(p => ({
+                      Programme: `${MF_MONTHS[p.month - 1]} '${String(p.year).slice(2)}`,
+                      "Completion %": p.completionRate,
+                    })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart
                     data={[...filtered].sort((a, b) => a.date.localeCompare(b.date)).map(p => ({
@@ -813,6 +854,7 @@ export default function MentorshipPage() {
                     <Bar dataKey="Completion %" fill={EMERALD} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>

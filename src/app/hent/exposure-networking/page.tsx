@@ -1,4 +1,6 @@
 "use client";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, BarList, ChartTip, ChartLegend, useCountUp } from "@/components/ui";
@@ -7,17 +9,26 @@ import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import OutreachFilters, { FilterSelect as OFilterSelect } from "@/components/filters/filter-popover";
 import { DonutRing } from "@/components/charts/donut-chart";
-import {
-  exposureEvents, EXPOSURE_TYPES, STAKEHOLDER_GROUPS,
-  type ExposureType, type StakeholderGroup,
-} from "@/data/exposure";
-import { pilotEngagements } from "@/data/pilot-engagements";
+// HENT sample datasets are removed; the lists below stay empty until HENT rows load.
+type ExposureType = string;
+type StakeholderGroup = string;
+const exposureEvents: any[] = [];
+const EXPOSURE_TYPES: string[] = [];
+const STAKEHOLDER_GROUPS: string[] = [];
+const pilotEngagements: any[] = [];
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [exposureEvents, pilotEngagements].some(list => list.length > 0);
 import { CalendarDays, Handshake, Link2, Mic, Star, Users } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
+type Row = Record<string, any>;
+
+
 
 // ─── Theme (HENT green) ──────────────────────────────────────────────────────
 const HERO     = "#2D6A4F";
@@ -108,6 +119,13 @@ function derive(rows: typeof exposureEvents) {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function ExposureNetworkingPage() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: headlineRows } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [fYear, setFYear]       = useState("All Years");
@@ -166,12 +184,12 @@ export default function ExposureNetworkingPage() {
         <HeaderStatsPanel
           title="Exposure & Networking Metrics"
           cards={[
-            { label: "Events Held", num: D.events, displayFmt: (n) => String(Math.round(n)), icon: CalendarDays, tip: "Exposure platforms delivered — pitch events, conferences, investor roundtables, ecosystem engagements and demo days." },
-            { label: "Founder Placements", num: D.founders, displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Total founder seats across all events. A founder attending two events counts twice." },
-            { label: "Investors Engaged", num: D.investors, displayFmt: (n) => Math.round(n).toLocaleString(), icon: Mic, tip: "Investors present across all platforms — the capital side of the room founders are being put in front of." },
-            { label: "Connections Made", num: D.connections, displayFmt: (n) => Math.round(n).toLocaleString(), icon: Link2, tip: "Introductions brokered between founders and ecosystem stakeholders. This is the top of the relationship funnel." },
-            { label: "Agreements Signed", num: D.mous, displayFmt: (n) => String(Math.round(n)), icon: Handshake, tip: "Formal agreements (MOUs, partnerships, investments) that resulted from these introductions — the end of the funnel." },
-            { label: "Visibility Score", num: D.visibility, displayFmt: (n) => `${n.toFixed(1)}/5`, icon: Star, tip: "How founders themselves rate the visibility and strategic value they gained, out of 5." },
+            { label: "Events Held", num: headline("Events Held"), displayFmt: (n) => String(Math.round(n)), icon: CalendarDays, tip: "Exposure platforms delivered — pitch events, conferences, investor roundtables, ecosystem engagements and demo days." },
+            { label: "Founder Placements", num: headline("Founder Placements"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Total founder seats across all events. A founder attending two events counts twice." },
+            { label: "Investors Engaged", num: headline("Investors Engaged"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Mic, tip: "Investors present across all platforms — the capital side of the room founders are being put in front of." },
+            { label: "Connections Made", num: headline("Connections Made"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Link2, tip: "Introductions brokered between founders and ecosystem stakeholders. This is the top of the relationship funnel." },
+            { label: "Agreements Signed", num: headline("Agreements Signed"), displayFmt: (n) => String(Math.round(n)), icon: Handshake, tip: "Formal agreements (MOUs, partnerships, investments) that resulted from these introductions — the end of the funnel." },
+            { label: "Visibility Score", num: headline("Visibility Score"), displayFmt: (n) => `${n.toFixed(1)}/5`, icon: Star, tip: "How founders themselves rate the visibility and strategic value they gained, out of 5." },
           ]}
         />
 
@@ -264,6 +282,7 @@ export default function ExposureNetworkingPage() {
 
             <ChartCard title="Events & Founder Placements per Year" sub="Delivery volume year on year"
               info="How many exposure platforms were delivered each year and how many founder seats they created.">
+              <ChartWithPlaceholder data={hasHentData ? D.byYear : null} height={220}>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={D.byYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%" barGap={2}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -274,6 +293,7 @@ export default function ExposureNetworkingPage() {
                   <Bar dataKey="Events"   fill="#A6C13C" radius={[4, 4, 0, 0]} maxBarSize={22} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16, fontSize: 11, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}` }}>
                 {([["Founders", "#1B4332"], ["Events", "#A6C13C"]] as const).map(([l, c]) => (
                   <span key={l} style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -285,6 +305,7 @@ export default function ExposureNetworkingPage() {
 
             <ChartCard title="Connections Brokered per Year" sub="Introductions made between founders and ecosystem stakeholders"
               info="Introductions made each year. Rising connections without rising agreements would suggest reach is growing faster than conversion.">
+              <ChartWithPlaceholder data={hasHentData ? D.byYear : null} height={220}>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={D.byYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -295,6 +316,7 @@ export default function ExposureNetworkingPage() {
                     dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Connections brokered", "#1F9E9E"]]} />
             </ChartCard>
           </div>
@@ -308,6 +330,7 @@ export default function ExposureNetworkingPage() {
 
             <ChartCard title="Deals Opened per Event, by Platform Type" sub="Higher is a more deal-productive format"
               info="Average number of deals or partnership conversations opened per event, by format. Use it to decide which formats deserve more investment.">
+              <ChartWithPlaceholder data={hasHentData ? D.byType : null} height={240}>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={D.byType} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -319,6 +342,7 @@ export default function ExposureNetworkingPage() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={D.byType.map(t => [t.name, TYPE_HEX[t.name as ExposureType]] as const)} />
             </ChartCard>
 

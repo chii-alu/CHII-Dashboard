@@ -1,4 +1,6 @@
 ﻿"use client";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
@@ -15,10 +17,20 @@ import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import OutreachFilters, { FilterSelect as OFilterSelect } from "@/components/filters/filter-popover";
 import { DonutRing } from "@/components/charts/donut-chart";
-import {
-  studyTrips, TRIP_TYPES, TRIP_CRITERIA, TRIP_REGIONS,
-  type TripType, type TripRegion,
-} from "@/data/study-trips";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
+type Row = Record<string, any>;
+
+
+// HENT sample datasets are removed; the lists below stay empty until HENT rows load.
+type TripType = string;
+type TripRegion = string;
+const studyTrips: any[] = [];
+const TRIP_TYPES: string[] = [];
+const TRIP_CRITERIA: string[] = [];
+const TRIP_REGIONS: string[] = [];
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [studyTrips].some(list => list.length > 0);
 
 // â”€â”€â”€ palette (green family, distinct by hue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const NAVY    = "#0F4C3A"; // footer bg only (brand green)
@@ -163,6 +175,13 @@ const KPI_TILES = [
 // Youth-in-Work-style filter select (green theme)
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function FieldVisitsPage() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: headlineRows } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [yearFilter,   setYearFilter]   = useState<"All"|"2022"|"2023"|"2024"|"2025"|"2026">("All");
@@ -346,12 +365,12 @@ export default function FieldVisitsPage() {
         <HeaderStatsPanel
           title="Study Trips Metrics"
           cards={[
-            { label: "Total Study Trips", num: tot.visits, displayFmt: (n) => String(Math.round(n)), icon: MapPin, tip: "Industry excursions conducted." },
-            { label: "Total Participants", num: tot.participants, displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Cumulative participant attendance across all visits." },
-            { label: "Ventures Participating", num: tot.ventures, displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Unique ventures represented across visits." },
-            { label: "Organisations Visited", num: tot.orgs, displayFmt: (n) => String(Math.round(n)), icon: Building2, tip: "Distinct host organizations across all visits." },
-            { label: "Avg Attendance / Visit", num: avgAtt, displayFmt: (n) => String(Math.round(n)), icon: TrendingUp, tip: "Average participants per excursion." },
-            { label: "Avg Completion Rate", num: tot.completion, displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Average completion rate across all visits." },
+            { label: "Total Study Trips", num: headline("Total Study Trips"), displayFmt: (n) => String(Math.round(n)), icon: MapPin, tip: "Industry excursions conducted." },
+            { label: "Total Participants", num: headline("Total Participants"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Cumulative participant attendance across all visits." },
+            { label: "Ventures Participating", num: headline("Ventures Participating"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Unique ventures represented across visits." },
+            { label: "Organisations Visited", num: headline("Organisations Visited"), displayFmt: (n) => String(Math.round(n)), icon: Building2, tip: "Distinct host organizations across all visits." },
+            { label: "Avg Attendance / Visit", num: headline("Avg Attendance / Visit"), displayFmt: (n) => String(Math.round(n)), icon: TrendingUp, tip: "Average participants per excursion." },
+            { label: "Avg Completion Rate", num: headline("Avg Completion Rate"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Average completion rate across all visits." },
           ]}
         />
 
@@ -637,6 +656,7 @@ export default function FieldVisitsPage() {
             <ChartCard title="Participation by Gender per Year"
               sub="Female vs male participants across all study trips by year  —  shows cohort composition trends"
               accent={VIOLET}>
+              <ChartWithPlaceholder data={hasHentData ? genderTrend : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
                 <BarChart data={genderTrend} barCategoryGap="30%" barGap={2} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -647,6 +667,7 @@ export default function FieldVisitsPage() {
                   <Bar dataKey="Male"   fill={SKY}    radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />Female</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />Male</span>
@@ -800,6 +821,7 @@ export default function FieldVisitsPage() {
             <ChartCard title="Cumulative Participant Reach"
               sub="Running total across all visits  —  programme exposure growth trajectory"
               accent={EMERALD}>
+              <ChartWithPlaceholder data={hasHentData ? growthData : null} height={240}>
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={growthData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -809,6 +831,7 @@ export default function FieldVisitsPage() {
                   <Line type="monotone" dataKey="Cumulative Participants" stroke={EMERALD} strokeWidth={2.5} dot={{ r: 4, fill: EMERALD, strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: EMERALD }} />Cumulative participants</span>
               </div>

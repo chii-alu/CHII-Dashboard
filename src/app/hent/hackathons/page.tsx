@@ -1,4 +1,6 @@
 ﻿"use client";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
@@ -15,7 +17,15 @@ import { CHART } from "@/theme/tokens";
 import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import { DonutRing } from "@/components/charts/donut-chart";
-import { hackathons, PROJECT_CATEGORIES } from "@/data/hackathons";
+
+// HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
+type Row = Record<string, any>;
+const hackathons: any[] = [];
+const PROJECT_CATEGORIES: string[] = [];
+
+// True once any sample list has rows. Charts show "In coming data" until then.
+const hasHentData = [hackathons].some(list => list.length > 0);
+
 
 // â”€â”€â”€ palette (green family, distinct by hue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const NAVY    = "#0F4C3A"; // footer bg only (brand green)
@@ -155,6 +165,13 @@ const KPI_TILES = [
 
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function HackathonsPage() {
+  // Headline values for the stat cards, from HENT At a Glance (actual values only).
+  const { data: headlineRows } = useDashboardData(
+    () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
+    []
+  );
+  const headline = (metric: string): number | null =>
+    headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [trendTab, setTrendTab] = useState<"participants" | "projects" | "winners" | "startups">("participants");
@@ -279,7 +296,7 @@ export default function HackathonsPage() {
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {YEARS[0]}–{YEARS[YEARS.length - 1]}</span>
               <span aria-hidden="true">·</span>
-              <span>{total.events} hackathons tracked</span>
+              <span>{hasHentData ? `${total.events} hackathons tracked` : "In coming data"}</span>
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
             </div>
@@ -295,12 +312,12 @@ export default function HackathonsPage() {
         <HeaderStatsPanel
           title="Hackathons Metrics"
           cards={[
-            { label: "Total Hackathons", num: total.events, displayFmt: (n) => String(Math.round(n)), icon: Briefcase, tip: "Innovation events conducted across all years.", sub: `${Math.round((total.events / 20) * 100)}% of 20 target`, pace: true, paceA: total.events, paceT: 20 },
-            { label: "Participants", num: total.participants, displayFmt: (n) => Math.round(n) >= 1000 ? `${(Math.round(n) / 1000).toFixed(1)}k` : String(Math.round(n)), icon: Users, tip: "Total founder and team member participation across all events.", sub: `${Math.round((total.participants / 3000) * 100)}% of 3000 target`, pace: true, paceA: total.participants, paceT: 3000 },
-            { label: "Winning Teams", num: total.winningTeams, displayFmt: (n) => String(Math.round(n)), icon: Trophy, tip: "Teams selected as winners across all hackathons.", sub: `${Math.round((total.winningTeams / 150) * 100)}% of 150 target`, pace: true, paceA: total.winningTeams, paceT: 150 },
-            { label: "Projects Developed", num: total.projects, displayFmt: (n) => String(Math.round(n)), icon: Lightbulb, tip: "Project submissions across all events.", sub: `${Math.round((total.projects / 400) * 100)}% of 400 target`, pace: true, paceA: total.projects, paceT: 400 },
-            { label: "Startups Created", num: total.startups, displayFmt: (n) => String(Math.round(n)), icon: Zap, tip: "Ventures founded from hackathon projects.", sub: `${Math.round((total.startups / 25) * 100)}% of 25 target`, pace: true, paceA: total.startups, paceT: 25 },
-            { label: "Partnerships", num: total.partnerships, displayFmt: (n) => String(Math.round(n)), icon: Handshake, tip: "Sponsor and partner organizations engaged.", sub: `${Math.round((total.partnerships / 30) * 100)}% of 30 target`, pace: true, paceA: total.partnerships, paceT: 30 },
+            { label: "Total Hackathons", num: headline("Total Hackathons"), displayFmt: (n) => String(Math.round(n)), icon: Briefcase, tip: "Innovation events conducted across all years." },
+            { label: "Participants", num: headline("Participants"), displayFmt: (n) => Math.round(n) >= 1000 ? `${(Math.round(n) / 1000).toFixed(1)}k` : String(Math.round(n)), icon: Users, tip: "Total founder and team member participation across all events." },
+            { label: "Winning Teams", num: headline("Winning Teams"), displayFmt: (n) => String(Math.round(n)), icon: Trophy, tip: "Teams selected as winners across all hackathons." },
+            { label: "Projects Developed", num: headline("Projects Developed"), displayFmt: (n) => String(Math.round(n)), icon: Lightbulb, tip: "Project submissions across all events." },
+            { label: "Startups Created", num: headline("Startups Created"), displayFmt: (n) => String(Math.round(n)), icon: Zap, tip: "Ventures founded from hackathon projects." },
+            { label: "Partnerships", num: headline("Partnerships"), displayFmt: (n) => String(Math.round(n)), icon: Handshake, tip: "Sponsor and partner organizations engaged." },
           ]}
         />
 
@@ -361,20 +378,20 @@ export default function HackathonsPage() {
 
         <section style={{ display: show(1) ? undefined : "none" }}>
           <SectionHeader title="Participant Profiles"
-            sub={`${total.participants.toLocaleString()} participants across all hackathons`} />
+            sub={hasHentData ? `${total.participants.toLocaleString()} participants across all hackathons` : "In coming data"} />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChartCard title="Gender Composition"
               sub="Distribution of participants by gender across all events"
               accent={VIOLET}>
               <CustomDonut
-                data={[
+                data={hasHentData ? [
                   { name: "Male Participants",   value: total.participants - total.female },
                   { name: "Female Participants", value: total.female },
-                ]}
+                ] : []}
                 colors={[SKY, VIOLET]}
                 className="h-44"
-                label={`${total.participants}`}
+                label={hasHentData ? `${total.participants}` : "In coming data"}
                 valueFormatter={(v: number) => `${v} participants`}
               />
             </ChartCard>
@@ -389,7 +406,7 @@ export default function HackathonsPage() {
                 ]}
                 colors={[SKY, ROSE]}
                 className="h-44"
-                label={`${total.participants}`}
+                label={hasHentData ? `${total.participants}` : "In coming data"}
                 valueFormatter={(v: number) => `${v} participants`}
               />
             </ChartCard>
@@ -405,6 +422,7 @@ export default function HackathonsPage() {
             <ChartCard title="Annual Hackathon Frequency"
               sub="Count of hackathons organised per calendar year"
               accent={ORANGE}>
+              <ChartWithPlaceholder data={hasHentData ? hackPerYear : null} height={192}>
               <ResponsiveContainer width="100%" height={192}>
                 <BarChart data={hackPerYear} barCategoryGap="40%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -414,12 +432,14 @@ export default function HackathonsPage() {
                   <Bar dataKey="Hackathons" fill={ORANGE} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Hackathons held", ORANGE]]} />
             </ChartCard>
 
             <ChartCard title="Participant Reach per Year"
               sub="Total participants across all hackathons  -  year-on-year growth"
               accent={TEAL}>
+              <ChartWithPlaceholder data={hasHentData ? reachPerYear : null} height={192}>
               <ResponsiveContainer width="100%" height={192}>
                 <LineChart data={reachPerYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -430,6 +450,7 @@ export default function HackathonsPage() {
                     stroke={TEAL} strokeWidth={2.5} dot={{ r: 4, fill: TEAL, strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <ChartLegend items={[["Participants", TEAL]]} />
             </ChartCard>
           </div>
@@ -479,6 +500,7 @@ export default function HackathonsPage() {
                 {trendCategories[0]}
               </span>
             </div>
+            <ChartWithPlaceholder data={hasHentData ? trendData : null} height={208}>
             <ResponsiveContainer width="100%" height={208}>
               <BarChart data={trendData} barCategoryGap="30%" barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -489,6 +511,7 @@ export default function HackathonsPage() {
                 <Bar dataKey={trendCategories[0]} fill={VIOLET} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            </ChartWithPlaceholder>
             <ChartLegend items={[[trendCategories[1], SKY], [trendCategories[0], VIOLET]]} />
           </ChartCard>
         </section>
@@ -496,7 +519,7 @@ export default function HackathonsPage() {
         {/* â”€â”€ SECTION 4: PARTICIPATION & PROJECT CATEGORIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <section style={{ display: show(4) ? undefined : "none" }}>
           <SectionHeader title="Participation & Project Categories"
-            sub={`${total.participants.toLocaleString()} participants  ·  ${total.projects} projects`} />
+            sub={hasHentData ? `${total.participants.toLocaleString()} participants  ·  ${total.projects} projects` : "In coming data"} />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
@@ -504,13 +527,13 @@ export default function HackathonsPage() {
               sub="Total female and male participants across all hackathon events"
               accent={VIOLET}>
               <p className="text-[11px] text-gray-500 mb-4">
-                Total of {total.participants.toLocaleString()} participants across {total.events} events
+                {hasHentData ? `Total of ${total.participants.toLocaleString()} participants across ${total.events} events` : "In coming data"}
               </p>
-              <ColorBarList data={genderBreakdown} colors={[VIOLET, SKY]} />
+              {hasHentData ? <ColorBarList data={genderBreakdown} colors={[VIOLET, SKY]} /> : <p className="text-[12px] text-gray-400">In coming data</p>}
 
               {/* Per-year gender breakdown mini-bars */}
               <div className="mt-5 space-y-1.5">
-                {participantsTrend.map(row => {
+                {(hasHentData ? participantsTrend : []).map(row => {
                   const tot = row.Female + row.Male;
                   const fPct = tot > 0 ? Math.round((row.Female / tot) * 100) : 0;
                   return (
@@ -563,11 +586,11 @@ export default function HackathonsPage() {
               <div className="space-y-2.5">
                 {(() => {
                   const steps = [
-                    { label: "Participants recruited",   value: total.participants },
-                    { label: "Projects developed",        value: total.projects },
-                    { label: "Winning teams selected",    value: total.winningTeams },
-                    { label: "Startups created",          value: total.startups },
-                    { label: "Partnerships secured",      value: total.partnerships },
+                    { label: "Participants recruited",   value: hasHentData ? total.participants : null },
+                    { label: "Projects developed",        value: hasHentData ? total.projects : null },
+                    { label: "Winning teams selected",    value: hasHentData ? total.winningTeams : null },
+                    { label: "Startups created",          value: hasHentData ? total.startups : null },
+                    { label: "Partnerships secured",      value: hasHentData ? total.partnerships : null },
                   ];
                   const max = steps[0].value || 1;
                   return steps.map((s, i) => {
@@ -579,7 +602,7 @@ export default function HackathonsPage() {
                         <div className="flex items-center justify-between text-[11px] mb-1">
                           <span className="font-semibold text-gray-700">{s.label}</span>
                           <span className="font-bold tabular-nums" style={{ color: "#0E4633" }}>
-                            {s.value.toLocaleString()}
+                            {s.value === null ? "In coming data" : s.value.toLocaleString()}
                             {conv !== null && <span className="text-gray-400 font-medium"> · {conv}%</span>}
                           </span>
                         </div>
@@ -592,12 +615,21 @@ export default function HackathonsPage() {
                 })()}
               </div>
               <p style={{ fontSize: 10, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, textAlign: "center" }}>
-                {total.projects ? Math.round(total.startups / total.projects * 100) : 0}% of hackathon projects go on to become startups
+                {hasHentData ? `${total.projects ? Math.round(total.startups / total.projects * 100) : 0}% of hackathon projects go on to become startups` : "In coming data"}
               </p>
             </ChartCard>
 
             <ChartCard title="Idea-to-Venture Conversion per Year"
               sub="Projects developed vs startups created, and the conversion rate achieved each year">
+              <ChartWithPlaceholder data={hasHentData ? YEARS.map(yr => {
+                  const hs = hackathons.filter(h => h.year === yr);
+                  const projects = hs.reduce((s, h) => s + h.projects, 0);
+                  const startups = hs.reduce((s, h) => s + h.startupsCreated, 0);
+                  return {
+                    Year: String(yr), Projects: projects, Startups: startups,
+                    Rate: projects ? Math.round((startups / projects) * 100) : 0,
+                  };
+                }) : null} height={220}>
               <ResponsiveContainer width="100%" height={220}>
                 <ComposedChart data={YEARS.map(yr => {
                   const hs = hackathons.filter(h => h.year === yr);
@@ -619,6 +651,7 @@ export default function HackathonsPage() {
                     dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </ComposedChart>
               </ResponsiveContainer>
+              </ChartWithPlaceholder>
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16, fontSize: 11, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}` }}>
                 {([["Projects", "#1B4332"], ["Startups", "#A6C13C"], ["Conversion rate", "#1F9E9E"]] as const).map(([l, c]) => (
                   <span key={l} style={{ display: "flex", alignItems: "center", gap: 6 }}>
