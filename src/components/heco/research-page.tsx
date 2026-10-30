@@ -14,8 +14,10 @@ import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionTabs } f
 
 const PROGRAMME = "Research Activities";
 const CATEGORIES = [
-  { name: "Research Output and Funding", blurb: "Papers by research topic and the grant pipeline" },
-  { name: "Masterclass Training", blurb: "Training attendance, kept separate from research" },
+  { name: "Publications", blurb: "Research papers produced, by research topic" },
+  { name: "Funding", blurb: "Grant applications, reviews and awards" },
+  { name: "Research Implementation", blurb: "How research is carried out and delivered" },
+  { name: "Research Masterclass", blurb: "Masterclass attendance per session, kept separate from research" },
 ];
 // Grant pipeline stages, in order, one segment each in the stacked bar.
 const STAGES = ["Applied", "Under Review", "Awarded", "Rejected"];
@@ -82,59 +84,73 @@ export default function ResearchPage() {
 
         <SectionTabs categories={CATEGORIES} active={activeCategory} onChange={setActiveCategory} />
 
-        {activeCategory === "Research Output and Funding" && (
+        {activeCategory === "Publications" && (
           <>
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
-            <Panel title="Papers by research topic" subtitle="Number of papers in each topic" legend={[{ label: "Papers", color: "#479BD6" }]}>
-              <ChartWithPlaceholder data={topics} height={320}>
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={topics ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 150 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={HECO_GRID} />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={140} />
+          <div>
+              <Panel title="Papers by research topic" subtitle="Number of papers in each topic" legend={[{ label: "Papers", color: "#479BD6" }]}>
+                <ChartWithPlaceholder data={topics} height={320}>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={topics ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 150 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={HECO_GRID} />
+                      <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={140} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill={HECO_BAR} radius={[0, 4, 4, 0]}>
+                        <LabelList dataKey="count" position="right" fontSize={10} fill={HECO_NAVY} fontWeight={700} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </Panel>
+          </div>
+          </>
+        )}
+        {activeCategory === "Funding" && (
+          <>
+          <div>
+              <Panel title="Grant pipeline" subtitle="Applied, under review, awarded and rejected" legend={[{ label: "Applied", color: "#479BD6" }, { label: "Under Review", color: "#EAB308" }, { label: "Awarded", color: "#16A34A" }, { label: "Rejected", color: "#D45F2C" }]}>
+                <ChartWithPlaceholder data={pipeline} height={320}>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={pipeline ?? []} layout="vertical" margin={{ top: 6, right: 20, bottom: 0, left: 20 }}>
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" hide />
+                      <Tooltip />
+                        {STAGES.map((stage, i) => (
+                        <Bar key={stage} dataKey={stage} stackId="pipeline" fill={STAGE_COLOURS[i]} />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </Panel>
+          </div>
+          </>
+        )}
+        {activeCategory === "Research Implementation" && (
+          <>
+          <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(16, 44, 94, 0.12)", minHeight: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <p style={{ fontSize: 14, color: "#9CA3AF" }}>In coming data</p>
+          </div>
+          </>
+        )}
+        {activeCategory === "Research Masterclass" && (
+          <>
+          <div>
+            <Panel title="Masterclass attendance per session" subtitle="Training attendance, kept separate from research output" legend={[{ label: "Attendees", color: "#479BD6" }]}>
+              <ChartWithPlaceholder data={attendance} height={300}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={attendance ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={HECO_GRID} vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                     <Tooltip />
-                    <Bar dataKey="count" fill={HECO_BAR} radius={[0, 4, 4, 0]}>
-                      <LabelList dataKey="count" position="right" fontSize={10} fill={HECO_NAVY} fontWeight={700} />
+                    <Bar dataKey="count" name="Attendees" fill={HECO_BAR} radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="count" position="top" fontSize={10} fill={HECO_NAVY} fontWeight={700} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
             </Panel>
-            <Panel title="Grant pipeline" subtitle="Applied, under review, awarded and rejected" legend={[{ label: "Applied", color: "#479BD6" }, { label: "Under Review", color: "#EAB308" }, { label: "Awarded", color: "#16A34A" }, { label: "Rejected", color: "#D45F2C" }]}>
-              <ChartWithPlaceholder data={pipeline} height={320}>
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={pipeline ?? []} layout="vertical" margin={{ top: 6, right: 20, bottom: 0, left: 20 }}>
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" hide />
-                    <Tooltip />
-                      {STAGES.map((stage, i) => (
-                      <Bar key={stage} dataKey={stage} stackId="pipeline" fill={STAGE_COLOURS[i]} />
-                    ))}
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartWithPlaceholder>
-            </Panel>
           </div>
-          </>
-        )}
-
-        {activeCategory === "Masterclass Training" && (
-          <>
-          <Panel title="Masterclass attendance per session" subtitle="Training attendance, kept separate from research output" legend={[{ label: "Attendees", color: "#479BD6" }]}>
-            <ChartWithPlaceholder data={attendance} height={300}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={attendance ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={HECO_GRID} vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                  <Tooltip />
-                  <Bar dataKey="count" name="Attendees" fill={HECO_BAR} radius={[4, 4, 0, 0]}>
-                    <LabelList dataKey="count" position="top" fontSize={10} fill={HECO_NAVY} fontWeight={700} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartWithPlaceholder>
-          </Panel>
           </>
         )}
       </div>
