@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { Award, BookOpen, Film, FlaskConical, LayoutDashboard, Lightbulb, ChevronLeft, ChevronRight, CircleDot, LogOut, Stethoscope, type LucideIcon } from "lucide-react";
 import { getPortalTheme, type Portal } from "@/theme/portals";
 import { PORTAL_NAVS } from "@/config/navigation";
 
@@ -13,15 +13,16 @@ const STORAGE_KEY = "portal-sidebar-pinned";
 const EXPANDED = 232;
 const COLLAPSED = 64;
 
-// Initials for a nav label: first letter of each word, skipping small connecting words.
-const SMALL_WORDS = new Set(["in", "and", "of", "the", "a", "&"]);
-export function navInitials(label: string): string {
-  return label
-    .split(/\s+/)
-    .filter(word => word && !SMALL_WORDS.has(word.toLowerCase()))
-    .map(word => word[0].toUpperCase())
-    .join("");
-}
+// Icon for each nav item, keyed by its route. Unknown routes fall back to a dot.
+const NAV_ICONS: Record<string, LucideIcon> = {
+  "/heco": LayoutDashboard,
+  "/heco/public-sector-fellowship": Award,
+  "/heco/health-expert-in-residence": Stethoscope,
+  "/heco/research-activities": FlaskConical,
+  "/heco/innovation-hackathon": Lightbulb,
+  "/heco/executive-courses": BookOpen,
+  "/heco/impact-stories": Film,
+};
 
 export default function PortalSidebar({ portal }: { portal: Portal }) {
   const pathname = usePathname();
@@ -101,6 +102,7 @@ export default function PortalSidebar({ portal }: { portal: Portal }) {
           <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1">
             {config.items.map(({ label, href }) => {
               const isActive = href === activeHref;
+              const Icon = NAV_ICONS[href] ?? CircleDot;
               return (
                 <Link
                   key={href}
@@ -121,7 +123,7 @@ export default function PortalSidebar({ portal }: { portal: Portal }) {
                       color: isActive ? "#FFFFFF" : accent,
                     }}
                   >
-                    {navInitials(label)}
+                    <Icon size={16} />
                   </span>
                   {open && <span className="text-[13px] leading-snug whitespace-normal">{label}</span>}
                 </Link>
