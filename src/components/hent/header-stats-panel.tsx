@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Info, type LucideIcon } from "lucide-react";
+import { progressInsight, type ProgressInsight, type ProgressRow, type ProgressStatus } from "@/lib/progressInsight";
+import { progressFor } from "@/lib/progressLabels";
 
 // Color palette - HENT green
 const BRAND = "#2D6A4F";
@@ -23,7 +25,17 @@ export interface HeaderStatsPanelProps {
   title: string;
   description?: string;
   cards: HeaderStatCard[];
+  // Live progress rows from v_progress (see useProgress). When given, each card shows its progress bar and caption.
+  progressRows?: Record<string, ProgressRow>;
 }
+
+const PROGRESS_COLOR: Record<ProgressStatus, string> = {
+  met: "#16A34A",
+  close: BRAND,
+  behind: "#F59E0B",
+  "no-data": "#9CA3AF",
+  "no-target": "#9CA3AF",
+};
 
 const PACE = 5 / 12;
 
@@ -54,9 +66,13 @@ function paceColor(a: number, t: number): string {
 export function HeaderStatsPanel({
   title,
   description,
-  cards
+  cards,
+  progressRows,
 }: HeaderStatsPanelProps) {
   const [hoveredCardIdx, setHoveredCardIdx] = useState<number | null>(null);
+  // With progress rows, the progress data alone decides the bar and caption; hardcoded sub-text is never shown.
+  const insightOf = (card: HeaderStatCard): ProgressInsight | null =>
+    progressRows ? progressInsight(progressFor(progressRows, card.label)) : null;
 
   return (
     <div>
@@ -149,20 +165,16 @@ export function HeaderStatsPanel({
               </div>
 
               {/* Optional Progress Bar (with pace indicator) */}
-              {card.pace && card.paceA !== undefined && card.paceT !== undefined && (
-                <div style={{ height: 4, borderRadius: 2, backgroundColor: LIGHT_BORDER, marginTop: 8, position: "relative" }}>
-                  <div style={{
-                    height: "100%",
-                    borderRadius: 2,
-                    width: `${Math.min((card.paceA / card.paceT) * 100, 100)}%`,
-                    backgroundColor: paceColor(card.paceA, card.paceT)
-                  }} />
-                  <div style={{ position: "absolute", top: -2, bottom: -2, width: 2, left: `${PACE * 100}%`, backgroundColor: BRAND_DK, borderRadius: 1 }} />
+              {insightOf(card)?.barPct != null && (
+                <div style={{ height: 4, borderRadius: 2, backgroundColor: LIGHT_BORDER, marginTop: 8, overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 2, width: `${insightOf(card)!.barPct}%`, backgroundColor: PROGRESS_COLOR[insightOf(card)!.status], transition: "width 300ms ease" }} />
                 </div>
               )}
 
               {/* Optional Sub-text */}
-              {card.sub && <p style={{ fontSize: 9.5, color: `rgba(14, 70, 51, 0.55)`, marginTop: 4, margin: 0 }}>{card.sub}</p>}
+              {(progressRows ? insightOf(card)?.caption : card.sub) && (
+                <p style={{ fontSize: 9.5, color: `rgba(14, 70, 51, 0.55)`, marginTop: 4, margin: 0 }}>{progressRows ? insightOf(card)?.caption : card.sub}</p>
+              )}
             </div>
           </div>
         ))}

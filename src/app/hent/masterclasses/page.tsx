@@ -1,4 +1,5 @@
 ﻿"use client";
+import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
@@ -191,6 +192,8 @@ function Stars({ score }: { score: number }) {
 
 // â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function MasterclassesPage() {
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -336,6 +339,7 @@ export default function MasterclassesPage() {
 
         {/* KPI strip */}
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Masterclasses Metrics"
           cards={[
             { label: "Total Masterclasses", num: headline("Total Masterclasses"), displayFmt: (n) => String(Math.round(n)), icon: Briefcase, tip: "Capacity-building sessions delivered across all periods." },

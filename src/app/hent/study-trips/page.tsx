@@ -1,4 +1,5 @@
 ﻿"use client";
+import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
@@ -175,6 +176,8 @@ const KPI_TILES = [
 // Youth-in-Work-style filter select (green theme)
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function FieldVisitsPage() {
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -363,6 +366,7 @@ export default function FieldVisitsPage() {
 
         {/* KPI strip */}
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Study Trips Metrics"
           cards={[
             { label: "Total Study Trips", num: headline("Total Study Trips"), displayFmt: (n) => String(Math.round(n)), icon: MapPin, tip: "Industry excursions conducted." },

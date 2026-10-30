@@ -1,4 +1,5 @@
 "use client";
+import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
@@ -119,6 +120,8 @@ function derive(rows: typeof exposureEvents) {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function ExposureNetworkingPage() {
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -182,6 +185,7 @@ export default function ExposureNetworkingPage() {
 
         {/* KPI strip */}
         <HeaderStatsPanel
+        progressRows={progressRows}
           title="Exposure & Networking Metrics"
           cards={[
             { label: "Events Held", num: headline("Events Held"), displayFmt: (n) => String(Math.round(n)), icon: CalendarDays, tip: "Exposure platforms delivered — pitch events, conferences, investor roundtables, ecosystem engagements and demo days." },
