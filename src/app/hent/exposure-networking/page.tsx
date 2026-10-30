@@ -170,7 +170,7 @@ export default function ExposureNetworkingPage() {
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> {YEARS[0]}–{YEARS[YEARS.length - 1]}</span>
                 <span aria-hidden="true">·</span>
-                <span>{D.events} events · {D.founders} founder placements</span>
+                <span>{hasHentData ? `${D.events} events · ${D.founders} founder placements` : "In coming data"}</span>
               </div>
             </div>
           </div>
@@ -260,9 +260,9 @@ export default function ExposureNetworkingPage() {
 
             <ChartCard title="Relationship Funnel" sub="Connections → follow-ups → deals opened → agreements signed"
               info="The core value chain of this intervention: an introduction is only worth something if it becomes a meeting, then a deal, then a signed agreement. The drop-off between steps shows where relationships stall.">
-              <Funnel steps={D.funnel} />
+              {hasHentData ? <Funnel steps={D.funnel} /> : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
               <p style={{ fontSize: 10, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, textAlign: "center" }}>
-                {D.connections ? Math.round(D.mous / D.connections * 100) : 0}% of introductions convert into a formal agreement
+                {hasHentData ? `${D.connections ? Math.round(D.mous / D.connections * 100) : 0}% of introductions convert into a formal agreement` : "In coming data"}
               </p>
             </ChartCard>
 

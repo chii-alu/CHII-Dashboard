@@ -92,15 +92,15 @@ function ColorBarList({ data, colors }: { data: { name: string; value: number }[
 }
 
 function ProfileCard({ label, value, pct, total: tot, color }: {
-  label: string; value: number; pct: number; total: number; color: string;
+  label: string; value: number | null; pct: number | null; total: number | null; color: string;
 }) {
   return (
     <div className="rounded-[10px]" style={{ backgroundColor: "#ffffff", border: "1px solid #2D6A4F", padding: "14px 16px" }}>
-      <p className="tabular-nums" style={{ fontSize: 30, fontWeight: 800, color: "#2D6A4F", lineHeight: 1.05 }}>{pct}%</p>
+      <p className="tabular-nums" style={{ fontSize: pct === null ? 14 : 30, fontWeight: 800, color: pct === null ? "#9CA3AF" : "#2D6A4F", lineHeight: 1.05 }}>{pct === null ? "In coming data" : `${pct}%`}</p>
       <p style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.04em", marginTop: 4 }}>{label}</p>
-      <p className="tabular-nums" style={{ fontSize: 9, fontWeight: 500, color: "#9CA3AF", marginTop: 2 }}>{value.toLocaleString()} / {tot.toLocaleString()}</p>
+      <p className="tabular-nums" style={{ fontSize: 9, fontWeight: 500, color: "#9CA3AF", marginTop: 2 }}>{value === null || tot === null ? "In coming data" : `${value.toLocaleString()} / ${tot.toLocaleString()}`}</p>
       <div className="rounded-sm mt-3 overflow-hidden" style={{ height: 6, backgroundColor: color + "20" }}>
-        <div className="h-full" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }} />
+        <div className="h-full" style={{ width: `${Math.min(pct ?? 0, 100)}%`, backgroundColor: color }} />
       </div>
     </div>
   );
@@ -349,7 +349,7 @@ export default function FieldVisitsPage() {
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2022–2026</span>
               <span aria-hidden="true">·</span>
-              <span>{studyTrips.length} visits tracked</span>
+              <span>{hasHentData ? `${studyTrips.length} visits tracked` : "In coming data"}</span>
               <span aria-hidden="true">·</span>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
             </div>
@@ -544,69 +544,73 @@ export default function FieldVisitsPage() {
           <SectionHeader title="Participant Demographics"
             sub="Breakdown by gender, age, venture stage, and social inclusion" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <ProfileCard label="Female Participants"  value={tot.female}                  pct={femalePct}        total={tot.participants} color={VIOLET}  />
-            <ProfileCard label="Male Participants"    value={tot.participants - tot.female} pct={100 - femalePct} total={tot.participants} color={SKY}     />
-            <ProfileCard label="Student Participants" value={tot.students}                pct={studentPct}       total={tot.participants} color={EMERALD} />
-            <ProfileCard label="Alumni Participants"  value={alumniTotal}                 pct={100 - studentPct} total={tot.participants} color={AMBER}   />
+            <ProfileCard label="Female Participants"  value={hasHentData ? tot.female : null}                  pct={hasHentData ? femalePct : null}        total={hasHentData ? tot.participants : null} color={VIOLET}  />
+            <ProfileCard label="Male Participants"    value={hasHentData ? tot.participants - tot.female : null} pct={hasHentData ? 100 - femalePct : null} total={hasHentData ? tot.participants : null} color={SKY}     />
+            <ProfileCard label="Student Participants" value={hasHentData ? tot.students : null}                pct={hasHentData ? studentPct : null}       total={hasHentData ? tot.participants : null} color={EMERALD} />
+            <ProfileCard label="Alumni Participants"  value={hasHentData ? alumniTotal : null}                 pct={hasHentData ? 100 - studentPct : null} total={hasHentData ? tot.participants : null} color={AMBER}   />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChartCard title="Participant Distribution" sub="By age, venture stage, and visit type" accent={SKY}>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Age Groups</p>
-                  {ageData.map((d, i) => (
-                    <div key={d.name} className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] w-12 text-gray-500">{d.name}</span>
-                      <div className="flex-1 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: [SKY, PRIMARY, VIOLET, ROSE][i] + "20" }}>
-                        <div className="h-full" style={{ width: `${(d.value / Math.max(...ageData.map(x => x.value))) * 100}%`, backgroundColor: [SKY, PRIMARY, VIOLET, ROSE][i] }} />
-                      </div>
-                      <span className="text-[10px] font-medium w-10 text-right" style={{ color: [SKY, PRIMARY, VIOLET, ROSE][i] }}>{d.value}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="border-t border-gray-100 pt-4">
-                  <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Venture Stage</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {stageData.map((d, i) => (
-                      <div key={d.name} className="text-center">
-                        <p className="text-sm font-bold" style={{ color: [SKY, PRIMARY, INDIGO][i] }}>{d.value}</p>
-                        <p className="text-[9px] text-gray-400 mt-0.5">{d.name}</p>
+              {hasHentData ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Age Groups</p>
+                    {ageData.map((d, i) => (
+                      <div key={d.name} className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] w-12 text-gray-500">{d.name}</span>
+                        <div className="flex-1 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: [SKY, PRIMARY, VIOLET, ROSE][i] + "20" }}>
+                          <div className="h-full" style={{ width: `${(d.value / Math.max(...ageData.map(x => x.value))) * 100}%`, backgroundColor: [SKY, PRIMARY, VIOLET, ROSE][i] }} />
+                        </div>
+                        <span className="text-[10px] font-medium w-10 text-right" style={{ color: [SKY, PRIMARY, VIOLET, ROSE][i] }}>{d.value}</span>
                       </div>
                     ))}
                   </div>
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Venture Stage</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {stageData.map((d, i) => (
+                        <div key={d.name} className="text-center">
+                          <p className="text-sm font-bold" style={{ color: [SKY, PRIMARY, INDIGO][i] }}>{d.value}</p>
+                          <p className="text-[9px] text-gray-400 mt-0.5">{d.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
             </ChartCard>
 
             <ChartCard title="Visit Types & Inclusion" sub="Sector categories and social representation" accent={TEAL}>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Visit Types (Top 4)</p>
-                  {typeData.slice(0, 4).map((d, i) => (
-                    <div key={d.name} className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] flex-1 text-gray-600 truncate">{d.name}</span>
-                      <div className="flex-1 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: TYPE_COLORS[i] + "20" }}>
-                        <div className="h-full" style={{ width: `${(d.value / Math.max(...typeData.map(x => x.value))) * 100}%`, backgroundColor: TYPE_COLORS[i] }} />
+              {hasHentData ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Visit Types (Top 4)</p>
+                    {typeData.slice(0, 4).map((d, i) => (
+                      <div key={d.name} className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] flex-1 text-gray-600 truncate">{d.name}</span>
+                        <div className="flex-1 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: TYPE_COLORS[i] + "20" }}>
+                          <div className="h-full" style={{ width: `${(d.value / Math.max(...typeData.map(x => x.value))) * 100}%`, backgroundColor: TYPE_COLORS[i] }} />
+                        </div>
+                        <span className="text-[10px] font-medium w-8 text-right" style={{ color: TYPE_COLORS[i] }}>{d.value}</span>
                       </div>
-                      <span className="text-[10px] font-medium w-8 text-right" style={{ color: TYPE_COLORS[i] }}>{d.value}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Social Inclusion</p>
+                    {socialData.map((d, i) => {
+                      const col = SOCIAL_COLORS[i % SOCIAL_COLORS.length];
+                      const pct = tot.participants > 0 ? Math.round((d.value / tot.participants) * 100) : 0;
+                      return (
+                        <div key={d.name} className="flex items-center justify-between text-[10px] mb-1.5">
+                          <span className="text-gray-600 flex-1">{d.name}</span>
+                          <span className="font-bold" style={{ color: col }}>{d.value}</span>
+                          <span className="text-gray-400 ml-2 min-w-fit">({pct}%)</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="border-t border-gray-100 pt-4">
-                  <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Social Inclusion</p>
-                  {socialData.map((d, i) => {
-                    const col = SOCIAL_COLORS[i % SOCIAL_COLORS.length];
-                    const pct = tot.participants > 0 ? Math.round((d.value / tot.participants) * 100) : 0;
-                    return (
-                      <div key={d.name} className="flex items-center justify-between text-[10px] mb-1.5">
-                        <span className="text-gray-600 flex-1">{d.name}</span>
-                        <span className="font-bold" style={{ color: col }}>{d.value}</span>
-                        <span className="text-gray-400 ml-2 min-w-fit">({pct}%)</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              ) : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
             </ChartCard>
           </div>
         </section>
@@ -840,35 +844,37 @@ export default function FieldVisitsPage() {
             <ChartCard title="Completion Insights"
               sub="Quality metrics for participant engagement and programme effectiveness"
               accent={INDIGO}>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Completion Rate Summary</p>
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    {[
-                      { value: `${tot.completion}%`, color: INDIGO, label: "Avg rate" },
-                      { value: String(filtered.filter(v => v.completionRate >= 95).length), color: EMERALD, label: "Visits ≥95%" },
-                      { value: String(filtered.filter(v => v.completionRate < 90).length), color: AMBER, label: "Visits <90%" },
-                    ].map(s => (
-                      <div key={s.label} className="text-center">
-                        <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
-                        <p className="text-[9px] text-gray-400 mt-0.5">{s.label}</p>
+              {hasHentData ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Completion Rate Summary</p>
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      {[
+                        { value: `${tot.completion}%`, color: INDIGO, label: "Avg rate" },
+                        { value: String(filtered.filter(v => v.completionRate >= 95).length), color: EMERALD, label: "Visits ≥95%" },
+                        { value: String(filtered.filter(v => v.completionRate < 90).length), color: AMBER, label: "Visits <90%" },
+                      ].map(s => (
+                        <div key={s.label} className="text-center">
+                          <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
+                          <p className="text-[9px] text-gray-400 mt-0.5">{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide">Top 6 Completion Rates</p>
+                    {[...filtered].sort((a, b) => b.completionRate - a.completionRate).slice(0, 6).map((v, i) => (
+                      <div key={v.id} className="flex items-center gap-2 mb-2 text-[10px]">
+                        <span className="text-gray-600 flex-1 truncate">{v.organization}</span>
+                        <div className="w-16 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: INDIGO + "20" }}>
+                          <div className="h-full" style={{ width: `${v.completionRate}%`, backgroundColor: INDIGO }} />
+                        </div>
+                        <span className="font-bold w-8 text-right" style={{ color: INDIGO }}>{v.completionRate}%</span>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="border-t border-gray-100 pt-4">
-                  <p className="text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide">Top 6 Completion Rates</p>
-                  {[...filtered].sort((a, b) => b.completionRate - a.completionRate).slice(0, 6).map((v, i) => (
-                    <div key={v.id} className="flex items-center gap-2 mb-2 text-[10px]">
-                      <span className="text-gray-600 flex-1 truncate">{v.organization}</span>
-                      <div className="w-16 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: INDIGO + "20" }}>
-                        <div className="h-full" style={{ width: `${v.completionRate}%`, backgroundColor: INDIGO }} />
-                      </div>
-                      <span className="font-bold w-8 text-right" style={{ color: INDIGO }}>{v.completionRate}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ) : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
             </ChartCard>
           </div>
         </section>
