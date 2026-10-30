@@ -14,6 +14,8 @@ import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Legend, Tooltip, ResponsiveContainer, LabelList,
 } from "recharts";
+import { Cell } from "recharts";
+import { hostNameList, hostBars, hostColor, hasMetric, topWithOther, departmentBars, type HostMetrics } from "@/lib/hostChart";
 import { Briefcase, Target, TrendingUp, Users, Info, type LucideIcon, ChevronDown } from "lucide-react";
 
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
@@ -141,6 +143,19 @@ export default function HEMPInternships() {
     () => fetch('/api/hemp-intervention?intervention=Internships').then(r => r.json()),
     []
   );
+  // Participants by academic programme, from the Internships breakdown rows (all years).
+  const academicProgrammeRows: { programme: string; count: number }[] | null =
+    interventionData?.breakdowns?.["Participants By Academic Programmes"]?.map((r: any) => ({ programme: r.name, count: r.count })) ?? null;
+  // Inclusion Reach counts by segment (all years), from the Internships segment rows.
+  const inclusionSegments = (interventionData?.segments ?? []).filter((r: any) => r.metric === "Inclusion Reach" && r.year == null);
+  const segmentValue = (segment: string): number | null => inclusionSegments.find((r: any) => r.segment === segment)?.value ?? null;
+  const inclusionBars = inclusionSegments.length > 0
+    ? [
+        { name: "Female", value: segmentValue("female") },
+        { name: "PWD", value: segmentValue("pwd") },
+        { name: "Refugee/IDP", value: segmentValue("refugee_idp") },
+      ]
+    : null;
   const actualOf = (metric: string): number | null => interventionData?.headlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
   const dataSource = useDataSource("HEMP");
@@ -157,7 +172,33 @@ export default function HEMPInternships() {
   const [filterIDP, setFilterIDP] = useState("All");
   const [filterPLWD, setFilterPLWD] = useState("All");
   const [filterOutcomeYear, setFilterOutcomeYear] = useState("All Years");
+  // Participant Trend: one point per year in the database (Internships section), narrowed by the year filter.
+  const participantTrendRows = (interventionData?.segments ?? []).filter((r: any) => r.metric === "Participant Trend" && r.segment === "all" && r.year != null);
+  const participantTrendData = participantTrendRows.length > 0
+    ? participantTrendRows
+        .filter((r: any) => filterOutcomeYear === "All Years" || r.year === Number(filterOutcomeYear))
+        .sort((a: any, b: any) => a.year - b.year)
+        .map((r: any) => ({ year: String(r.year), students: r.value }))
+    : null;
   const [filterSectorYear, setFilterSectorYear] = useState("All Years");
+  // Host organisations and their per-host rows, read from the database (see /api/internships-hosts).
+  const { data: hostData } = useDashboardData<{ hosts: string[]; metrics: HostMetrics }>(
+    () => fetch('/api/internships-hosts').then(r => r.json()),
+    []
+  );
+  const hostMetrics: HostMetrics = hostData?.metrics ?? {};
+  const hosts = hostNameList(hostData?.hosts ?? [], hostMetrics);
+  const yearOf = (filter: string) => (filter === "All Years" ? null : Number(filter));
+  const hostYear = yearOf(filterSectorYear);
+  const placementBars = topWithOther(hostBars(hostMetrics, { Placements: "Placement By Organization" }, hostYear, hosts), "Placements", 8);
+  const departmentData = departmentBars(hostMetrics, "Departments By Organization", hostYear, hosts);
+  const overallBars = hostBars(hostMetrics, { "Overall Rating": "Overall Employer Rating" }, hostYear, hosts);
+  const skillsBars = hostBars(hostMetrics, { "Skills Rating": "Workplace Skills" }, hostYear, hosts);
+  const healthBars = hostBars(hostMetrics, { "Systems Understanding": "Health Sector Readiness" }, hostYear, hosts);
+  const recommendBars = hostBars(hostMetrics, { "Recommend ALU": "Employer Recommendation & Hiring" }, hostYear, hosts);
+  const placementAfterBars = hostBars(hostMetrics, { Placements: "Placement After Internship" }, hostYear, hosts);
+  const learningBars = hostBars(hostMetrics, { "Real-World Application": "Learning & Skill Application" }, hostYear, hosts);
+  const internRecBars = hostBars(hostMetrics, { Recommendation: "Intern Recommendation" }, hostYear, hosts);
   const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
 
   const show = (category: string) => activeCategory === category;
@@ -209,7 +250,7 @@ export default function HEMPInternships() {
 
   const totalApplicants: number | null = null;
   const placementsSecured: number | null = hasData ? filteredInternships.length : null;
-  const uniquePartners = Array.from(new Set(filteredInternships.map(i => i.organization))).length;
+  const uniquePartners = hosts.length;
   const avgEmployerRating: number | null = hasData && filteredInternships.length ? parseFloat(((filteredInternships.reduce((s, i) => s + i.recommendationScore + i.likelyToHire * 2 + i.healthSystemsUnderstanding + i.appliesToHealthProblems, 0) / (filteredInternships.length * 6)) * 2).toFixed(1)) : null;
 
   // Fallback values for Mission Students (will be replaced with Supabase data)
@@ -376,8 +417,8 @@ export default function HEMPInternships() {
             >
               {[
                 { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", ...years.map(String)] },
-                { label: "Organization", value: filterOrganization, setValue: setFilterOrganization, options: ["All", ...Array.from(new Set(filteredInternships.map(i => i.organization)))] },
-                { label: "Department", value: filterDepartment, setValue: setFilterDepartment, options: ["All", ...Array.from(new Set(filteredInternships.map(i => i.department)))] },
+                { label: "Organization", value: filterOrganization, setValue: setFilterOrganization, options: ["All", ...hosts] },
+                { label: "Department", value: filterDepartment, setValue: setFilterDepartment, options: ["All", ...departmentData.departments] },
                 { label: "Cohort", value: filterCohort, setValue: setFilterCohort, options: ["All", ...cohorts.map(c => `Cohort ${c}`)] },
                 { label: "Female", value: filterFemale, setValue: setFilterFemale, options: ["All", "Yes"] },
                 { label: "IDP", value: filterIDP, setValue: setFilterIDP, options: ["All", "Yes"] },
@@ -432,8 +473,8 @@ export default function HEMPInternships() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Internship participants by primary academic programme" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <ChartWithPlaceholder data={hasData ? true : null} height={300}><ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                  <ChartWithPlaceholder data={academicProgrammeRows} height={300}><ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={academicProgrammeRows ?? []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                       <YAxis dataKey="programme" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={210} />
@@ -473,8 +514,8 @@ export default function HEMPInternships() {
                 </div>
               </Panel>
               <Panel title="Participant Trend" subtitle="Participation growth over time" info="Annual trend of students placed in internships" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={years.map(y => ({ year: String(y), students: filteredInternships.filter(i => i.year === y).reduce((s, i) => s + i.students, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
+                <ChartWithPlaceholder data={participantTrendData} height={250}><ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={participantTrendData ?? []} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
                     <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
@@ -485,12 +526,8 @@ export default function HEMPInternships() {
                 </ResponsiveContainer></ChartWithPlaceholder>
               </Panel>
               <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { name: "Female", value: femaleStudents },
-                    { name: "PWD", value: null },
-                    { name: "Refugee/IDP", value: null },
-                  ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                <ChartWithPlaceholder data={inclusionBars} height={250}><ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={inclusionBars ?? []} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
@@ -524,33 +561,36 @@ export default function HEMPInternships() {
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Placements by Organization" subtitle="Distribution across partner organizations" info="Number of placements across different organizations" filterOptions={["All Years", ...years.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).map(o => ({
-                    name: o,
-                    value: filteredInternships.filter(i => i.organization === o).length
-                  })).sort((a, b) => b.value - a.value)} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
-                    <Bar dataKey="value" fill={BRAND} barSize={46} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
+                <ChartWithPlaceholder data={placementBars} height={300}><ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={placementBars} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={170} />
+                                        <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
+                    <Bar dataKey="Placements" fill="#479BD6" radius={[0, 4, 4, 0]}>
+                      {placementBars.map((d, i) => <Cell key={d.name} fill={hostColor(i)} />)}
+                      <LabelList dataKey="Placements" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: BRAND }} /> Count</span>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
+                  {placementBars.map((d, i) => (
+                    <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ width: 12, height: 12, backgroundColor: hostColor(i), borderRadius: 2 }} />
+                      <span style={{ fontSize: 10, color: "#6B7280" }}>{d.name}</span>
+                    </div>
+                  ))}
                 </div>
               </Panel>
               <Panel title="Departments by Organization" subtitle="Department distribution across partner organizations" info="Number of internship placements by department within each organization" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={280}><ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={[]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                <ChartWithPlaceholder data={departmentData.data} height={280}><ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={departmentData.data} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                     <YAxis dataKey="organization" type="category" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
                     <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(20, 48, 107, 0.04)" }} />
-                    {Array.from(new Set(filteredInternships.map(i => i.department))).map((dept, idx) => (
-                      <Bar key={dept} dataKey={dept} stackId="a" fill={BRAND_DK} opacity={0.6 + (idx * 0.05)} radius={idx === Array.from(new Set(filteredInternships.map(i => i.department))).length - 1 ? [0, 4, 4, 0] : [0, 0, 0, 0]} />
+                    {departmentData.departments.map((dept, idx) => (
+                      <Bar key={dept} dataKey={dept} stackId="a" fill={BRAND_DK} opacity={0.6 + (idx * 0.05)} radius={idx === departmentData.departments.length - 1 ? [0, 4, 4, 0] : [0, 0, 0, 0]} />
                     ))}
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
@@ -578,21 +618,14 @@ export default function HEMPInternships() {
             <div style={{ marginBottom: 32 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Overall Employer Rating" subtitle="Composite employer satisfaction score" info="Average rating across all employer assessment dimensions (0-10 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={280}><ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgSkills = orgInternships.length ? (orgInternships.reduce((s, i) => s + (i.asksClarifyingQuestions || 0) + (i.communicatesProfessionally || 0) + (i.meetsDeadlines || 0) + (i.worksInTeams || 0), 0) / (orgInternships.length * 4)) : 0;
-                    const avgHealth = orgInternships.length ? (orgInternships.reduce((s, i) => s + (i.healthSystemsUnderstanding || 0) + (i.appliesToHealthProblems || 0), 0) / (orgInternships.length * 2)) : 0;
-                    const avgRecommendation = orgInternships.length ? (orgInternships.reduce((s, i) => s + (i.recommendationScore || 0), 0) / orgInternships.length) : 0;
-                    const avgHire = orgInternships.length ? ((orgInternships.reduce((s, i) => s + (i.likelyToHire || 0), 0) / orgInternships.length) * 2) : 0;
-                    const overallScore = parseFloat(((avgSkills + avgHealth + (avgRecommendation / 2) + avgHire) / 4 * 2).toFixed(1));
-                    return { name: o, "Overall Rating": overallScore };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                <ChartWithPlaceholder data={overallBars} height={280}><ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={overallBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 10]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
                     <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
                     <Bar dataKey="Overall Rating" fill="#479BD6" radius={[0, 4, 4, 0]}>
+                      {overallBars.map((d, i) => <Cell key={d.name} fill={hostColor(i)} />)}
                       <LabelList dataKey="Overall Rating" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} />
                     </Bar>
                   </BarChart>
@@ -602,17 +635,14 @@ export default function HEMPInternships() {
                 </div>
               </Panel>
               <Panel title="Workplace Skills" subtitle="Employer assessment of core competencies" info="Average employer ratings for student workplace skills (1=Never, 5=Consistently)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={280}><ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgSkills = orgInternships.length ? parseFloat(((orgInternships.reduce((s, i) => s + (i.asksClarifyingQuestions || 0) + (i.communicatesProfessionally || 0) + (i.meetsDeadlines || 0) + (i.worksInTeams || 0), 0) / (orgInternships.length * 4)) * 2).toFixed(1)) : 0;
-                    return { name: o, "Skills Rating": avgSkills };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                <ChartWithPlaceholder data={skillsBars} height={280}><ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={skillsBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 10]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
                     <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
                     <Bar dataKey="Skills Rating" fill="#14306B" radius={[0, 4, 4, 0]}>
+                      {skillsBars.map((d, i) => <Cell key={d.name} fill={hostColor(i)} />)}
                       <LabelList dataKey="Skills Rating" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} />
                     </Bar>
                   </BarChart>
@@ -622,13 +652,8 @@ export default function HEMPInternships() {
                 </div>
               </Panel>
               <Panel title="Health Sector Readiness" subtitle="Understanding and application of health context" info="Average employer ratings on health systems understanding and practical application (1=Not at all, 5=Extremely)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={280}><ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgUnderstanding = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + i.healthSystemsUnderstanding, 0) / orgInternships.length).toFixed(1)) : 0;
-                    const avgApplication = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + i.appliesToHealthProblems, 0) / orgInternships.length).toFixed(1)) : 0;
-                    return { name: o, "Systems Understanding": avgUnderstanding, "Practical Application": avgApplication };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
+                <ChartWithPlaceholder data={healthBars} height={280}><ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={healthBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
@@ -640,13 +665,8 @@ export default function HEMPInternships() {
                 </ResponsiveContainer></ChartWithPlaceholder>
               </Panel>
               <Panel title="Employer Recommendation & Hiring" subtitle="Likelihood to recommend ALU and hire graduates" info="Employer likelihood to recommend ALU students (0-10 scale) and hire graduates" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={280}><ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgRecommendation = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + i.recommendationScore, 0) / orgInternships.length).toFixed(1)) : 0;
-                    const avgHire = orgInternships.length ? parseFloat(((orgInternships.reduce((s, i) => s + i.likelyToHire, 0) / orgInternships.length) * 2).toFixed(1)) : 0;
-                    return { name: o, "Recommend ALU": avgRecommendation, "Likely to Hire": avgHire };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
+                <ChartWithPlaceholder data={recommendBars} height={280}><ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={recommendBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 10]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
@@ -693,14 +713,8 @@ export default function HEMPInternships() {
                 </div>
               </Panel>
               <Panel title="Placement After Internship" subtitle="Job placement outcomes by organization" info="Number of interns who secured positions following internship completion" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={280}><ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const totalPlacements = orgInternships.reduce((s, i) => s + (i.placementsAfterInternship || 0), 0);
-                    const totalStudents = orgInternships.reduce((s, i) => s + i.students, 0);
-                    const placementRate = hasData && totalStudents ? Math.round((totalPlacements / totalStudents) * 100) : null;
-                    return { name: o, "Placements": totalPlacements, "Placement %": placementRate };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
+                <ChartWithPlaceholder data={placementAfterBars} height={280}><ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={placementAfterBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
@@ -716,17 +730,14 @@ export default function HEMPInternships() {
                 </ResponsiveContainer></ChartWithPlaceholder>
               </Panel>
               <Panel title="Learning & Skill Application" subtitle="Student-perceived capability growth" info="Average student rating of ability to apply skills to real-world health challenges (1-5 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={200}><ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgSkillApplication = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + (i.skillApplicationToRealWorld || 0), 0) / orgInternships.length).toFixed(1)) : 0;
-                    return { name: o, "Real-World Application": avgSkillApplication };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                <ChartWithPlaceholder data={learningBars} height={200}><ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={learningBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
                     <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
                     <Bar dataKey="Real-World Application" fill="#1D9E75" radius={[0, 4, 4, 0]}>
+                      {learningBars.map((d, i) => <Cell key={d.name} fill={hostColor(i)} />)}
                       <LabelList dataKey="Real-World Application" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} />
                     </Bar>
                   </BarChart>
@@ -736,17 +747,14 @@ export default function HEMPInternships() {
                 </div>
               </Panel>
               <Panel title="Intern Recommendation" subtitle="Student recommendation likelihood" info="Average student recommendation score (0-10 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={280}><ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={Array.from(new Set(filteredInternships.map(i => i.organization))).sort().map(o => {
-                    const orgInternships = filteredInternships.filter(i => i.organization === o);
-                    const avgRecommendation = orgInternships.length ? parseFloat((orgInternships.reduce((s, i) => s + (i.internRecommendationScore || 0), 0) / orgInternships.length).toFixed(1)) : 0;
-                    return { name: o, "Recommendation": avgRecommendation };
-                  })} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
+                <ChartWithPlaceholder data={internRecBars} height={280}><ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={internRecBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 10]} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} width={110} />
                     <Tooltip content={<ChartTip hideLabel />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
                     <Bar dataKey="Recommendation" fill="#479BD6" radius={[0, 4, 4, 0]}>
+                      {internRecBars.map((d, i) => <Cell key={d.name} fill={hostColor(i)} />)}
                       <LabelList dataKey="Recommendation" position="right" fontSize={10} fill={BRAND_DK} fontWeight={700} offset={5} />
                     </Bar>
                   </BarChart>

@@ -5,3 +5,7 @@ node_modules
 .env.*.local
 dist
 build
+
+Stories/Videos/
+*.mp4
+tsconfig.tsbuildinfo
