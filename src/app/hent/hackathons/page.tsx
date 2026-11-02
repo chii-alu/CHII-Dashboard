@@ -157,7 +157,7 @@ function GenderMiniBar({ year, female, male, fPct }: { year: string; female: num
 // â”€â”€â”€ KPI tile colour map (10 metrics) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const KPI_TILES = [
   { label: "Total Hackathons",   clr: "#C2410C" },  // orange  -  identity
-  { label: "Participants",       clr: "#1E3A8A" },  // blue
+  { label: "Total Participants", clr: "#1E3A8A" },  // blue
   { label: "Winning Teams",      clr: "#D97706" },  // bright amber
   { label: "Projects Developed", clr: "#5B21B6" },  // violet
   { label: "Startups Created",   clr: "#064E3B" },  // emerald
@@ -317,7 +317,7 @@ export default function HackathonsPage() {
           title="Hackathons Metrics"
           cards={[
             { label: "Total Hackathons", num: headline("Total Hackathons"), displayFmt: (n) => String(Math.round(n)), icon: Briefcase, tip: "Innovation events conducted across all years." },
-            { label: "Participants", num: headline("Participants"), displayFmt: (n) => Math.round(n) >= 1000 ? `${(Math.round(n) / 1000).toFixed(1)}k` : String(Math.round(n)), icon: Users, tip: "Total founder and team member participation across all events." },
+            { label: "Total Participants", num: headline("Participants"), displayFmt: (n) => Math.round(n) >= 1000 ? `${(Math.round(n) / 1000).toFixed(1)}k` : String(Math.round(n)), icon: Users, tip: "Total founder and team member participation across all events." },
             { label: "Winning Teams", num: headline("Winning Teams"), displayFmt: (n) => String(Math.round(n)), icon: Trophy, tip: "Teams selected as winners across all hackathons." },
             { label: "Projects Developed", num: headline("Projects Developed"), displayFmt: (n) => String(Math.round(n)), icon: Lightbulb, tip: "Project submissions across all events." },
             { label: "Startups Created", num: headline("Startups Created"), displayFmt: (n) => String(Math.round(n)), icon: Zap, tip: "Ventures founded from hackathon projects." },
