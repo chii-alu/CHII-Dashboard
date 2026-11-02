@@ -22,7 +22,7 @@ const hasHentData = [exposureEvents, pilotEngagements].some(list => list.length 
 import { Handshake, Link2, Mic, Star, Target, Users } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
-  Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
+  Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, LineChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
 } from "recharts";
 
@@ -118,6 +118,19 @@ function derive(rows: typeof exposureEvents) {
 }
 
 
+// Section filter: a pill-style select, matching the other section filters.
+function SectionFilter({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+  return (
+    <label style={ { display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#6B7280" } }>
+      <span>{label}</span>
+      <select value={value} onChange={e => onChange(e.target.value)}
+        style={ { fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: 10, border: `1px solid ${LIGHT_BORDER}`, borderLeft: `5px solid ${BRAND}`, backgroundColor: "white", color: BRAND_DK } }>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function ExposureNetworkingPage() {
   // Live progress against target for the stat cards, from v_progress (HENT rows).
@@ -146,6 +159,24 @@ export default function ExposureNetworkingPage() {
 
   const [activeSection, setActiveSection] = useState<number>(1);
   const show = (n: number) => activeSection === n;
+  const [reachPlatform, setReachPlatform] = useState("All Platform Types");
+  const [commitStakeholder, setCommitStakeholder] = useState("All Stakeholder Types");
+  const [platformFormat, setPlatformFormat] = useState("All Platform Types");
+  const [pilotStatus, setPilotStatus] = useState("All Statuses");
+  const PLATFORM_TYPES = ["All Platform Types", "Pitch Event", "Conference", "Roundtable", "Ecosystem Engagement", "Demo Day"];
+  const STAKEHOLDER_TYPES = ["All Stakeholder Types", "Investors", "Partners", "Health Stakeholders", "Policymakers", "Peers"];
+  const PILOT_STATUSES = ["All Statuses", "Ongoing", "Completed", "Converted to Contract"];
+  // Chart data the database does not provide yet: empty until those rows exist, so each chart shows "In coming data".
+  const reachByYear: { Year: string; Events: number; Founders: number }[] = [];
+  const introductionsByStakeholder: { Year: string; Investors: number; Partners: number; "Health stakeholders": number; Policymakers: number; Peers: number }[] = [];
+  const commitmentFunnel: { label: string; value: number }[] = [];
+  const dealsByStakeholder: { name: string; Introductions: number; "Deals signed": number }[] = [];
+  const dealsPerEventByFormat: { name: string; value: number }[] = [];
+  const platformRows: { format: string; events: number; founders: number; introductions: number; meetings: number; deals: number; conversion: number }[] = [];
+  const competitionResults: { Year: string; Entered: number; Finalists: number; Winners: number }[] = [];
+  const prizeValue = null as number | null;
+  const pilotsByStage: { Year: string; Expose: number; Build: number; Scale: number }[] = [];
+  const pilotOutcomes: { name: string; value: number }[] = [];
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
@@ -204,9 +235,10 @@ export default function ExposureNetworkingPage() {
             value={String(activeSection)}
             onChange={(v) => setActiveSection(Number(v))}
             options={[
-              { label: "Connection to Commitment", value: "1" },
-              { label: "Reach Over Time", value: "2" },
+              { label: "Reach Over Time", value: "1" },
+              { label: "Connection to Commitment", value: "2" },
               { label: "Which Platforms Work", value: "3" },
+              { label: "Pitch Competitions and Pilots", value: "4" },
             ]}
           />
           <div style={{ position: "relative" }}>
@@ -255,165 +287,204 @@ export default function ExposureNetworkingPage() {
           </div>
         </div>
 
-        {/* ── SECTION 1: Relationship funnel ─── */}
-        <section style={{ display: show(1) ? undefined : "none" }}>
-          <SectionHeader title="From Connection to Commitment"
-            sub="Whether the introductions made at these platforms actually convert into meetings, deals and formal agreements" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-            <ChartCard title="Relationship Funnel" sub="Connections → follow-ups → deals opened → agreements signed"
-              info="The core value chain of this intervention: an introduction is only worth something if it becomes a meeting, then a deal, then a signed agreement. The drop-off between steps shows where relationships stall.">
-              {hasHentData ? <Funnel steps={D.funnel} /> : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
-              <p style={{ fontSize: 10, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, textAlign: "center" }}>
-                {hasHentData ? `${D.connections ? Math.round(D.mous / D.connections * 100) : 0}% of introductions convert into a formal agreement` : "In coming data"}
-              </p>
-            </ChartCard>
-
-            <ChartCard title="Stakeholder Mix" sub="Who founders are being connected to across all platforms"
-              info="The make-up of the room across all events — investors, industry partners, healthcare stakeholders, policy makers and peer founders. Reveals whether founders are meeting capital, customers or regulators.">
-              <DonutRing data={D.byStakeholder} colors={DISTINCT}
-                total={D.byStakeholder.reduce((s, d) => s + d.value, 0)} totalLabel="Stakeholders"
-                height={300} legendPercent />
-            </ChartCard>
+        {/* ── SECTION 1: Reach Over Time ─── */}
+        <section style={ { display: show(1) ? undefined : "none" } }>
+          <SectionHeader title="Reach Over Time"
+            sub="How many founders, events and introductions each year." />
+          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+            <SectionFilter label="Platform type" value={reachPlatform} options={PLATFORM_TYPES} onChange={setReachPlatform} />
           </div>
-        </section>
-
-        {/* ── SECTION 2: Reach over time ─── */}
-        <section style={{ display: show(2) ? undefined : "none" }}>
-          <SectionHeader title="Reach Over Time" sub="Events delivered, founders placed and connections brokered each year" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-            <ChartCard title="Events & Founder Placements per Year" sub="Delivery volume year on year"
-              info="How many exposure platforms were delivered each year and how many founder seats they created.">
-              <ChartWithPlaceholder data={hasHentData ? D.byYear : null} height={220}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={D.byYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%" barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={34} />
-                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
-                  <Bar dataKey="Founders" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={22} />
-                  <Bar dataKey="Events"   fill="#A6C13C" radius={[4, 4, 0, 0]} maxBarSize={22} />
-                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
-                </BarChart>
-              </ResponsiveContainer>
-              </ChartWithPlaceholder>
-            </ChartCard>
-
-            <ChartCard title="Connections Brokered per Year" sub="Introductions made between founders and ecosystem stakeholders"
-              info="Introductions made each year. Rising connections without rising agreements would suggest reach is growing faster than conversion.">
-              <ChartWithPlaceholder data={hasHentData ? D.byYear : null} height={220}>
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={D.byYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={34} />
-                  <Tooltip content={<ChartTip />} />
-                  <Line type="monotone" dataKey="Connections" stroke="#1F9E9E" strokeWidth={2.5}
-                    dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
-                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
-                </LineChart>
-              </ResponsiveContainer>
-              </ChartWithPlaceholder>
-            </ChartCard>
-          </div>
-        </section>
-
-        {/* ── SECTION 3: Which platforms work ─── */}
-        <section style={{ display: show(3) ? undefined : "none" }}>
-          <SectionHeader title="Which Platforms Work"
-            sub="Comparing pitch events, conferences, roundtables, ecosystem engagements and demo days on the connections and deals they produce" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-            <ChartCard title="Deals Opened per Event, by Platform Type" sub="Higher is a more deal-productive format"
-              info="Average number of deals or partnership conversations opened per event, by format. Use it to decide which formats deserve more investment.">
-              <ChartWithPlaceholder data={hasHentData ? D.byType : null} height={240}>
+            <ChartCard title="Events and Founders Reached per Year" sub="Events held (bars) and founders who attended (line) per year"
+              info="Events held each year (bars) and the founders who attended them (line).">
+              <ChartWithPlaceholder data={hasHentData ? reachByYear : null} height={240}>
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={D.byType} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
+                <ComposedChart data={reachByYear} margin={ { top: 8, right: 8, left: 0, bottom: 0 } } barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#6B7280" }} axisLine={false} tickLine={false} interval={0} angle={-12} textAnchor="end" height={50} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={30} />
-                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
-                  <Bar dataKey="DealsPerEvent" name="Deals per event" radius={[4, 4, 0, 0]} maxBarSize={46}>
-                    {D.byType.map(d => <Cell key={d.name} fill={TYPE_HEX[d.name as ExposureType]} />)}
-                  </Bar>
-                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                  <XAxis dataKey="Year" tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="events" allowDecimals={false} tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} width={32} />
+                  <YAxis yAxisId="founders" orientation="right" tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} width={44} />
+                  <Tooltip cursor={ { fill: "rgba(0,33,71,0.04)" } } content={<ChartTip />} />
+                  <Bar yAxisId="events" dataKey="Events" name="Events" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Line yAxisId="founders" type="monotone" dataKey="Founders" name="Founders reached" stroke="#1F9E9E" strokeWidth={2.5} dot={ { r: 4, fill: "#1F9E9E", strokeWidth: 0 } } />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                </ComposedChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Introductions per Year, by Stakeholder" sub="Introductions to investors, partners, health stakeholders, policymakers and peers"
+              info="Introductions founders made each year, split by the stakeholder group they were made to.">
+              <ChartWithPlaceholder data={hasHentData ? introductionsByStakeholder : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={introductionsByStakeholder} margin={ { top: 8, right: 8, left: 0, bottom: 0 } } barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="Year" tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} />
+                  <YAxis tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} width={32} />
+                  <Tooltip cursor={ { fill: "rgba(0,33,71,0.04)" } } content={<ChartTip />} />
+                  <Bar dataKey="Investors" name="Investors" stackId="intro" fill="#1B4332" maxBarSize={38} />
+                  <Bar dataKey="Partners" name="Partners" stackId="intro" fill="#1F9E9E" maxBarSize={38} />
+                  <Bar dataKey="Health stakeholders" name="Health stakeholders" stackId="intro" fill="#A6C13C" maxBarSize={38} />
+                  <Bar dataKey="Policymakers" name="Policymakers" stackId="intro" fill="#E9C46A" maxBarSize={38} />
+                  <Bar dataKey="Peers" name="Peers" stackId="intro" fill="#6A4C93" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
             </ChartCard>
+          </div>
+        </section>
 
-            <ChartCard title="Platform Comparison" sub="Events, founders reached, connections and deals by format"
-              info="Side-by-side view of each format. Connections-per-founder shows how densely a format networks each founder, regardless of how many attend.">
+        {/* ── SECTION 2: From Connection to Commitment ─── */}
+        <section style={ { display: show(2) ? undefined : "none" } }>
+          <SectionHeader title="From Connection to Commitment"
+            sub="Whether introductions turn into meetings, deals and signed agreements." />
+          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+            <SectionFilter label="Stakeholder type" value={commitStakeholder} options={STAKEHOLDER_TYPES} onChange={setCommitStakeholder} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard title="Relationship Funnel" sub="Introductions, follow-up meetings, deals opened and deals signed, with % conversion at each step"
+              info="Introductions to follow-up meetings, deals opened and deals signed, with the conversion from each step to the next.">
+              {hasHentData ? (
+                <Funnel steps={commitmentFunnel} />
+              ) : (
+                <p style={ { fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 } }>In coming data</p>
+              )}
+            </ChartCard>
+            <ChartCard title="Deals by Stakeholder Type" sub="Introductions compared with deals signed for each stakeholder group"
+              info="Introductions and deals signed for each stakeholder group, so you can see which relationships pay off.">
+              <ChartWithPlaceholder data={hasHentData ? dealsByStakeholder : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={dealsByStakeholder} margin={ { top: 8, right: 8, left: 0, bottom: 0 } } barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="name" tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} width={32} />
+                  <Tooltip cursor={ { fill: "rgba(0,33,71,0.04)" } } content={<ChartTip />} />
+                  <Bar dataKey="Introductions" name="Introductions" fill="#1F9E9E" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Bar dataKey="Deals signed" name="Deals signed" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+          </div>
+        </section>
+
+        {/* ── SECTION 3: Which Platforms Work ─── */}
+        <section style={ { display: show(3) ? undefined : "none" } }>
+          <SectionHeader title="Which Platforms Work"
+            sub="Comparing formats on the deals they produce." />
+          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+            <SectionFilter label="Platform type" value={platformFormat} options={PLATFORM_TYPES} onChange={setPlatformFormat} />
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <ChartCard title="Deals per Event, by Format" sub="Average deals opened per event; higher means more productive"
+              info="Average deals opened per event for each format. Higher means more productive.">
+              <ChartWithPlaceholder data={hasHentData ? dealsPerEventByFormat : null} height={260}>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={dealsPerEventByFormat} layout="vertical" margin={ { top: 8, right: 16, left: 0, bottom: 0 } } barCategoryGap="22%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={150} tick={ { fontSize: 10, fill: "#6B7280" } } axisLine={false} tickLine={false} />
+                  <Tooltip cursor={ { fill: "rgba(0,33,71,0.04)" } } content={<ChartTip />} />
+                  <Bar dataKey="value" name="Deals per event" fill="#1B4332" radius={[0, 4, 4, 0]} maxBarSize={22} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Platform Comparison" sub="The full breakdown by format"
+              info="Events, founders, introductions, meetings and deals by format. Conversion % is deals signed divided by introductions.">
               <div className="overflow-x-auto">
                 <table className="w-full text-[11px]">
                   <thead>
                     <tr>
-                      <th className="text-left text-gray-400 font-bold pb-3 pr-4 uppercase tracking-wider text-[9px]">Format</th>
+                      <th className="text-left text-gray-400 font-bold pb-3 pr-6 uppercase tracking-wider text-[9px]">Format</th>
                       <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Events</th>
                       <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Founders</th>
-                      <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Connections</th>
-                      <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Conn./Founder</th>
-                      <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Deals</th>
+                      <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Introductions</th>
+                      <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Meetings</th>
+                      <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Deals Signed</th>
+                      <th className="text-center text-gray-400 font-bold pb-3 pl-2 uppercase tracking-wider text-[9px]">Conversion %</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {D.byType.map(t => (
-                      <tr key={t.name} style={{ borderTop: `1px solid ${LIGHT_BORDER}` }}>
-                        <td className="py-2.5 pr-4 whitespace-nowrap">
-                          <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: TYPE_HEX[t.name as ExposureType] }} />
-                            <span className="font-semibold text-gray-700">{t.name}</span>
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-700">{t.Events}</td>
-                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-700">{t.Founders}</td>
-                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-700">{t.Connections}</td>
-                        <td className="py-2.5 px-2 text-center font-bold tabular-nums" style={{ color: BRAND_DK }}>{t.ConnPerFounder}</td>
-                        <td className="py-2.5 px-2 text-center font-bold tabular-nums" style={{ color: BRAND_DK }}>{t.Deals}</td>
+                    {platformRows.map(row => (
+                      <tr key={row.format} style={ { borderTop: `1px solid ${LIGHT_BORDER}` } }>
+                        <td className="py-2.5 pr-6 whitespace-nowrap font-semibold text-gray-700">{row.format}</td>
+                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-600">{row.events}</td>
+                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-600">{row.founders}</td>
+                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-600">{row.introductions}</td>
+                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-600">{row.meetings}</td>
+                        <td className="py-2.5 px-2 text-center tabular-nums text-gray-600">{row.deals}</td>
+                        <td className="py-2.5 pl-2 text-center tabular-nums font-bold" style={ { color: BRAND_DK } }>{row.conversion}%</td>
                       </tr>
                     ))}
-                    {!D.byType.length && (
-                      <tr><td colSpan={6} className="text-center text-gray-400 py-6">No events match the selected filters.</td></tr>
+                    {!platformRows.length && (
+                      <tr><td colSpan={7} className="text-center text-gray-400 py-6">In coming data</td></tr>
                     )}
                   </tbody>
                 </table>
               </div>
             </ChartCard>
           </div>
-
         </section>
 
-        {/* ── PITCHING COMPETITIONS & PILOT ENGAGEMENTS ─── */}
-        <section>
-          <SectionHeader title="Competitive Engagements & Pilot Support" sub="Pitching competitions, pilot programs, and structured venture support by stage" />
+        {/* ── SECTION 4: Pitch Competitions and Pilots ─── */}
+        <section style={ { display: show(4) ? undefined : "none" } }>
+          <SectionHeader title="Pitch Competitions and Pilots"
+            sub="Competitive visibility and hands-on pilot support for ventures." />
+          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+            <SectionFilter label="Competition / pilot status" value={pilotStatus} options={PILOT_STATUSES} onChange={setPilotStatus} />
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Pitching Competitions" sub="High-stakes visibility opportunities for founders" accent={BRAND}>
-              <div className="space-y-3">
-                {exposureEvents.filter(e => e.type === "Pitching Competition").map(e => (
-                  <div key={e.id} style={{ paddingBottom: 12, borderBottom: "1px solid rgba(0,33,71,0.06)" }} className="last:border-0 last:pb-0">
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#0E4633" }}>{e.name}</p>
-                    <p style={{ fontSize: 10, color: "#6B7280", marginTop: 2 }}>{e.year} · {e.founders} founders</p>
-                    {e.winner && <p style={{ fontSize: 10, color: "#059669", marginTop: 2, fontWeight: 600 }}>🏆 Winner: {e.winner}</p>}
-                    {e.prizeAmount && <p style={{ fontSize: 10, color: "#0891B2", marginTop: 1 }}>Prize: ${(e.prizeAmount || 0).toLocaleString()}</p>}
-                  </div>
-                ))}
+            <ChartCard title="Competition Results" sub="Founders who entered, reached the finals and won each year"
+              info="Founders who entered pitch competitions, reached the finals and won, per year.">
+              <ChartWithPlaceholder data={hasHentData ? competitionResults : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={competitionResults} margin={ { top: 8, right: 8, left: 0, bottom: 0 } } barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="Year" tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} width={32} />
+                  <Tooltip cursor={ { fill: "rgba(0,33,71,0.04)" } } content={<ChartTip />} />
+                  <Bar dataKey="Entered" name="Entered" fill="#A6C13C" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                  <Bar dataKey="Finalists" name="Finalists" fill="#1F9E9E" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                  <Bar dataKey="Winners" name="Winners" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Prize and Award Value" sub="Total prize money and awards won by founders (USD)"
+              info="Total prize money and awards won by founders, in USD.">
+              <div style={ { textAlign: "center", padding: 32 } }>
+                <p className="text-3xl font-bold" style={ { color: BRAND_DK } }>{prizeValue !== null ? `$${prizeValue.toLocaleString()}` : "In coming data"}</p>
+                <p className="text-[10px] text-gray-400 mt-2">Prize money and awards won</p>
               </div>
             </ChartCard>
-            <ChartCard title="Pilot Engagements" sub="Structured support by venture stage and year" accent="#40916C">
-              <div className="space-y-3">
-                {pilotEngagements.slice(0, 8).map(p => (
-                  <div key={p.id} style={{ paddingBottom: 12, borderBottom: "1px solid rgba(0,33,71,0.06)" }} className="last:border-0 last:pb-0">
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#0E4633" }}>{p.ventureName}</p>
-                    <div style={{ fontSize: 10, color: "#6B7280", marginTop: 2 }}>
-                      <span>{p.year} · {p.stage} stage</span>
-                      <span style={{ marginLeft: 8, color: p.outcome === "Success" ? "#059669" : "#EA580C" }}>
-                        {p.outcome}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <ChartCard title="Pilots by Stage" sub="Pilot engagements per year, split by Expose, Build and Scale"
+              info="Pilot engagements each year, split by venture stage.">
+              <ChartWithPlaceholder data={hasHentData ? pilotsByStage : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={pilotsByStage} margin={ { top: 8, right: 8, left: 0, bottom: 0 } } barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="Year" tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={ { fontSize: 11, fill: "#6B7280" } } axisLine={false} tickLine={false} width={32} />
+                  <Tooltip cursor={ { fill: "rgba(0,33,71,0.04)" } } content={<ChartTip />} />
+                  <Bar dataKey="Expose" name="Expose" stackId="pilot" fill="#A6C13C" maxBarSize={38} />
+                  <Bar dataKey="Build" name="Build" stackId="pilot" fill="#1F9E9E" maxBarSize={38} />
+                  <Bar dataKey="Scale" name="Scale" stackId="pilot" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Pilot Outcomes" sub="Pilots completed, ongoing, or converted to contracts"
+              info="Pilot engagements by outcome: completed, ongoing, or converted to a contract.">
+              {hasHentData ? (
+                <DonutRing data={pilotOutcomes} colors={DISTINCT} total={sum(pilotOutcomes.map(d => d.value))} totalLabel="Pilots" height={300} legendPercent />
+              ) : (
+                <p style={ { fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 } }>In coming data</p>
+              )}
             </ChartCard>
           </div>
         </section>
