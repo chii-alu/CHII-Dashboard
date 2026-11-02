@@ -665,7 +665,7 @@ export default function HENTOverview() {
                   ))}
                 </div>
               </Panel>
-              <Panel title="Inclusivity Metrics" subtitle="PWD, Refugee, and Female representation" info="Distribution of participants from underrepresented groups">
+              <Panel title="Inclusion Reach" subtitle="PWD, Refugee, and Female representation" info="Distribution of participants from underrepresented groups">
                 <ChartWithPlaceholder data={hasHentData ? [
                     { name: "PWD", count: pwdCount, pct: founders.length > 0 ? Math.round((pwdCount / founders.length) * 100) : 0, fill: GREEN_RAMP[0] },
                     { name: "Refugee", count: refugeeCount, pct: founders.length > 0 ? Math.round((refugeeCount / founders.length) * 100) : 0, fill: GREEN_RAMP[2] },
