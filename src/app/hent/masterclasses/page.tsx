@@ -240,7 +240,7 @@ export default function MasterclassesPage() {
   const byAge    = { "18-25": 0, "26-35": 0, "36-45": 0, "46+": 0 };
   const byRegion = { "East Africa": 0, "West Africa": 0, "South Africa": 0, "North Africa": 0, Other: 0 };
   const byStage  = { Expose: 0, Build: 0, Scale: 0 };
-  const bySocial = { "MCF Scholars": 0, PWD: 0, "Refugee-Displaced": 0 };
+  const bySocial = { PWD: 0, "Refugee-Displaced": 0 };
 
   filtered.forEach(m => {
     (Object.keys(m.byAge)    as (keyof typeof byAge)[]).forEach(k    => { byAge[k]    += m.byAge[k]; });
@@ -347,6 +347,8 @@ export default function MasterclassesPage() {
             { label: "Ventures Represented", num: headline("Ventures Represented"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: TrendingUp, tip: "Unique ventures with founder/team attendance." },
             { label: "Female Participants", num: headline("Female Participants"), displayFmt: (n) => `${Math.round(n)}%`, icon: WomanIcon, tip: "Share of female attendees." },
             { label: "Alumni Participants", num: headline("Alumni Participants"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Share of alumni attendees." },
+            { label: "Inclusion Reach", num: headline("Inclusion Reach"), displayFmt: (n) => `${Math.round(n * 10) / 10}%`, icon: Users, tip: "Share of participants with disabilities or refugee background." },
+            { label: "Attendance Rate", num: headline("Attendance Rate"), displayFmt: (n) => `${Math.round(n * 10) / 10}%`, icon: TrendingUp, tip: "Share of registered attendees who attended." },
           ]}
         />
 
@@ -599,7 +601,7 @@ export default function MasterclassesPage() {
               </div>
             </ChartCard>
 
-            <ChartCard title="Social Inclusion Groups" sub="MCF scholars, PWD, refugee-displaced" accent={AMBER_MC}>
+            <ChartCard title="Inclusion Reach" sub="PWD and refugee-displaced" accent={AMBER_MC}>
               <ChartWithPlaceholder data={hasHentData ? socialData.map((s, i) => ({
                     name: s.name,
                     value: s.value,

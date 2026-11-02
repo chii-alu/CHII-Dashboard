@@ -354,7 +354,7 @@ export default function MentorshipPage() {
   const byAge    = { "18-25": 0, "26-35": 0, "36-45": 0, "46+": 0 };
   const byRegion = { "East Africa": 0, "West Africa": 0, "Southern Africa": 0, "North Africa & Horn": 0 };
   const byStage  = { Expose: 0, Build: 0, Scale: 0 };
-  const bySocial = { "MCF Scholars": 0, PWD: 0, "Refugee-Displaced": 0 };
+  const bySocial = { PWD: 0, "Refugee-Displaced": 0 };
   filtered.forEach(p => {
     (Object.keys(p.byAge)    as (keyof typeof byAge)[]).forEach(k    => { byAge[k]    += p.byAge[k]; });
     (Object.keys(p.byRegion) as (keyof typeof byRegion)[]).forEach(k => { byRegion[k] += p.byRegion[k]; });
@@ -699,8 +699,8 @@ export default function MentorshipPage() {
                 subtitle="Fellows by development stage">
                 <CustomDonut data={stageData} className="h-36" />
               </Panel>
-              <Panel title="Social Inclusion Groups"
-                subtitle="MCF scholars, PWD, refugee-displaced">
+              <Panel title="Inclusion Reach"
+                subtitle="PWD and refugee-displaced">
                 <ChartWithPlaceholder data={hasHentData ? socialData : null} height={240}>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={socialData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }} barCategoryGap="30%">

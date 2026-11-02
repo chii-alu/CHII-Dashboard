@@ -226,7 +226,7 @@ export default function FieldVisitsPage() {
 
   const byAge    = { "18-25": 0, "26-35": 0, "36-45": 0, "46+": 0 };
   const byStage  = { Expose: 0, Build: 0, Scale: 0 };
-  const bySocial = { "MCF Scholars": 0, PWD: 0, "Refugee-Displaced": 0 };
+  const bySocial = { PWD: 0, "Refugee-Displaced": 0 };
   filtered.forEach(v => {
     (Object.keys(v.byAge)    as (keyof typeof byAge)[]).forEach(k    => { byAge[k]    += v.byAge[k]; });
     (Object.keys(v.byStage)  as (keyof typeof byStage)[]).forEach(k  => { byStage[k]  += v.byStage[k]; });
@@ -600,7 +600,7 @@ export default function FieldVisitsPage() {
                     ))}
                   </div>
                   <div className="border-t border-gray-100 pt-4">
-                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Social Inclusion</p>
+                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Inclusion Reach</p>
                     {socialData.map((d, i) => {
                       const col = SOCIAL_COLORS[i % SOCIAL_COLORS.length];
                       const pct = tot.participants > 0 ? Math.round((d.value / tot.participants) * 100) : 0;
