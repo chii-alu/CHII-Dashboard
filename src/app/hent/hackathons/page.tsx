@@ -326,6 +326,7 @@ export default function HackathonsPage() {
               options={[
                 { label: "Participant profile", value: "1" },
                 { label: "Innovation & Impact", value: "3" },
+                { label: "Quality & Outcomes", value: "6" },
               ]}
             />
           </div>
@@ -549,6 +550,12 @@ export default function HackathonsPage() {
               <ChartLegend items={[["Male-founded", SKY], ["Female-founded", VIOLET]]} />
             </ChartCard>
           </div>
+        </section>
+
+        {/* â”€â”€ SECTION 6: QUALITY & OUTCOMES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <section style={{ display: show(6) ? undefined : "none" }}>
+          <SectionHeader title="Quality & Outcomes"
+            sub="Quality ratings and outcomes across hackathons" />
         </section>
 
         {/* â”€â”€ SECTION 4: PARTICIPATION & PROJECT CATEGORIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
