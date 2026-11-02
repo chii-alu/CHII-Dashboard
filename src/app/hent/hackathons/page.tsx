@@ -495,8 +495,8 @@ export default function HackathonsPage() {
               </ChartWithPlaceholder>
               <ChartLegend items={[["Male-led", SKY], ["Female-led", VIOLET]]} />
             </ChartCard>
-            <ChartCard title="Winning Teams by Year"
-              sub="Female-led vs male-led winning teams  ·  by year"
+            <ChartCard title="Funding Deployed to Winning Teams per Year"
+              sub="Funding deployed to female-led vs male-led winning teams  ·  per year"
               accent={SKY}>
               <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
                 <span className="flex items-center gap-1.5">
