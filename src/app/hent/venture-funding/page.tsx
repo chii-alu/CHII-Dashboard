@@ -253,61 +253,12 @@ export default function VentureFundingPage() {
         progressRows={progressRows}
           title="Venture Funding Metrics"
           cards={[
-            {
-              label: "Capital Deployed",
-              num: headline("Capital Deployed"),
-              displayFmt: fmt$,
-              icon: Banknote,
-              sub: `${Math.round((D.totalFunding / 910_904) * 100)}% of $910.9K target`,
-              pace: true,
-              paceA: D.totalFunding,
-              paceT: 910_904,
-              tip: "Total catalytic funding disbursed to ventures across every milestone tranche."
-            },
-            {
-              label: "Ventures Funded",
-              num: headline("Ventures Funded"),
-              displayFmt: (n) => String(Math.round(n)),
-              icon: Rocket,
-              sub: `${Math.round((D.funded.length / 400) * 100)}% of 400 target`,
-              pace: true,
-              paceA: D.funded.length,
-              paceT: 400,
-              tip: "Ventures that have received at least one tranche of catalytic funding."
-            },
-            {
-              label: "Milestone Rate",
-              num: headline("Milestone Rate"),
-              displayFmt: (n) => `${Math.round(n)}%`,
-              icon: CheckCircle2,
-              sub: hasHentData ? `Average delivery · ${D.funded.length} funded ventures` : "In coming data",
-              pace: true,
-              paceA: D.milestoneRate,
-              paceT: 100,
-              tip: "Average share of agreed milestones delivered by funded ventures — funding is released against these."
-            },
-            {
-              label: "Progressed to Scale",
-              num: headline("Progressed to Scale"),
-              displayFmt: (n) => String(Math.round(n)),
-              icon: TrendingUp,
-              sub: hasHentData && D.funded.length > 0 ? `${Math.round((D.progressed / D.funded.length) * 100)}% of funded ventures` : "In coming data",
-              pace: true,
-              paceA: D.progressed,
-              paceT: Math.max(D.funded.length > 0 ? Math.round(D.funded.length * 0.5) : 1, 1),
-              tip: "Funded ventures that have advanced to the Scaling or Investment/Funding stage."
-            },
-            {
-              label: "Jobs Created",
-              num: headline("Jobs Created"),
-              displayFmt: (n) => Math.round(n).toLocaleString(),
-              icon: Users,
-              sub: `${Math.round((D.jobs / 2_000) * 100)}% of 2,000 target`,
-              pace: true,
-              paceA: D.jobs,
-              paceT: 2_000,
-              tip: "Total jobs created to date by ventures that received catalytic funding."
-            },
+            { label: "Capital Deployed", num: headline("Capital Deployed"), displayFmt: fmt$, icon: Banknote, tip: "Catalytic funding disbursed to ventures to date (USD)." },
+            { label: "Ventures Funded", num: headline("Ventures Funded"), displayFmt: (n) => String(Math.round(n)), icon: Rocket, tip: "Ventures that have received catalytic funding." },
+            { label: "Follow-On Capital Raised", num: headline("Follow-On Capital Raised"), displayFmt: fmt$, icon: TrendingUp, tip: "External investment raised by funded ventures after our funding (USD)." },
+            { label: "Milestone Achievement Rate", num: headline("Milestone Achievement Rate"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Share of funded ventures meeting their agreed milestones on time." },
+            { label: "Cost per Job", num: headline("Cost per Job"), displayFmt: fmt$, icon: Target, tip: "Capital deployed ÷ jobs created by funded ventures (USD)." },
+            { label: "Capital to Female-Led Ventures", num: headline("Capital to Female-Led Ventures"), displayFmt: fmt$, icon: Users, tip: "Share of catalytic funding disbursed to female-led ventures." },
           ]}
         />
 
