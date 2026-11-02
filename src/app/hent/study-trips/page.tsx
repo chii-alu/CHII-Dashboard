@@ -547,12 +547,6 @@ export default function FieldVisitsPage() {
         <section style={{ display: show(2) ? undefined : "none" }}>
           <SectionHeader title="Participant Demographics"
             sub="Breakdown by gender, age, venture stage, and social inclusion" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <ProfileCard label="Female Participants"  value={hasHentData ? tot.female : null}                  pct={hasHentData ? femalePct : null}        total={hasHentData ? tot.participants : null} color={VIOLET}  />
-            <ProfileCard label="Male Participants"    value={hasHentData ? tot.participants - tot.female : null} pct={hasHentData ? 100 - femalePct : null} total={hasHentData ? tot.participants : null} color={SKY}     />
-            <ProfileCard label="Student Participants" value={hasHentData ? tot.students : null}                pct={hasHentData ? studentPct : null}       total={hasHentData ? tot.participants : null} color={EMERALD} />
-            <ProfileCard label="Alumni Participants"  value={hasHentData ? alumniTotal : null}                 pct={hasHentData ? 100 - studentPct : null} total={hasHentData ? tot.participants : null} color={AMBER}   />
-          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChartCard title="Participant Distribution" sub="By age, venture stage, and visit type" accent={SKY}>
               {hasHentData ? (
