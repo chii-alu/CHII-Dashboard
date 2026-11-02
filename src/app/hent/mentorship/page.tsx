@@ -468,11 +468,14 @@ export default function MentorshipPage() {
         progressRows={progressRows}
           title="Mentorship & Fellowship Metrics"
           cards={[
-            { label: "Total Mentees", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Participants in mentorship and fellowship programs." },
-            { label: "Total Mentors", num: headline("Total Mentors"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Mentors across mentorship and fellowship programs." },
-            { label: "Mentor Engagements", num: headline("Mentor Engagements"), displayFmt: (n) => String(Math.round(n)), icon: Award, tip: "Mentorship slots deployed across programs." },
-            { label: "Female Mentees", num: headline("Female Fellows"), displayFmt: (n) => `${Math.round(n)}%`, icon: Star, tip: "Percentage of female participation across all programs." },
-            { label: "Avg Completion Rate", num: headline("Avg Completion Rate"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Average completion rate across all programs." },
+            { label: "Total cohorts", num: headline("Total cohorts"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Target, tip: "Mentorship and fellowship cohorts across all programs." },
+            { label: "Active cohorts", num: headline("Active cohorts"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Zap, tip: "Cohorts currently running." },
+            { label: "Unique ventures in register", num: headline("Unique ventures in register"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Distinct ventures registered on mentorship and fellowship programs." },
+            { label: "Mentors in register", num: headline("Mentors in register"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Award, tip: "Mentors registered on mentorship and fellowship programs." },
+            { label: "Mentees in Register", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Mentees registered on mentorship and fellowship programs." },
+            { label: "Cohort enrolments", num: headline("Cohort enrolments"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: TrendingUp, tip: "Enrolments across all cohorts." },
+            { label: "Completed sessions", num: headline("Completed sessions"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: CheckCircle2, tip: "Mentorship sessions held." },
+            { label: "Scheduled sessions", num: headline("Scheduled sessions"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Info, tip: "Mentorship sessions planned but not yet held." },
           ]}
         />
 
