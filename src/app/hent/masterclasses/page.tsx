@@ -46,6 +46,10 @@ const RATING_CRITERIA: string[] = [];
 const ALL_VENTURES: any[] = [];
 // True once any sample list has rows. Charts show "In coming data" until then.
 const hasHentData = [masterclasses, ALL_VENTURES].some(list => list.length > 0);
+// Quality & Impact data: filled from the database once HENT satisfaction rows exist.
+const satisfactionData: { Session: string; "Satisfaction %": number }[] = [];
+const qualityDimensions: { Dimension: string; "Score %": number }[] = [];
+const recommendRate: number | null = null;
 
 // â”€â”€â”€ Palette (green family, distinct by hue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const NAVY      = "#0F4C3A"; // brand green (footer)
@@ -660,43 +664,54 @@ export default function MasterclassesPage() {
         {/* SECTION 3: QUALITY & IMPACT */}
         {show(3) && (
         <section>
-          <SectionHeader title="Attendance Trends"
-            sub="Session attendance and yearly gender breakdown" />
+          <SectionHeader title="Quality & Impact"
+            sub="Participant satisfaction and quality dimensions" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Attendance by Session"
-              sub="Attendees per masterclass in chronological order"
-              accent={ORANGE_MC}>
-              <ChartWithPlaceholder data={hasHentData ? attendanceTrend.slice(0, 12) : null} height={208}>
+            <ChartCard title="Satisfaction Score"
+              sub="Participant satisfaction scores"
+              accent={ORANGE_MC}
+              headerRight={
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+              }>
+              <ChartWithPlaceholder data={hasHentData ? satisfactionData : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
-                <BarChart data={attendanceTrend.slice(0, 12)} barCategoryGap="30%">
+                <BarChart data={satisfactionData} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="Session" tick={{ fontSize: 11, fill: "#6B7280" }}
                     axisLine={false} tickLine={false} height={70} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} domain={[0, 100]} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
-                  <Bar dataKey="Attendees" fill={ORANGE_MC} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Satisfaction %" fill={ORANGE_MC} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Attendees", ORANGE_MC]]} />
+              <ChartLegend items={[["Satisfaction %", ORANGE_MC]]} />
             </ChartCard>
 
-            <ChartCard title="Attendance by Gender per Year"
-              sub="Female vs male participants  -  yearly comparison"
-              accent={VIOLET_MC}>
-              <ChartWithPlaceholder data={hasHentData ? genderTrend : null} height={176}>
+            <ChartCard title="Quality Dimensions & Recommendation"
+              sub="Rating by quality dimension and likelihood to recommend"
+              accent={VIOLET_MC}
+              headerRight={
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+              }>
+              <ChartWithPlaceholder data={hasHentData ? qualityDimensions : null} height={176}>
               <ResponsiveContainer width="100%" height={176}>
-                <BarChart data={genderTrend} barCategoryGap="30%" barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={20} />
+                <BarChart data={qualityDimensions} layout="vertical" barCategoryGap="25%" margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="Dimension" width={110} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
-                  <Bar dataKey="Female" fill={VIOLET_MC} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Male"   fill={SKY}       radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Score %" fill={VIOLET_MC} radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Female", VIOLET_MC], ["Male", SKY]]} />
+              <div className="mt-3 grid grid-cols-1 gap-2 pt-3 border-t border-gray-100 text-center">
+                <div>
+                  <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{hasHentData && recommendRate !== null ? `${recommendRate}%` : "In coming data"}</p>
+                  <p className="text-[9px] text-gray-400">Would recommend</p>
+                </div>
+              </div>
+              <ChartLegend items={[["Score %", VIOLET_MC]]} />
             </ChartCard>
           </div>
         </section>
