@@ -319,6 +319,17 @@ export default function MentorshipPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const show = (category: string) => activeCategory === category;
+  // Program Delivery panels: only rows with a database value are plotted; no value means no bar.
+  const registerData = [
+    { name: "Unique ventures", value: headline("Unique ventures in register") },
+    { name: "Mentors", value: headline("Mentors in register") },
+    { name: "Mentees", value: headline("Total Fellows") },
+  ].filter((d): d is { name: string; value: number } => d.value !== null);
+  const cohortData = [
+    { name: "Total cohorts", value: headline("Total cohorts") },
+    { name: "Active cohorts", value: headline("Active cohorts") },
+    { name: "Cohort enrolments", value: headline("Cohort enrolments") },
+  ].filter((d): d is { name: string; value: number } => d.value !== null);
   const filtersActive = (yearFilter !== "All" ? 1 : 0) + (typeFilter !== "All" ? 1 : 0) + (genderView !== "All" ? 1 : 0);
 
   const filtered = useMemo(() => mentorshipPrograms.filter(p => {
@@ -611,63 +622,43 @@ export default function MentorshipPage() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Criterion Ratings Distribution"
-                subtitle="Average score per criterion across programmes">
-                <ChartWithPlaceholder data={hasHentData ? MF_CRITERIA.map(c => ({
-                      name: c,
-                      score: filtered.length ? (filtered.reduce((s, p) => s + p.scores[c], 0) / filtered.length) : 0,
-                    })) : null} height={240}>
+              <Panel title="Register Overview"
+                subtitle="Ventures, mentors and mentees registered across programmes">
+                <ChartWithPlaceholder data={registerData} height={240}>
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart
-                    data={MF_CRITERIA.map(c => ({
-                      name: c,
-                      score: filtered.length ? (filtered.reduce((s, p) => s + p.scores[c], 0) / filtered.length) : 0,
-                    }))}
-                    margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
-                    layout="vertical"
-                    barCategoryGap="20%">
+                  <BarChart data={registerData} layout="vertical" margin={{ top: 8, right: 56, bottom: 0, left: 0 }} barCategoryGap="22%">
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#6B7280" }} domain={[0, 5]} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={130} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={150} />
                     <Tooltip content={<ChartTip />} />
-                    <Bar dataKey="score" fill={PRIMARY} radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="value" name="Count" fill={PRIMARY} radius={[0, 4, 4, 0]}>
+                      <LabelList dataKey="value" position="right" formatter={(v: number) => v.toLocaleString()} style={{ fontSize: 10, fill: "#374151" }} />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Average Score</span>
+                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Count</span>
                 </div>
               </Panel>
 
-              <Panel title="Gender Comparison by Criterion"
-                subtitle="Female-majority vs male-majority programme ratings">
-                <ChartWithPlaceholder data={hasHentData ? MF_CRITERIA.map(c => ({
-                      name: c,
-                      Female: fProgs.length ? (fProgs.reduce((s, p) => s + p.scores[c], 0) / fProgs.length) : 0,
-                      Male: mProgs.length ? (mProgs.reduce((s, p) => s + p.scores[c], 0) / mProgs.length) : 0,
-                    })) : null} height={240}>
+              <Panel title="Cohort Activity"
+                subtitle="Cohorts and enrolments across mentorship and fellowship programmes">
+                <ChartWithPlaceholder data={cohortData} height={240}>
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart
-                    data={MF_CRITERIA.map(c => ({
-                      name: c,
-                      Female: fProgs.length ? (fProgs.reduce((s, p) => s + p.scores[c], 0) / fProgs.length) : 0,
-                      Male: mProgs.length ? (mProgs.reduce((s, p) => s + p.scores[c], 0) / mProgs.length) : 0,
-                    }))}
-                    margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
-                    layout="vertical"
-                    barCategoryGap="20%">
+                  <BarChart data={cohortData} layout="vertical" margin={{ top: 8, right: 56, bottom: 0, left: 0 }} barCategoryGap="22%">
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#6B7280" }} domain={[0, 10]} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={130} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={150} />
                     <Tooltip content={<ChartTip />} />
-                    <Bar dataKey="Female" fill={VIOLET} radius={[0, 4, 4, 0]} stackId="a" />
-                    <Bar dataKey="Male" fill={SKY} radius={[0, 4, 4, 0]} stackId="a" />
+                    <Bar dataKey="value" name="Count" fill={SKY} radius={[0, 4, 4, 0]}>
+                      <LabelList dataKey="value" position="right" formatter={(v: number) => v.toLocaleString()} style={{ fontSize: 10, fill: "#374151" }} />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: VIOLET }} /> Female</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Male</span>
+                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Count</span>
                 </div>
               </Panel>
             </div>
