@@ -5,6 +5,7 @@ import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown, ChartTip } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartLegend } from "@/components/ui/hent";
+import { FILTER_YEARS } from "@/lib/filter-years";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -310,7 +311,7 @@ export default function MentorshipPage() {
     headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
-  const categories = ["Program Delivery & Performance", "Participant Profile", "Learning & Outcomes"];
+  const categories = ["Program Delivery & Performance", "Participant Profile", "Quality & Impact"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [yearFilter,  setYearFilter]  = useState<YearVal>("All");
@@ -319,6 +320,11 @@ export default function MentorshipPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const show = (category: string) => activeCategory === category;
+  const [qualityYear, setQualityYear] = useState("All Years");
+  const qualityYearOptions = ["All Years", ...FILTER_YEARS.map(String)];
+  // Quality & Impact data: filled from the database once HENT rows exist; empty means "In coming data".
+  const qualityRatings: { name: string; value: number }[] = [];
+  const skillNps: { name: string; value: number }[] = [];
   // Program Delivery panels: only rows with a database value are plotted; no value means no bar.
   const registerData = [
     { name: "Unique ventures", value: headline("Unique ventures in register") },
@@ -728,131 +734,57 @@ export default function MentorshipPage() {
           </section>
         )}
 
-        {/* SECTION 3: Learning & Outcomes */}
-        {show("Learning & Outcomes") && (
+        {/* SECTION 3: Quality & Impact */}
+        {show("Quality & Impact") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Learning & Outcomes
+                    Quality & Impact
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Engagement trends, satisfaction, and impact metrics</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Programme quality ratings and venture outcomes</p>
                 </div>
               </div>
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Satisfaction by Criterion"
-                subtitle="Proportion rated High or Very High">
-                <div className="space-y-3">
-                  {highSatData.map(d => (
-                    <div key={d.name}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-gray-700 font-medium">{d.name}</span>
-                        <span className="font-bold" style={{ color: d.value >= 80 ? EMERALD : d.value >= 60 ? PRIMARY : AMBER }}>{d.value}%</span>
-                      </div>
-                      <div className="h-3 bg-gray-100 rounded-sm overflow-hidden">
-                        <div className="h-full transition-all"
-                          style={{ width: `${d.value}%`, backgroundColor: d.value >= 80 ? EMERALD : d.value >= 60 ? PRIMARY : AMBER }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, textAlign: "center" }}>
-                  <div>
-                    <p className="text-lg font-bold" style={{ color: ACCENT }}>{avgHighSat}%</p>
-                    <p style={{ fontSize: 10, color: "#6B7280" }}>Avg high satisfaction</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold" style={{ color: EMERALD }}>{filtered.filter(p => p.highSatisfactionPct >= 85).length}</p>
-                    <p style={{ fontSize: 10, color: "#6B7280" }}>Programmes ≥85%</p>
-                  </div>
-                </div>
-              </Panel>
-
-              <Panel title="Gender Participation Trend"
-                subtitle="Female vs male fellows by year">
-                <ChartWithPlaceholder data={hasHentData ? genderTrend : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={genderTrend} barCategoryGap="30%" barGap={2}>
+              <Panel title="Quality Ratings & Venture Clarity"
+                subtitle="Programme assessment and venture outcome (1-5 scale)"
+                filterOptions={qualityYearOptions} filterValue={qualityYear} onFilterChange={setQualityYear}>
+                <ChartWithPlaceholder data={qualityRatings} height={240}>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={qualityRatings} barCategoryGap="30%">
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
-                    <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={20} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} interval={0} />
+                    <YAxis domain={[0, 5]} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={28} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: LIGHT_BORDER }} />
-                    <Bar dataKey="Female" fill={VIOLET} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Male"   fill={SKY}    radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" name="Rating (0-5 scale)" fill={PRIMARY} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: VIOLET }} /> Female</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Male</span>
+                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Rating (0-5 scale)</span>
                 </div>
               </Panel>
-
-              <Panel title="Venture Stage Distribution"
-                subtitle="Expose, Build, Scale by cohort year">
-                <ChartWithPlaceholder data={hasHentData ? stageTrend : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={stageTrend} barCategoryGap="30%" barGap={2}>
+              <Panel title="Skill Confidence & NPS"
+                subtitle="Skill confidence and net promoter score"
+                filterOptions={qualityYearOptions} filterValue={qualityYear} onFilterChange={setQualityYear}>
+                <ChartWithPlaceholder data={skillNps} height={240}>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={skillNps} barCategoryGap="30%">
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
-                    <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={20} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} interval={0} />
+                    <YAxis domain={[0, "auto"]} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={28} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: LIGHT_BORDER }} />
-                    <Bar dataKey="Expose" fill={SKY}    radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Build"  fill={PRIMARY} radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Scale"  fill={INDIGO}  radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" name="Score" fill={SKY} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Expose</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Build</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: INDIGO }} /> Scale</span>
+                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Score</span>
                 </div>
-              </Panel>
-
-              <Panel title="Cumulative Fellow Growth"
-                subtitle="Running total expansion over time">
-                <ChartWithPlaceholder data={hasHentData ? growthData : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={growthData} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="Period" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="Cumulative Fellows" stroke={EMERALD} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Cumulative fellows" />
-                  </LineChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-              </Panel>
-
-              <Panel title="Completion Rate by Program"
-                subtitle="Percentage of enrolled fellows completing">
-                <ChartWithPlaceholder data={hasHentData ? [...filtered].sort((a, b) => a.date.localeCompare(b.date)).map(p => ({
-                      Programme: `${MF_MONTHS[p.month - 1]} '${String(p.year).slice(2)}`,
-                      "Completion %": p.completionRate,
-                    })) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart
-                    data={[...filtered].sort((a, b) => a.date.localeCompare(b.date)).map(p => ({
-                      Programme: `${MF_MONTHS[p.month - 1]} '${String(p.year).slice(2)}`,
-                      "Completion %": p.completionRate,
-                    }))}
-                    barCategoryGap="30%"
-                    margin={{ top: 6, right: 10, bottom: 0, left: -16 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} vertical={false} />
-                    <XAxis dataKey="Programme" tick={{ fontSize: 11, fill: "#6B7280" }}
-                      axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} domain={[0, 100]} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: LIGHT_BORDER }} />
-                    <Bar dataKey="Completion %" fill={EMERALD} radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
