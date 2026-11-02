@@ -19,7 +19,7 @@ const STAKEHOLDER_GROUPS: string[] = [];
 const pilotEngagements: any[] = [];
 // True once any sample list has rows. Charts show "In coming data" until then.
 const hasHentData = [exposureEvents, pilotEngagements].some(list => list.length > 0);
-import { CalendarDays, Handshake, Link2, Mic, Star, Users } from "lucide-react";
+import { Handshake, Link2, Mic, Star, Target, Users } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
@@ -144,8 +144,8 @@ export default function ExposureNetworkingPage() {
   const D = useMemo(() => derive(filtered), [filtered]);
   const activeCount = (fYear !== "All Years" ? 1 : 0) + (fType !== "All Types" ? 1 : 0) + (fCountry !== "All Countries" ? 1 : 0);
 
-  const [activeSection, setActiveSection] = useState<"all" | number>("all");
-  const show = (n: number) => activeSection === "all" || activeSection === n;
+  const [activeSection, setActiveSection] = useState<number>(1);
+  const show = (n: number) => activeSection === n;
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
@@ -188,12 +188,12 @@ export default function ExposureNetworkingPage() {
         progressRows={progressRows}
           title="Exposure & Networking Metrics"
           cards={[
-            { label: "Events Held", num: headline("Events Held"), displayFmt: (n) => String(Math.round(n)), icon: CalendarDays, tip: "Exposure platforms delivered — pitch events, conferences, investor roundtables, ecosystem engagements and demo days." },
-            { label: "Founder Placements", num: headline("Founder Placements"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Total founder seats across all events. A founder attending two events counts twice." },
-            { label: "Investors Engaged", num: headline("Investors Engaged"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Mic, tip: "Investors present across all platforms — the capital side of the room founders are being put in front of." },
-            { label: "Connections Made", num: headline("Connections Made"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Link2, tip: "Introductions brokered between founders and ecosystem stakeholders. This is the top of the relationship funnel." },
-            { label: "Agreements Signed", num: headline("Agreements Signed"), displayFmt: (n) => String(Math.round(n)), icon: Handshake, tip: "Formal agreements (MOUs, partnerships, investments) that resulted from these introductions — the end of the funnel." },
-            { label: "Visibility Score", num: headline("Visibility Score"), displayFmt: (n) => `${n.toFixed(1)}/5`, icon: Star, tip: "How founders themselves rate the visibility and strategic value they gained, out of 5." },
+            { label: "Founders Reached", num: headline("Founders Reached"), displayFmt: (n) => `${Math.round(n)}%`, icon: Users, tip: "Share of portfolio founders who attended at least one networking event." },
+            { label: "Founders Showcased", num: headline("Founders Showcased"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Mic, tip: "Founders who pitched, exhibited or spoke at external events." },
+            { label: "Investors Engaged", num: headline("Investors Engaged"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Target, tip: "Investors who met or heard pitches from portfolio founders." },
+            { label: "Follow-Up Meetings", num: headline("Follow-Up Meetings"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Link2, tip: "Meetings founders held with investors, partners or officials after an event." },
+            { label: "Deals Signed", num: headline("Deals Signed"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Handshake, tip: "Partnerships, contracts or investment agreements that came from these connections." },
+            { label: "Founder Value Rating", num: headline("Founder Value Rating"), displayFmt: (n) => `${n.toFixed(1)}/5`, icon: Star, tip: "How founders rate the visibility and strategic value they gained, out of 5." },
           ]}
         />
 
@@ -201,10 +201,9 @@ export default function ExposureNetworkingPage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
           <SectionPills
             accent={BRAND}
-            value={activeSection === "all" ? "all" : String(activeSection)}
-            onChange={(v) => setActiveSection(v === "all" ? "all" : Number(v))}
+            value={String(activeSection)}
+            onChange={(v) => setActiveSection(Number(v))}
             options={[
-              { label: "All Sections", value: "all" },
               { label: "Connection to Commitment", value: "1" },
               { label: "Reach Over Time", value: "2" },
               { label: "Which Platforms Work", value: "3" },
