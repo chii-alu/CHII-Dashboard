@@ -311,7 +311,7 @@ export default function MentorshipPage() {
     headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
-  const categories = ["Participant profile", "Quality & Impact"];
+  const categories = ["Program Delivery & Performance", "Participant Profile", "Quality & Impact"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [yearFilter,  setYearFilter]  = useState<YearVal>("All");
@@ -612,17 +612,17 @@ export default function MentorshipPage() {
           </div>
         </div>
 
-        {/* SECTION 1: Participant profile */}
-        {show("Participant profile") && (
+        {/* SECTION 1: Program Delivery & Performance */}
+        {show("Program Delivery & Performance") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Participant profile
+                    Program Delivery & Performance
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Register, cohort activity, demographics and participant distribution</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Top-rated programs and satisfaction metrics</p>
                 </div>
               </div>
             </div>
@@ -668,7 +668,24 @@ export default function MentorshipPage() {
                 </div>
               </Panel>
             </div>
-            <div style={{ marginBottom: 16 }} />
+          </section>
+        )}
+
+        {/* SECTION 2: Participant Profile */}
+        {show("Participant Profile") && (
+          <section style={{ marginBottom: 48 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
+                    Participant Profile
+                  </p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Demographics and participant distribution</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Age Group Distribution"
                 subtitle="Fellows by age bracket">

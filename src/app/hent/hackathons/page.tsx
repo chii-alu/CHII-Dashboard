@@ -335,8 +335,7 @@ export default function HackathonsPage() {
               value={String(activeSection)}
               onChange={(v: string) => setActiveSection(Number(v))}
               options={[
-                { label: "Delivery & Performance", value: "1" },
-                { label: "Participant Profile", value: "2" },
+                { label: "Participant profile", value: "1" },
                 { label: "Innovation & Impact", value: "3" },
               ]}
             />
@@ -416,48 +415,6 @@ export default function HackathonsPage() {
               />
             </ChartCard>
 
-          </div>
-        </section>
-
-        {/* â”€â”€ SECTION 2: HACKATHONS PER YEAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <section style={{ display: show(2) ? undefined : "none" }}>
-          <SectionHeader title="Hackathons Conducted Per Year"
-            sub="Event frequency and participant reach by year" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Annual Hackathon Frequency"
-              sub="Count of hackathons organised per calendar year"
-              accent={ORANGE}>
-              <ChartWithPlaceholder data={hasHentData ? hackPerYear : null} height={192}>
-              <ResponsiveContainer width="100%" height={192}>
-                <BarChart data={hackPerYear} barCategoryGap="40%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={18} />
-                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
-                  <Bar dataKey="Hackathons" fill={ORANGE} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-              </ChartWithPlaceholder>
-              <ChartLegend items={[["Hackathons held", ORANGE]]} />
-            </ChartCard>
-
-            <ChartCard title="Participant Reach per Year"
-              sub="Total participants across all hackathons  -  year-on-year growth"
-              accent={TEAL}>
-              <ChartWithPlaceholder data={hasHentData ? reachPerYear : null} height={192}>
-              <ResponsiveContainer width="100%" height={192}>
-                <LineChart data={reachPerYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={30} />
-                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
-                  <Line type="monotone" dataKey="Participants"
-                    stroke={TEAL} strokeWidth={2.5} dot={{ r: 4, fill: TEAL, strokeWidth: 0 }} activeDot={{ r: 6 }} />
-                </LineChart>
-              </ResponsiveContainer>
-              </ChartWithPlaceholder>
-              <ChartLegend items={[["Participants", TEAL]]} />
-            </ChartCard>
           </div>
         </section>
 
