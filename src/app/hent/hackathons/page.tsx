@@ -26,6 +26,10 @@ const PROJECT_CATEGORIES: string[] = [];
 
 // True once any sample list has rows. Charts show "In coming data" until then.
 const hasHentData = [hackathons].some(list => list.length > 0);
+// Health interest breakdown: filled from the database once HENT rows exist; empty means "In coming data".
+const healthInterestData: { name: string; value: number }[] = [];
+// Academic programme breakdown: filled from the database once HENT rows exist; empty means "In coming data".
+const academicProgrammeData: { name: string; value: number }[] = [];
 
 
 // â”€â”€â”€ palette (green family, distinct by hue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -415,6 +419,42 @@ export default function HackathonsPage() {
               />
             </ChartCard>
 
+
+            <div style={{ gridColumn: "1 / -1" }}>
+              <ChartCard title="Participants by Health Interest"
+                sub="Participants grouped by their health interest area"
+                accent={SKY}>
+                <ChartWithPlaceholder data={hasHentData ? healthInterestData : null} height={240}>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={healthInterestData} layout="vertical" margin={{ top: 8, right: 16, bottom: 0, left: 0 }} barCategoryGap="22%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Bar dataKey="value" name="Participants" fill={SKY} radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </ChartCard>
+            </div>
+
+            <div style={{ gridColumn: "1 / -1" }}>
+              <ChartCard title="Participants by Academic Programmes"
+                sub="Participants grouped by their academic programme"
+                accent={SKY}>
+                <ChartWithPlaceholder data={hasHentData ? academicProgrammeData : null} height={240}>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={academicProgrammeData} layout="vertical" margin={{ top: 8, right: 16, bottom: 0, left: 0 }} barCategoryGap="22%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                    <Bar dataKey="value" name="Participants" fill={SKY} radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </ChartCard>
+            </div>
           </div>
         </section>
 
