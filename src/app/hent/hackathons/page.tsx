@@ -326,7 +326,7 @@ export default function HackathonsPage() {
               options={[
                 { label: "Participant profile", value: "1" },
                 { label: "Innovation & Impact", value: "3" },
-                { label: "Quality & Outcomes", value: "6" },
+                { label: "Quality and Feedback", value: "6" },
               ]}
             />
           </div>
@@ -554,7 +554,7 @@ export default function HackathonsPage() {
 
         {/* â”€â”€ SECTION 6: QUALITY & OUTCOMES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <section style={{ display: show(6) ? undefined : "none" }}>
-          <SectionHeader title="Quality & Outcomes"
+          <SectionHeader title="Quality and Feedback"
             sub="Quality ratings and outcomes across hackathons" />
         </section>
 
