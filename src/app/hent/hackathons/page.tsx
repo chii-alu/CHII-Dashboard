@@ -32,6 +32,10 @@ const healthInterestData: { name: string; value: number }[] = [];
 const academicProgrammeData: { name: string; value: number }[] = [];
 // Inclusion reach breakdown: filled from the database once HENT rows exist; empty means "In coming data".
 const inclusionReachData: { name: string; value: number }[] = [];
+// Quality and Feedback data: filled from the database once HENT rows exist; empty means "In coming data".
+const satisfactionData: { name: string; value: number }[] = [];
+const qualityDimensions: { name: string; value: number }[] = [];
+const recommendRate: number | null = null;
 
 
 // â”€â”€â”€ palette (green family, distinct by hue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -556,6 +560,52 @@ export default function HackathonsPage() {
         <section style={{ display: show(6) ? undefined : "none" }}>
           <SectionHeader title="Quality and Feedback"
             sub="Quality ratings and outcomes across hackathons" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard title="Satisfaction Score"
+              sub="Participant satisfaction scores"
+              accent={SKY}
+              headerRight={
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+              }>
+              <ChartWithPlaceholder data={hasHentData ? satisfactionData : null} height={208}>
+              <ResponsiveContainer width="100%" height={208}>
+                <BarChart data={satisfactionData} barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} height={70} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
+                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
+                  <Bar dataKey="value" name="Satisfaction %" fill={SKY} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+              <ChartLegend items={[["Satisfaction %", SKY]]} />
+            </ChartCard>
+
+            <ChartCard title="Quality Dimensions & Recommendation"
+              sub="Rating by quality dimension and likelihood to recommend"
+              accent={VIOLET}
+              headerRight={
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+              }>
+              <ChartWithPlaceholder data={hasHentData ? qualityDimensions : null} height={176}>
+              <ResponsiveContainer width="100%" height={176}>
+                <BarChart data={qualityDimensions} layout="vertical" barCategoryGap="25%" margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
+                  <Bar dataKey="value" name="Score %" fill={VIOLET} radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+              <div className="mt-3 pt-3 border-t border-gray-100 text-center">
+                <p className="text-lg font-bold" style={{ color: VIOLET }}>{hasHentData && recommendRate !== null ? `${recommendRate}%` : "In coming data"}</p>
+                <p className="text-[9px] text-gray-400">Would recommend</p>
+              </div>
+              <ChartLegend items={[["Score %", VIOLET]]} />
+            </ChartCard>
+          </div>
         </section>
 
         {/* â”€â”€ SECTION 4: PARTICIPATION & PROJECT CATEGORIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
