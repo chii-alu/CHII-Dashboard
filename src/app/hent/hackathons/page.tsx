@@ -183,7 +183,6 @@ export default function HackathonsPage() {
     headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
-  const [trendTab, setTrendTab] = useState<"participants" | "projects" | "winners" | "startups">("projects");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterYear, setFilterYear] = useState("All Years");
@@ -223,22 +222,6 @@ export default function HackathonsPage() {
     const totS   = events.reduce((s, h) => s + h.startupsCreated,  0);
     return { Year: String(yr), "Female-founded": femS, "Male-founded": totS - femS };
   });
-
-  const trendData = trendTab === "participants" ? participantsTrend
-                  : trendTab === "projects"     ? projectsTrend
-                  : trendTab === "winners"      ? winnersTrend
-                  :                              startupsTrend;
-
-  const trendCategories: [string, string] =
-      trendTab === "participants" ? ["Female",        "Male"]
-    : trendTab === "startups"    ? ["Female-founded", "Male-founded"]
-    :                              ["Female-led",     "Male-led"];
-
-  const trendFormatter = (v: number) =>
-      trendTab === "participants" ? `${v} participants`
-    : trendTab === "projects"    ? `${v} projects`
-    : trendTab === "winners"     ? `${v} teams`
-    : `${v} startups`;
 
   // â”€â”€ hackathons per year â”€â”€
   const hackPerYear = YEARS.map(yr => ({
@@ -478,63 +461,94 @@ export default function HackathonsPage() {
           </div>
         </section>
 
-        {/* â”€â”€ SECTION 3: HACKATHON TRENDS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* â”€â”€ SECTION 3: INNOVATION AND IMPACT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <section style={{ display: show(3) ? undefined : "none" }}>
           <SectionHeader title="Innovation and Impact"
             sub="Year-on-year trends with male vs female comparison" />
 
-          {/* Tab filters — pill style matching the section filters */}
-          <div style={{ marginBottom: 16 }}>
-            <SectionPills
-              accent="#0E4633"
-              value={trendTab}
-              onChange={(v: string) => setTrendTab(v as "participants" | "projects" | "winners" | "startups")}
-              options={[
-                { label: "Projects Developed", value: "projects" },
-                { label: "Winning Teams",      value: "winners" },
-                { label: "Startups Created",   value: "startups" },
-              ]}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <ChartCard title="Projects Developed by Year"
+              sub="Female-led vs male-led project teams  ·  by year"
+              accent={SKY}>
+              <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />
+                  Male-led
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />
+                  Female-led
+                </span>
+              </div>
+              <ChartWithPlaceholder data={hasHentData ? projectsTrend : null} height={208}>
+              <ResponsiveContainer width="100%" height={208}>
+                <BarChart data={projectsTrend} barCategoryGap="30%" barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
+                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
+                  <Bar dataKey="Male-led" fill={SKY}    radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Female-led" fill={VIOLET} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+              <ChartLegend items={[["Male-led", SKY], ["Female-led", VIOLET]]} />
+            </ChartCard>
+            <ChartCard title="Winning Teams by Year"
+              sub="Female-led vs male-led winning teams  ·  by year"
+              accent={SKY}>
+              <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />
+                  Male-led
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />
+                  Female-led
+                </span>
+              </div>
+              <ChartWithPlaceholder data={hasHentData ? winnersTrend : null} height={208}>
+              <ResponsiveContainer width="100%" height={208}>
+                <BarChart data={winnersTrend} barCategoryGap="30%" barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
+                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
+                  <Bar dataKey="Male-led" fill={SKY}    radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Female-led" fill={VIOLET} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+              <ChartLegend items={[["Male-led", SKY], ["Female-led", VIOLET]]} />
+            </ChartCard>
+            <ChartCard title="Startups Created from Hackathons by Year"
+              sub="Female-founded vs male-founded startups  ·  by year"
+              accent={SKY}>
+              <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />
+                  Male-founded
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />
+                  Female-founded
+                </span>
+              </div>
+              <ChartWithPlaceholder data={hasHentData ? startupsTrend : null} height={208}>
+              <ResponsiveContainer width="100%" height={208}>
+                <BarChart data={startupsTrend} barCategoryGap="30%" barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
+                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
+                  <Bar dataKey="Male-founded" fill={SKY}    radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Female-founded" fill={VIOLET} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+              <ChartLegend items={[["Male-founded", SKY], ["Female-founded", VIOLET]]} />
+            </ChartCard>
           </div>
-
-          <ChartCard
-            title={
-                trendTab === "participants" ? "Participant Growth by Year"
-              : trendTab === "projects"    ? "Projects Developed by Year"
-              : trendTab === "winners"     ? "Winning Teams by Year"
-              :                              "Startups Created from Hackathons by Year"
-            }
-            sub={`${
-                trendTab === "participants" ? "Female vs male participation"
-              : trendTab === "projects"    ? "Female-led vs male-led project teams"
-              : trendTab === "winners"     ? "Female-led vs male-led winning teams"
-              :                              "Female-founded vs male-founded startups"
-            }  ·  by year`}
-            accent={SKY}>
-            <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />
-                {trendCategories[1]}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />
-                {trendCategories[0]}
-              </span>
-            </div>
-            <ChartWithPlaceholder data={hasHentData ? trendData : null} height={208}>
-            <ResponsiveContainer width="100%" height={208}>
-              <BarChart data={trendData} barCategoryGap="30%" barGap={2}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
-                <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
-                <Bar dataKey={trendCategories[1]} fill={SKY}    radius={[4, 4, 0, 0]} />
-                <Bar dataKey={trendCategories[0]} fill={VIOLET} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            </ChartWithPlaceholder>
-            <ChartLegend items={[[trendCategories[1], SKY], [trendCategories[0], VIOLET]]} />
-          </ChartCard>
         </section>
 
         {/* â”€â”€ SECTION 4: PARTICIPATION & PROJECT CATEGORIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
