@@ -4,12 +4,12 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
+import { ChartCard, SectionHeader, ChartTip, BarList, useCountUp } from "@/components/ui/hent";
 import { benchColor } from "@/theme/tokens";
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
   BarChart, Bar, AreaChart, Area, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { Star, MapPin, Users, Handshake, Zap, Briefcase, Building2, TrendingUp, CheckCircle2 } from "lucide-react";
 import PortalNav from "@/components/layout/portal-nav";
@@ -519,14 +519,14 @@ export default function FieldVisitsPage() {
             <ChartCard title="Rating Distribution by Criterion"
               sub="Very High  ·  High  ·  Moderate  ·  Low  -  proportion of visits per level"
               accent={TEAL}>
-              <div className="flex gap-3 text-[10px] text-gray-500 mb-4 flex-wrap">
+              {TRIP_CRITERIA.map(c => <RatingBar key={c} label={c} visits={filtered} criterion={c} />)}
+              <div className="flex flex-wrap justify-center gap-4 text-[10px] mt-4">
                 {(["Very High","High","Moderate","Low"] as const).map(l => (
-                  <span key={l} className="flex items-center gap-1">
+                  <span key={l} className="flex items-center gap-1.5">
                     <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: RATING_COLORS[l] }} />{l}
                   </span>
                 ))}
               </div>
-              {TRIP_CRITERIA.map(c => <RatingBar key={c} label={c} visits={filtered} criterion={c} />)}
             </ChartCard>
 
             <ChartCard title="Ratings by Gender of Participants"
@@ -673,13 +673,10 @@ export default function FieldVisitsPage() {
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Female" fill={VIOLET} radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Male"   fill={SKY}    radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />Female</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />Male</span>
-              </div>
             </ChartCard>
           </div>
         </section>
@@ -837,12 +834,10 @@ export default function FieldVisitsPage() {
                   <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={30} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Line type="monotone" dataKey="Cumulative Participants" stroke={EMERALD} strokeWidth={2.5} dot={{ r: 4, fill: EMERALD, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </LineChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: EMERALD }} />Cumulative participants</span>
-              </div>
             </ChartCard>
 
             <ChartCard title="Completion Insights"

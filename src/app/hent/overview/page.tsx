@@ -656,14 +656,10 @@ export default function HENTOverview() {
                       {programData.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.fill} />)}
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  {programData.map((d, i) => (
-                    <span key={d.name} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: d.fill }} /> {d.name}</span>
-                  ))}
-                </div>
               </Panel>
               <Panel title="Inclusion Reach" subtitle="PWD, Refugee, and Female representation" info="Distribution of participants from underrepresented groups">
                 <ChartWithPlaceholder data={hasHentData ? [
@@ -689,18 +685,10 @@ export default function HENTOverview() {
                       ].map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.fill} />)}
                       <LabelList dataKey="count" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  {[
-                    { name: "PWD", fill: GREEN_RAMP[0] },
-                    { name: "Refugee", fill: GREEN_RAMP[2] },
-                    { name: "Female-Led", fill: GREEN_RAMP[3] },
-                  ].map((d) => (
-                    <span key={d.name} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: d.fill }} /> {d.name}</span>
-                  ))}
-                </div>
               </Panel>
             </div>
           </section>
@@ -743,12 +731,10 @@ export default function HENTOverview() {
                     <Bar dataKey="value" fill={CHART_COLOR_1} barSize={46} radius={[4, 4, 0, 0]}>
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: CHART_COLOR_1 }} /> Value</span>
-                </div>
               </Panel>
               <Panel title="Female-Led Ventures Trend" subtitle="Year-over-year progress" info="Annual trend of ventures with female founders or co-founders" filterOptions={["All Years", ...years.map(String)]} filterValue={filterVenturesFemaleYear} onFilterChange={setFilterVenturesFemaleYear}>
                 <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), count: ALL_VENTURES.filter(v => v.cohort === c && v.teamGender === "Female").length })) : null} height={250}>
@@ -796,12 +782,10 @@ export default function HENTOverview() {
                     <Bar dataKey="value" fill={CHART_COLOR_2} radius={[0, 4, 4, 0]}>
                       <LabelList dataKey="value" position="right" fontSize={10} fill="var(--chart-label)" fontWeight={700} formatter={(v: number) => fmt$(v)} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: CHART_COLOR_2 }} /> Value</span>
-                </div>
               </Panel>
               <Panel title="Funding Trend" subtitle="Capital deployed annually" info="Annual funding disbursement to ventures showing acceleration or sustainability" filterOptions={["All Years", ...years.map(String)]} filterValue={filterFundingTrendYear} onFilterChange={setFilterFundingTrendYear}>
                 <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), funding: ALL_VENTURES.filter(v => v.cohort === c && v.funding > 0).reduce((s, v) => s + v.funding, 0) })) : null} height={280}>
@@ -851,14 +835,10 @@ export default function HENTOverview() {
                     <Bar dataKey="Expose" stackId="stage" fill={GREEN_RAMP[0]} barSize={26} radius={[4, 4, 0, 0]} />
                     <Bar dataKey="Build" stackId="stage" fill={GREEN_RAMP[2]} barSize={26} />
                     <Bar dataKey="Scale" stackId="stage" fill={GREEN_RAMP[4]} barSize={26} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[0] }} /> Expose</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[2] }} /> Build</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[4] }} /> Scale</span>
-                </div>
               </Panel>
             </div>
           </section>
@@ -890,13 +870,10 @@ export default function HENTOverview() {
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
                     <Bar dataKey="Female-Led Jobs" stackId="jobs" fill={GREEN_RAMP[0]} barSize={26} radius={[4, 4, 0, 0]} />
                     <Bar dataKey="Other Jobs" stackId="jobs" fill={GREEN_RAMP[2]} barSize={26} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[0] }} /> Female-Led Jobs</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[2] }} /> Other Jobs</span>
-                </div>
               </Panel>
               <Panel title="Job Creation Trend" subtitle="Growth over time" info="Annual trend of employment opportunities created" filterOptions={["All Years", ...years.map(String)]} filterValue={filterEmploymentTrendYear} onFilterChange={setFilterEmploymentTrendYear}>
                 <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), jobs: ALL_VENTURES.filter(v => v.cohort === c).reduce((s, v) => s + v.jobsTotal, 0) })) : null} height={250}>
@@ -944,14 +921,10 @@ export default function HENTOverview() {
                       {npsData.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.fill} />)}
                       <LabelList dataKey="count" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  {npsData.map((d) => (
-                    <span key={d.range} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: d.fill }} /> {d.range}</span>
-                  ))}
-                </div>
               </Panel>
               <Panel title="Founder Satisfaction Breakdown" subtitle="NPS distribution" info="Breakdown of founder satisfaction scores (Promoters, Passives, Detractors)" filterOptions={["All Years", ...years.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
                 <ChartWithPlaceholder data={hasHentData ? npsData : null} height={250}>
@@ -965,14 +938,10 @@ export default function HENTOverview() {
                       {npsData.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.fill} />)}
                       <LabelList dataKey="count" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  {npsData.map((d) => (
-                    <span key={d.range} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: d.fill }} /> {d.range}</span>
-                  ))}
-                </div>
               </Panel>
             </div>
           </section>

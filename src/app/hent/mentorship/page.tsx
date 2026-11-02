@@ -4,7 +4,6 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown, ChartTip } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { ChartLegend } from "@/components/ui/hent";
 import { FILTER_YEARS } from "@/lib/filter-years";
 import { useState, useMemo } from "react";
 import {
@@ -640,12 +639,10 @@ export default function MentorshipPage() {
                     <Bar dataKey="value" name="Count" fill={PRIMARY} radius={[0, 4, 4, 0]}>
                       <LabelList dataKey="value" position="right" formatter={(v: number) => v.toLocaleString()} style={{ fontSize: 10, fill: "#374151" }} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Count</span>
-                </div>
               </Panel>
 
               <Panel title="Cohort Activity"
@@ -660,12 +657,10 @@ export default function MentorshipPage() {
                     <Bar dataKey="value" name="Count" fill={SKY} radius={[0, 4, 4, 0]}>
                       <LabelList dataKey="value" position="right" formatter={(v: number) => v.toLocaleString()} style={{ fontSize: 10, fill: "#374151" }} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Count</span>
-                </div>
               </Panel>
             </div>
           </section>
@@ -723,12 +718,10 @@ export default function MentorshipPage() {
                       }}
                     />
                     <Bar dataKey="value" fill={EMERALD} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: EMERALD }} /> Inclusion Groups</span>
-                </div>
               </Panel>
             </div>
           </section>
@@ -761,12 +754,10 @@ export default function MentorshipPage() {
                     <YAxis domain={[0, 5]} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={28} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: LIGHT_BORDER }} />
                     <Bar dataKey="value" name="Rating (0-5 scale)" fill={PRIMARY} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: PRIMARY }} /> Rating (0-5 scale)</span>
-                </div>
               </Panel>
               <Panel title="Skill Confidence & NPS"
                 subtitle="Skill confidence and net promoter score"
@@ -779,12 +770,10 @@ export default function MentorshipPage() {
                     <YAxis domain={[0, "auto"]} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={28} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: LIGHT_BORDER }} />
                     <Bar dataKey="value" name="Score" fill={SKY} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SKY }} /> Score</span>
-                </div>
               </Panel>
             </div>
           </section>

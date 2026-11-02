@@ -179,6 +179,14 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
   );
 }
 
+// Median of a list, or null when there are no values.
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((x, y) => x - y);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
 export default function HENTVentures() {
   // Live progress against target for the stat cards, from v_progress (HENT rows).
   const progressRows = useProgress("HENT");
@@ -191,7 +199,7 @@ export default function HENTVentures() {
     ventureHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
-  const categories = ["Growth & Jobs", "Portfolio Composition", "Geography & Engagement", "Portfolio Health"];
+  const categories = ["Portfolio Composition", "Portfolio Health"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   // Global filters
@@ -242,6 +250,15 @@ export default function HENTVentures() {
     jobs: filteredVentures.reduce((s, v) => s + v.jobsTotal, 0),
     funds: filteredVentures.reduce((s, v) => s + v.funding, 0)
   };
+  // Portfolio Health data: filled from the database once HENT rows exist; empty means "In coming data".
+  const survivalByCohort: { year: string; survival: number }[] = [];
+  const statusData: { name: string; value: number }[] = [];
+  const stageProgression: { year: string; expose_to_build: number; build_to_scale: number }[] = [];
+  // Median per year, so a year with no ventures is left out instead of reading as zero.
+  const revenueMedianByYear: { year: string; revenue: number }[] = years.flatMap(y => {
+    const m = median(filteredVentures.filter(v => v.cohort === y).map(v => v.revenue));
+    return m === null ? [] : [{ year: String(y), revenue: m }];
+  });
   const avgJobsPerVenture = filteredVentures.length ? Math.round(filteredActuals.jobs / filteredVentures.length) : 0;
   const totalRevenue = filteredVentures.reduce((s, v) => s + v.revenue, 0);
 
@@ -367,100 +384,43 @@ export default function HENTVentures() {
         </div>
 
         {/* ════ GROWTH & JOBS ════ */}
-        {show("Growth & Jobs") && (
+        {show("Portfolio Composition") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Growth & Jobs
+                    Portfolio Composition
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Venture pipeline and employment outcomes</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Where HENT ventures are based, what stage they’re at, and who leads them.</p>
                 </div>
               </div>
             </div>
-            <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Ventures Funded" subtitle="Ventures that have received capital" info="Number of ventures that have received capital vs unfunded">
-                <ChartWithPlaceholder data={hasHentData ? [
-                    { name: "Funded", value: venturesFunded },
-                    { name: "Unfunded", value: filteredVentures.length - venturesFunded },
-                  ] : null} height={250}>
+              <Panel title="Ventures by Country" subtitle="Number of active ventures based in each country" info="Number of active ventures based in each country" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGeoYear} onFilterChange={setFilterGeoYear}>
+                <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
+                    name: c,
+                    value: filteredVentures.filter(v => v.country === c).length
+                  })).sort((a, b) => b.value - a.value).slice(0, 8) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { name: "Funded", value: venturesFunded },
-                    { name: "Unfunded", value: filteredVentures.length - venturesFunded },
-                  ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                  <BarChart data={Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
+                    name: c,
+                    value: filteredVentures.filter(v => v.country === c).length
+                  })).sort((a, b) => b.value - a.value).slice(0, 8)} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="value" fill="#2D6A4F" barSize={46} radius={[4, 4, 0, 0]}>
+                    <Bar dataKey="value" fill={GREEN} barSize={46} radius={[4, 4, 0, 0]}>
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#2D6A4F" }} /> Value</span>
-                </div>
               </Panel>
-              <Panel title="Avg Jobs per Venture" subtitle="Employment intensity by stage" info="Average employment impact across different venture stages">
-                <ChartWithPlaceholder data={hasHentData ? [
-                    { name: "Expose", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Expose").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Expose").length, 1)) },
-                    { name: "Build", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Build").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Build").length, 1)) },
-                    { name: "Scale", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Scale").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Scale").length, 1)) },
-                  ] : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { name: "Expose", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Expose").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Expose").length, 1)) },
-                    { name: "Build", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Build").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Build").length, 1)) },
-                    { name: "Scale", value: Math.round(filteredVentures.filter(v => sg(v.stage) === "Scale").reduce((s, v) => s + v.jobsTotal, 0) / Math.max(filteredVentures.filter(v => sg(v.stage) === "Scale").length, 1)) },
-                  ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="value" fill="#26A69A" barSize={46} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#26A69A" }} /> Value</span>
-                </div>
-              </Panel>
-              <Panel title="Partnerships Built" subtitle="Cross-sector partnerships trend" info="Cross-sector partnerships built by ventures over time">
-                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), partnerships: filteredVentures.filter(v => v.cohort === y && v.partnerships > 0).reduce((s, v) => s + v.partnerships, 0) })) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={years.map(y => ({ year: String(y), partnerships: filteredVentures.filter(v => v.cohort === y && v.partnerships > 0).reduce((s, v) => s + v.partnerships, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="partnerships" stroke="#FF5722" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Partnerships" />
-                  </LineChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-              </Panel>
-              <Panel title="Revenue Generated" subtitle="Venture revenue trend over time" info="Total venture revenue generated over time">
-                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) })) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} tickFormatter={v => fmt$(v)} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip money />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="revenue" stroke="#26A69A" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Revenue" />
-                  </LineChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-              </Panel>
-              <Panel title="Ventures by Stage" subtitle="Expose · Build · Scale distribution" info="Distribution of ventures across development stages" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
+              <Panel title="Ventures by Stage" subtitle="How the portfolio splits across Expose, Build and Scale" info="How the portfolio splits across Expose, Build and Scale" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
                 <ChartWithPlaceholder data={hasHentData ? [
                     { name: "Expose", value: filteredVentures.filter(v => sg(v.stage) === "Expose").length },
                     { name: "Build", value: filteredVentures.filter(v => sg(v.stage) === "Build").length },
@@ -479,54 +439,12 @@ export default function HENTVentures() {
                     <Bar dataKey="value" fill={GREEN} barSize={46} radius={[4, 4, 0, 0]}>
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
-                </div>
               </Panel>
-              <Panel title="Jobs Trend" subtitle="Employment growth over time" info="Annual trend of employment opportunities created" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
-                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) })) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="jobs" stroke={GREEN} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Jobs Created" />
-                  </LineChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-              </Panel>
-              <Panel title="Performance Against Targets" subtitle="Current progress vs annual targets" info="Current progress vs annual targets for ventures, jobs, and funds">
-                <ChartWithPlaceholder data={hasHentData ? [
-                    { name: "Ventures", actual: filteredActuals.ventures, target: TARGETS.ventures },
-                    { name: "Jobs", actual: Math.round(filteredActuals.jobs / 100), target: Math.round(TARGETS.jobs / 100) },
-                    { name: "Funds", actual: Math.round(filteredActuals.funds / 10000), target: Math.round(TARGETS.funds / 10000) },
-                  ] : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={[
-                    { name: "Ventures", actual: filteredActuals.ventures, target: TARGETS.ventures },
-                    { name: "Jobs", actual: Math.round(filteredActuals.jobs / 100), target: Math.round(TARGETS.jobs / 100) },
-                    { name: "Funds", actual: Math.round(filteredActuals.funds / 10000), target: Math.round(TARGETS.funds / 10000) },
-                  ]} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="actual" fill="#2D6A4F" barSize={40} radius={[4, 4, 0, 0]} name="Actual" />
-                    <Bar dataKey="target" fill="#26A69A" barSize={40} radius={[4, 4, 0, 0]} name="Target" />
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#2D6A4F" }} /> Actual</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#26A69A" }} /> Target</span>
-                </div>
-              </Panel>
-              <Panel title="Female-Led & Accelerator Status" subtitle="Ventures breakdown by characteristics" info="Breakdown of ventures by female leadership and accelerator participation">
+              <Panel title="Female-Led and Accelerated Ventures" subtitle="Share of ventures that are female-led or in an accelerator" info="Share of ventures that are female-led or in an accelerator">
                 <ChartWithPlaceholder data={hasHentData ? [
                     { name: "Female-Led", value: filteredVentures.filter(v => v.teamGender === "Female").length },
                     { name: "In Accelerators", value: filteredVentures.filter(v => v.accelerator).length },
@@ -545,185 +463,29 @@ export default function HENTVentures() {
                     <Bar dataKey="value" fill="#FF5722" barSize={40} radius={[4, 4, 0, 0]}>
                       <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#FF5722" }} /> Value</span>
-                </div>
+              </Panel>
+              <Panel title="Jobs Created Over Time" subtitle="Total jobs created by ventures each year" info="Total jobs created by ventures each year" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
+                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) })) : null} height={250}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
+                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
+                    <Line type="monotone" dataKey="jobs" stroke={GREEN} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Jobs Created" />
+                  </LineChart>
+                </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
         )}
 
-        {/* ════ PORTFOLIO COMPOSITION ════ */}
-        {show("Portfolio Composition") && (
-          <section style={{ marginBottom: 48 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Portfolio Composition
-                  </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Sector mix and founder characteristics</p>
-                </div>
-              </div>
-            </div>
-            <div style={{ marginBottom: 24 }} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Ventures by Sector" subtitle="Distribution across sectors" info="Distribution of portfolio ventures by business sector" filterOptions={["All Years", ...years.map(String)]} filterValue={filterCompYear} onFilterChange={setFilterCompYear}>
-                <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.sector))).map(s => ({
-                    name: s,
-                    value: filteredVentures.filter(v => v.sector === s).length
-                  })).sort((a, b) => b.value - a.value).slice(0, 5) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={Array.from(new Set(filteredVentures.map(v => v.sector))).map(s => ({
-                    name: s,
-                    value: filteredVentures.filter(v => v.sector === s).length
-                  })).sort((a, b) => b.value - a.value).slice(0, 5)} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="value" fill={GREEN} barSize={46} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
-                </div>
-              </Panel>
-              <Panel title="Gender Distribution" subtitle="Founder diversity metrics" info="Founder diversity metrics across gender">
-                <ChartWithPlaceholder data={hasHentData ? [{
-                    name: "Founders",
-                    Male: founders.filter(f => f.gender !== "Female").length,
-                    Female: founders.filter(f => f.gender === "Female").length
-                  }] : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart layout="vertical" data={[{
-                    name: "Founders",
-                    Male: founders.filter(f => f.gender !== "Female").length,
-                    Female: founders.filter(f => f.gender === "Female").length
-                  }]} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
-                    <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="Male" fill={GREEN_RAMP[0]} radius={[0, 4, 4, 0]} />
-                    <Bar dataKey="Female" fill={GREEN_RAMP[1]} radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[0] }} /> Male</span>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[1] }} /> Female</span>
-                </div>
-              </Panel>
-              <Panel title="Sector Distribution" subtitle="Portfolio composition by sector" info="Portfolio composition by business sector">
-                <DonutRing
-                  data={Array.from(new Set(filteredVentures.map(v => v.sector))).map(s => ({
-                    name: s,
-                    value: filteredVentures.filter(v => v.sector === s).length
-                  }))}
-                  colors={GREEN_RAMP}
-                  total={filteredVentures.length}
-                  totalLabel="Sectors"
-                  height={250}
-                  legendPercent
-                />
-              </Panel>
-              <Panel title="Ventures by Cohort" subtitle="Portfolio distribution by entry year" info="Portfolio distribution across entry years">
-                <ChartWithPlaceholder data={hasHentData ? VENTURE_YEARS.map(y => ({ year: String(y), count: filteredVentures.filter(v => v.cohort === y).length })) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={VENTURE_YEARS.map(y => ({ year: String(y), count: filteredVentures.filter(v => v.cohort === y).length }))} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="count" fill="#26A69A" barSize={40} radius={[4, 4, 0, 0]} name="Ventures">
-                      <LabelList dataKey="count" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: "#26A69A" }} /> Ventures</span>
-                </div>
-              </Panel>
-            </div>
-          </section>
-        )}
-
-        {/* ════ GEOGRAPHY & ENGAGEMENT ════ */}
-        {show("Geography & Engagement") && (
-          <section style={{ marginBottom: 48 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
-                    Geography & Engagement
-                  </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Geographic distribution and regional performance</p>
-                </div>
-              </div>
-            </div>
-            <div style={{ marginBottom: 24 }} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Funding by Country" subtitle="Capital distribution across regions" info="Capital distribution across regions and countries" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGeoYear} onFilterChange={setFilterGeoYear}>
-                <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
-                    name: c,
-                    value: filteredVentures.filter(v => v.country === c).reduce((s, v) => s + v.funding, 0)
-                  })).sort((a, b) => b.value - a.value).slice(0, 8) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
-                    name: c,
-                    value: filteredVentures.filter(v => v.country === c).reduce((s, v) => s + v.funding, 0)
-                  })).sort((a, b) => b.value - a.value).slice(0, 8)} layout="vertical" margin={{ top: 4, right: 36, bottom: 0, left: 60 }} barSize={16} barCategoryGap="20%">
-                    <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: "#9CA3AF" }} tickFormatter={(v) => fmt$(v)} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={50} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip money />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="value" fill={GREEN} radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
-                </div>
-              </Panel>
-              <Panel title="Ventures by Country" subtitle="Portfolio distribution" info="Portfolio distribution across regions and countries" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGeoYear} onFilterChange={setFilterGeoYear}>
-                <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
-                    name: c,
-                    value: filteredVentures.filter(v => v.country === c).length
-                  })).sort((a, b) => b.value - a.value).slice(0, 8) : null} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
-                    name: c,
-                    value: filteredVentures.filter(v => v.country === c).length
-                  })).sort((a, b) => b.value - a.value).slice(0, 8)} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(14, 70, 51, 0.04)" }} />
-                    <Bar dataKey="value" fill={GREEN} barSize={46} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="value" position="top" fontSize={11} fill={BRAND_DK} fontWeight={700} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN }} /> Value</span>
-                </div>
-              </Panel>
-            </div>
-          </section>
-        )}
-
-        {/* ════ PORTFOLIO HEALTH ════ */}
         {show("Portfolio Health") && (
           <section style={{ marginBottom: 48 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
@@ -733,36 +495,78 @@ export default function HENTVentures() {
                   <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>
                     Portfolio Health
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Venture retention and expansion outcomes</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>Whether ventures are surviving, growing and moving to the next stage.</p>
                 </div>
               </div>
             </div>
-            <div style={{ marginBottom: 24 }} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Funding Trend" subtitle="Capital deployment over time" info="Annual capital deployment to ventures over time" filterOptions={["All Years", ...years.map(String)]} filterValue={filterHealthYear} onFilterChange={setFilterHealthYear}>
-                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), funding: filteredVentures.filter(v => v.cohort === y && v.funding > 0).reduce((s, v) => s + v.funding, 0) })) : null} height={250}>
+            <div style={ { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 } }>
+              <Panel title="Venture Survival by Cohort"
+                subtitle="Share of each intake year still operating today"
+                info="Share of each intake year still operating today">
+                <ChartWithPlaceholder data={hasHentData ? survivalByCohort : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={years.map(y => ({ year: String(y), funding: filteredVentures.filter(v => v.cohort === y && v.funding > 0).reduce((s, v) => s + v.funding, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} tickFormatter={v => fmt$(v)} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip money />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="funding" stroke={GREEN} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Funding Deployed" />
-                  </LineChart>
+                  <BarChart data={survivalByCohort} margin={ { top: 6, right: 10, bottom: 0, left: -16 } } barCategoryGap="28%">
+                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
+                    <XAxis dataKey="year" tick={ { fontSize: 11, fill: "#374151", fontWeight: 600 } } axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={ { fontSize: 10, fill: "#9CA3AF" } } axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={ { fill: "rgba(14, 70, 51, 0.04)" } } />
+                    <Bar dataKey="survival" name="Still operating %" fill="#26A69A" barSize={40} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                  </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
               </Panel>
-              <Panel title="Revenue Trend" subtitle="Growth over time" info="Annual venture revenue growth over time" filterOptions={["All Years", ...years.map(String)]} filterValue={filterHealthYear} onFilterChange={setFilterHealthYear}>
-                <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) })) : null} height={250}>
+
+              <Panel title="Ventures by Status"
+                subtitle="Active, growing, stalled or closed ventures right now"
+                info="Active, growing, stalled or closed ventures right now">
+                <ChartWithPlaceholder data={hasHentData ? statusData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={years.map(y => ({ year: String(y), revenue: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.revenue, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
+                  <BarChart data={statusData} margin={ { top: 6, right: 10, bottom: 0, left: -16 } } barCategoryGap="28%">
+                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
+                    <XAxis dataKey="name" tick={ { fontSize: 11, fill: "#374151", fontWeight: 600 } } axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={ { fontSize: 10, fill: "#9CA3AF" } } axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={ { fill: "rgba(14, 70, 51, 0.04)" } } />
+                    <Bar dataKey="value" name="Ventures" fill="#26A69A" barSize={40} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                  </BarChart>
+                </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </Panel>
+            </div>
+            <div style={ { marginBottom: 16 } } />
+            <div style={ { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 } }>
+              <Panel title="Stage Progression"
+                subtitle="Ventures that moved from Expose to Build or Build to Scale each year"
+                info="Ventures that moved from Expose to Build or Build to Scale each year">
+                <ChartWithPlaceholder data={hasHentData ? stageProgression : null} height={250}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={stageProgression} margin={ { top: 6, right: 10, bottom: 0, left: -16 } } barCategoryGap="28%" barGap={2}>
+                    <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
+                    <XAxis dataKey="year" tick={ { fontSize: 11, fill: "#374151", fontWeight: 600 } } axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={ { fontSize: 10, fill: "#9CA3AF" } } axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={ { fill: "rgba(14, 70, 51, 0.04)" } } />
+                    <Bar dataKey="expose_to_build" name="Expose to Build" fill="#26A69A" barSize={24} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="build_to_scale" name="Build to Scale" fill={GREEN} barSize={24} radius={[4, 4, 0, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
+                  </BarChart>
+                </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </Panel>
+
+              <Panel title="Revenue Trend"
+                subtitle="Median venture revenue per year (USD)"
+                info="Median venture revenue per year (USD). The median keeps one large venture from hiding how most ventures are doing."
+                filterOptions={["All Years", ...years.map(String)]} filterValue={filterHealthYear} onFilterChange={setFilterHealthYear}>
+                <ChartWithPlaceholder data={hasHentData ? revenueMedianByYear : null} height={250}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={revenueMedianByYear} margin={ { top: 6, right: 14, bottom: 0, left: -12 } }>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
-                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} tickFormatter={v => fmt$(v)} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="year" tick={ { fontSize: 10, fill: "#9CA3AF" } } axisLine={false} tickLine={false} />
+                    <YAxis tick={ { fontSize: 10, fill: "#9CA3AF" } } axisLine={false} tickLine={false} tickFormatter={v => fmt$(v)} />
                     <Tooltip content={<ChartTip money />} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} iconType="plainline" />
-                    <Line type="monotone" dataKey="revenue" stroke={GREEN} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Revenue Generated" />
+                    <Line type="monotone" dataKey="revenue" name="Median revenue (USD)" stroke={GREEN} strokeWidth={2.5} dot={ { r: 3 } } activeDot={ { r: 5 } } />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={ { fontSize: 10 } } />
                   </LineChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
@@ -770,6 +574,7 @@ export default function HENTVentures() {
             </div>
           </section>
         )}
+
 
         <PortalFooter source={dataSource} portal="hent" synced={syncedAt} />
 
