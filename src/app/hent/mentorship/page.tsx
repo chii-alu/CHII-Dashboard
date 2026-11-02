@@ -475,7 +475,6 @@ export default function MentorshipPage() {
             { label: "Mentees in Register", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Mentees registered on mentorship and fellowship programs." },
             { label: "Cohort enrolments", num: headline("Cohort enrolments"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: TrendingUp, tip: "Enrolments across all cohorts." },
             { label: "Completed sessions", num: headline("Completed sessions"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: CheckCircle2, tip: "Mentorship sessions held." },
-            { label: "Scheduled sessions", num: headline("Scheduled sessions"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Info, tip: "Mentorship sessions planned but not yet held." },
           ]}
         />
 
