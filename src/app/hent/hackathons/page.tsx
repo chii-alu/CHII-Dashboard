@@ -4,13 +4,13 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
+import { ChartCard, SectionHeader, ChartTip, BarList, useCountUp } from "@/components/ui/hent";
 import { benchColor } from "@/theme/tokens";
 import { useState, useEffect, useRef } from "react";
 import {
   BarChart, Bar,
   AreaChart, Area, LineChart, Line, ComposedChart,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { Briefcase, Zap, Users, Trophy, Lightbulb, Handshake, DollarSign } from "lucide-react";
 import PortalNav from "@/components/layout/portal-nav";
@@ -422,6 +422,7 @@ export default function HackathonsPage() {
                     <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="value" name="Participants" fill={SKY} radius={[0, 4, 4, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
@@ -440,6 +441,7 @@ export default function HackathonsPage() {
                     <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="value" name="Participants" fill={SKY} radius={[0, 4, 4, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
@@ -458,6 +460,7 @@ export default function HackathonsPage() {
                     <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                     <Bar dataKey="value" name="Participants" fill={SKY} radius={[0, 4, 4, 0]} />
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
@@ -475,16 +478,6 @@ export default function HackathonsPage() {
             <ChartCard title="Projects Developed by Year"
               sub="Female-led vs male-led project teams  ·  by year"
               accent={SKY}>
-              <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />
-                  Male-led
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />
-                  Female-led
-                </span>
-              </div>
               <ChartWithPlaceholder data={hasHentData ? projectsTrend : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
                 <BarChart data={projectsTrend} barCategoryGap="30%" barGap={2}>
@@ -494,24 +487,14 @@ export default function HackathonsPage() {
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Male-led" fill={SKY}    radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Female-led" fill={VIOLET} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Male-led", SKY], ["Female-led", VIOLET]]} />
             </ChartCard>
             <ChartCard title="Funding Deployed to Winning Teams per Year"
               sub="Funding deployed to female-led vs male-led winning teams  ·  per year"
               accent={SKY}>
-              <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />
-                  Male-led
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />
-                  Female-led
-                </span>
-              </div>
               <ChartWithPlaceholder data={hasHentData ? winnersTrend : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
                 <BarChart data={winnersTrend} barCategoryGap="30%" barGap={2}>
@@ -521,24 +504,14 @@ export default function HackathonsPage() {
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Male-led" fill={SKY}    radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Female-led" fill={VIOLET} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Male-led", SKY], ["Female-led", VIOLET]]} />
             </ChartCard>
             <ChartCard title="Startups Created from Hackathons by Year"
               sub="Female-founded vs male-founded startups  ·  by year"
               accent={SKY}>
-              <div className="flex items-center gap-4 text-[11px] text-gray-500 mb-3">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: SKY }} />
-                  Male-founded
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: VIOLET }} />
-                  Female-founded
-                </span>
-              </div>
               <ChartWithPlaceholder data={hasHentData ? startupsTrend : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
                 <BarChart data={startupsTrend} barCategoryGap="30%" barGap={2}>
@@ -548,10 +521,10 @@ export default function HackathonsPage() {
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Male-founded" fill={SKY}    radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Female-founded" fill={VIOLET} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Male-founded", SKY], ["Female-founded", VIOLET]]} />
             </ChartCard>
           </div>
         </section>
@@ -576,10 +549,10 @@ export default function HackathonsPage() {
                   <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="value" name="Satisfaction %" fill={SKY} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Satisfaction %", SKY]]} />
             </ChartCard>
 
             <ChartCard title="Quality Dimensions & Recommendation"
@@ -596,6 +569,7 @@ export default function HackathonsPage() {
                   <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="value" name="Score %" fill={VIOLET} radius={[0, 4, 4, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
@@ -603,7 +577,6 @@ export default function HackathonsPage() {
                 <p className="text-lg font-bold" style={{ color: VIOLET }}>{hasHentData && recommendRate !== null ? `${recommendRate}%` : "In coming data"}</p>
                 <p className="text-[9px] text-gray-400">Would recommend</p>
               </div>
-              <ChartLegend items={[["Score %", VIOLET]]} />
             </ChartCard>
           </div>
         </section>
@@ -741,16 +714,10 @@ export default function HackathonsPage() {
                   <Bar yAxisId="l" dataKey="Startups" fill="#A6C13C" radius={[4, 4, 0, 0]} maxBarSize={18} />
                   <Line yAxisId="r" type="monotone" dataKey="Rate" name="Conversion rate" stroke="#1F9E9E" strokeWidth={2.5}
                     dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </ComposedChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16, fontSize: 11, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}` }}>
-                {([["Projects", "#1B4332"], ["Startups", "#A6C13C"], ["Conversion rate", "#1F9E9E"]] as const).map(([l, c]) => (
-                  <span key={l} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ display: "inline-block", width: 8, height: 6, borderRadius: 2, backgroundColor: c }} />{l}
-                  </span>
-                ))}
-              </div>
             </ChartCard>
 
           </div>

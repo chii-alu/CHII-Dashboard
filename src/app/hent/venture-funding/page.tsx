@@ -4,7 +4,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, ChartTip, ChartLegend, useCountUp } from "@/components/ui";
+import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, ChartTip, useCountUp } from "@/components/ui";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
@@ -387,6 +387,7 @@ export default function VentureFundingPage() {
                   <Bar dataKey="Funding" radius={[0, 4, 4, 0]} maxBarSize={22}>
                     {D.byMilestone.map(d => <Cell key={d.name} fill={MILESTONE_HEX[d.name as Milestone]} />)}
                   </Bar>
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
@@ -439,10 +440,10 @@ export default function VentureFundingPage() {
                   <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={44} tickFormatter={fmt$} />
                   <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip money />} />
                   <Bar dataKey="Deployed" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Capital deployed", "#1B4332"]]} />
             </ChartCard>
 
             <ChartCard title="Cumulative Capital Deployed" sub="Running total of catalytic funding across cohorts"
@@ -456,10 +457,10 @@ export default function VentureFundingPage() {
                   <Tooltip content={<ChartTip money />} />
                   <Line type="monotone" dataKey="Cumulative" stroke="#1F9E9E" strokeWidth={2.5}
                     dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </LineChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Cumulative capital", "#1F9E9E"]]} />
             </ChartCard>
           </div>
         </section>
@@ -691,14 +692,10 @@ export default function VentureFundingPage() {
                         />
                       ))}
                     </Bar>
+                    <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                  {bySectorByYear.map((entry, idx) => (
-                    <span key={entry.name} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: GREEN_RAMP[idx % GREEN_RAMP.length] }} /> {entry.name}</span>
-                  ))}
-                </div>
               </div>
             </ChartCard>
           </div>

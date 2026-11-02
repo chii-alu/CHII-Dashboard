@@ -4,13 +4,13 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { ChartCard, SectionHeader, ChartTip, ChartLegend, BarList, useCountUp } from "@/components/ui/hent";
+import { ChartCard, SectionHeader, ChartTip, BarList, useCountUp } from "@/components/ui/hent";
 import { benchColor } from "@/theme/tokens";
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
   BarChart, Bar, Cell,
   AreaChart, Area, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { Star, Zap, Briefcase, Users, TrendingUp, CheckCircle2 } from "lucide-react";
 
@@ -479,10 +479,10 @@ export default function MasterclassesPage() {
                   <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Attendees" fill={ORANGE_MC} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Attendees", ORANGE_MC]]} />
             </ChartCard>
 
             <ChartCard title="Attendance by Gender per Year"
@@ -497,10 +497,10 @@ export default function MasterclassesPage() {
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Female" fill={VIOLET_MC} radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Male"   fill={SKY}       radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Female", VIOLET_MC], ["Male", SKY]]} />
             </ChartCard>
           </div>
 
@@ -518,10 +518,10 @@ export default function MasterclassesPage() {
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Line type="monotone" dataKey="Cumulative Attendees"
                     stroke={VIOLET_MC} strokeWidth={2.5} dot={{ r: 4, fill: VIOLET_MC, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </LineChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Cumulative attendees", VIOLET_MC]]} />
             </ChartCard>
 
             <ChartCard title="Completion Rate by Session"
@@ -536,6 +536,7 @@ export default function MasterclassesPage() {
                   <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} domain={[0, 100]} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Completion %" fill={TEAL} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
@@ -645,17 +646,10 @@ export default function MasterclassesPage() {
                       <Cell key={`cell-${index}`} fill={SOCIAL_COLORS[index % SOCIAL_COLORS.length]} />
                     ))}
                   </Bar>
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid rgba(0,33,71,0.06)`, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
-                {socialData.map((d, i) => (
-                  <span key={d.name} style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 8, height: 6, borderRadius: 2, display: "inline-block", backgroundColor: SOCIAL_COLORS[i] }} />
-                    {d.name}
-                  </span>
-                ))}
-              </div>
             </ChartCard>
           </div>
         </section>
@@ -682,10 +676,10 @@ export default function MasterclassesPage() {
                   <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} domain={[0, 100]} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Satisfaction %" fill={ORANGE_MC} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Satisfaction %", ORANGE_MC]]} />
             </ChartCard>
 
             <ChartCard title="Quality Dimensions & Recommendation"
@@ -702,6 +696,7 @@ export default function MasterclassesPage() {
                   <YAxis type="category" dataKey="Dimension" width={110} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Score %" fill={VIOLET_MC} radius={[0, 4, 4, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
@@ -711,7 +706,6 @@ export default function MasterclassesPage() {
                   <p className="text-[9px] text-gray-400">Would recommend</p>
                 </div>
               </div>
-              <ChartLegend items={[["Score %", VIOLET_MC]]} />
             </ChartCard>
           </div>
         </section>
@@ -735,10 +729,10 @@ export default function MasterclassesPage() {
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Line type="monotone" dataKey="Cumulative Attendees"
                     stroke={VIOLET_MC} strokeWidth={2.5} dot={{ r: 4, fill: VIOLET_MC, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </LineChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Cumulative attendees", VIOLET_MC]]} />
             </ChartCard>
 
             <ChartCard title="Completion Rate by Session"
@@ -753,6 +747,7 @@ export default function MasterclassesPage() {
                   <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={25} domain={[0, 100]} />
                   <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
                   <Bar dataKey="Completion %" fill={TEAL} radius={[4, 4, 0, 0]} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>

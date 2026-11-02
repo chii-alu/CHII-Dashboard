@@ -4,7 +4,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, BarList, ChartTip, ChartLegend, useCountUp } from "@/components/ui";
+import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, BarList, ChartTip, useCountUp } from "@/components/ui";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
@@ -23,7 +23,7 @@ import { CalendarDays, Handshake, Link2, Mic, Star, Users } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis,
+  ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
 } from "recharts";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
@@ -295,16 +295,10 @@ export default function ExposureNetworkingPage() {
                   <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
                   <Bar dataKey="Founders" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={22} />
                   <Bar dataKey="Events"   fill="#A6C13C" radius={[4, 4, 0, 0]} maxBarSize={22} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16, fontSize: 11, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}` }}>
-                {([["Founders", "#1B4332"], ["Events", "#A6C13C"]] as const).map(([l, c]) => (
-                  <span key={l} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ display: "inline-block", width: 8, height: 6, borderRadius: 2, backgroundColor: c }} />{l}
-                  </span>
-                ))}
-              </div>
             </ChartCard>
 
             <ChartCard title="Connections Brokered per Year" sub="Introductions made between founders and ecosystem stakeholders"
@@ -318,10 +312,10 @@ export default function ExposureNetworkingPage() {
                   <Tooltip content={<ChartTip />} />
                   <Line type="monotone" dataKey="Connections" stroke="#1F9E9E" strokeWidth={2.5}
                     dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </LineChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={[["Connections brokered", "#1F9E9E"]]} />
             </ChartCard>
           </div>
         </section>
@@ -344,10 +338,10 @@ export default function ExposureNetworkingPage() {
                   <Bar dataKey="DealsPerEvent" name="Deals per event" radius={[4, 4, 0, 0]} maxBarSize={46}>
                     {D.byType.map(d => <Cell key={d.name} fill={TYPE_HEX[d.name as ExposureType]} />)}
                   </Bar>
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <ChartLegend items={D.byType.map(t => [t.name, TYPE_HEX[t.name as ExposureType]] as const)} />
             </ChartCard>
 
             <ChartCard title="Platform Comparison" sub="Events, founders reached, connections and deals by format"
