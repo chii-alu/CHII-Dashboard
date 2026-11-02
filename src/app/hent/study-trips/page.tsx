@@ -369,12 +369,12 @@ export default function FieldVisitsPage() {
         progressRows={progressRows}
           title="Study Trips Metrics"
           cards={[
-            { label: "Total Study Trips", num: headline("Total Study Trips"), displayFmt: (n) => String(Math.round(n)), icon: MapPin, tip: "Industry excursions conducted." },
-            { label: "Total Participants", num: headline("Total Participants"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Cumulative participant attendance across all visits." },
-            { label: "Ventures Participating", num: headline("Ventures Participating"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Unique ventures represented across visits." },
-            { label: "Organisations Visited", num: headline("Organisations Visited"), displayFmt: (n) => String(Math.round(n)), icon: Building2, tip: "Distinct host organizations across all visits." },
-            { label: "Avg Attendance / Visit", num: headline("Avg Attendance / Visit"), displayFmt: (n) => String(Math.round(n)), icon: TrendingUp, tip: "Average participants per excursion." },
-            { label: "Avg Completion Rate", num: headline("Avg Completion Rate"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Average completion rate across all visits." },
+            { label: "Study Trips Held", num: headline("Total Study Trips"), displayFmt: (n) => String(Math.round(n)), icon: MapPin, tip: "Industry visits delivered to date." },
+            { label: "Founders Reached", num: headline("Founders Reached"), displayFmt: (n) => `${Math.round(n)}%`, icon: Users, tip: "Share of portfolio founders who joined at least one study trip." },
+            { label: "Ventures Participating", num: headline("Ventures Participating"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Ventures with at least one founder or team member on a trip." },
+            { label: "Attendance Rate", num: headline("Attendance Rate"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Share of registered participants who attended." },
+            { label: "Learning Rating", num: headline("Learning Rating"), displayFmt: (n) => `${n.toFixed(1)}/5`, icon: Star, tip: "How participants rate what they learned, out of 5." },
+            { label: "Host Follow-Ups", num: headline("Host Follow-Ups"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Handshake, tip: "Visits that led to a meeting, pilot, mentorship or partnership with the host." },
           ]}
         />
 
