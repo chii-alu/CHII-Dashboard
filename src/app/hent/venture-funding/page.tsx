@@ -13,7 +13,7 @@ import { DonutRing } from "@/components/charts/donut-chart";
 import { Banknote, CheckCircle2, ChevronDown, Rocket, Target, TrendingUp, Users } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
-  Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart,
+  Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, LineChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import type { Stage } from "@/types";
@@ -166,6 +166,9 @@ export default function VentureFundingPage() {
   ), [fCohort, fSector, fStatus]);
 
   const D = useMemo(() => derive(filtered), [filtered]);
+  // Chart data the database does not provide yet: empty until those rows exist, so the charts show "In coming data".
+  const catalyticVsFollowOn: { Year: string; Catalytic: number; FollowOn: number }[] = [];
+  const milestoneSuccessByInstrument: { name: string; value: number }[] = [];
   const activeCount = (fCohort !== "All Cohorts" ? 1 : 0) + (fSector !== "All Sectors" ? 1 : 0) + (fStatus !== "All Instruments" ? 1 : 0);
 
   // Chart year + sector filtering
@@ -269,9 +272,9 @@ export default function VentureFundingPage() {
             value={String(activeSection)}
             onChange={(v) => setActiveSection(Number(v))}
             options={[
-              { label: "Catalytic Capital & Milestones", value: "1" },
-              { label: "Funding Growth & Sustainability", value: "2" },
-              { label: "Capital Instruments & Venture Outcomes", value: "3" },
+              { label: "Catalytic Capital and Milestones", value: "1" },
+              { label: "Funding Growth and Sustainability", value: "2" },
+              { label: "Capital Instruments and Outcomes", value: "3" },
             ]}
           />
           <div style={{ position: "relative" }}>
@@ -320,10 +323,10 @@ export default function VentureFundingPage() {
           </div>
         </div>
 
-        {/* ── SECTION 1: Catalytic Capital & Milestones ─── */}
+        {/* ── SECTION 1: Catalytic Capital and Milestones ─── */}
         <section style={{ display: show(1) ? undefined : "none" }}>
-          <SectionHeader title="Catalytic Capital & Milestones"
-            sub="How catalytic funding is deployed against venture milestones from validation through early growth and the funnel from portfolio to scaling ventures" />
+          <SectionHeader title="Catalytic Capital and Milestones"
+            sub="How funding is tied to milestones, from validation to early growth." />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
             <ChartCard title="Capital by Milestone" sub="Funding deployed against each milestone purpose"
@@ -342,33 +345,12 @@ export default function VentureFundingPage() {
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div className="mt-4 flex flex-wrap justify-center gap-3">
-                {(hasHentData ? D.byMilestone : []).map(d => (
-                  <div key={d.name} className="flex items-center gap-1.5 text-[10px]">
-                    <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: MILESTONE_HEX[d.name as Milestone] }} />
-                    <span className="text-gray-700 font-medium">{d.name.split(" ").map(w => w[0]).join("")}</span>
-                    <span className="text-gray-500">{d.Ventures}v</span>
-                  </div>
-                ))}
-              </div>
             </ChartCard>
 
-            <ChartCard title="Catalytic Funding" sub="Portfolio distribution across catalytic funding milestones"
-              info="Distribution of ventures across catalytic funding journey stages.">
+            <ChartCard title="Milestone Funnel" sub="Ventures at each step, from portfolio to funded, through each milestone met, to scaling"
+              info="Ventures at each step, from portfolio to funded, through each milestone met, to scaling.">
               {hasHentData ? (
-              <DonutRing
-                  data={D.funnel.map(f => ({ name: f.label, value: f.value }))}
-                  colors={{
-                    "Ventures in portfolio": "#1B4332",
-                    "Received catalytic funding": "#2D6A4F",
-                    "Milestones met (≥50%)": "#40916C",
-                    "Progressed to Scale": "#5BB4A0"
-                  }}
-                  total={filtered.length}
-                  totalLabel="Ventures"
-                  height={340}
-                  legendPercent
-                />
+                <Funnel steps={D.funnel} />
               ) : (
                 <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>
               )}
@@ -376,50 +358,53 @@ export default function VentureFundingPage() {
           </div>
         </section>
 
-        {/* ── SECTION 2: Funding Growth & Sustainability ─── */}
+        {/* ── SECTION 2: Funding Growth and Sustainability ─── */}
         <section style={{ display: show(2) ? undefined : "none" }}>
-          <SectionHeader title="Funding Growth & Sustainability" sub="Capital deployment trends per cohort, cumulative funding trajectory, and whether funding is accelerating or sustainable" />
+          <SectionHeader title="Funding Growth and Sustainability"
+            sub="Whether funding is growing each year and attracting outside capital." />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-            <ChartCard title="Capital Deployed per Cohort" sub="Amount disbursed and ventures funded each year"
-              info="Catalytic funding disbursed to each venture cohort. Useful for spotting whether recent cohorts are being funded at the same rate as earlier ones.">
+            <ChartCard title="Capital Deployed per Cohort" sub="Amount disbursed (bars) and ventures funded (line) per intake year"
+              info="Catalytic funding disbursed to each venture cohort (bars), with the number of ventures funded in that cohort (line).">
               <ChartWithPlaceholder data={hasHentData ? D.byCohort : null} height={220}>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={D.byCohort} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
+                <ComposedChart data={D.byCohort} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={44} tickFormatter={fmt$} />
+                  <YAxis yAxisId="deployed" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={44} tickFormatter={fmt$} />
+                  <YAxis yAxisId="funded" orientation="right" allowDecimals={false} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={32} />
                   <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip money />} />
-                  <Bar dataKey="Deployed" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Bar yAxisId="deployed" dataKey="Deployed" name="Capital deployed" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Line yAxisId="funded" type="monotone" dataKey="Ventures" name="Ventures funded" stroke="#1F9E9E" strokeWidth={2.5} dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
                   <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
-                </BarChart>
+                </ComposedChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
             </ChartCard>
 
-            <ChartCard title="Cumulative Capital Deployed" sub="Running total of catalytic funding across cohorts"
-              info="Running total of all catalytic capital deployed to date. A steepening line means funding is accelerating.">
-              <ChartWithPlaceholder data={hasHentData ? D.byCohort : null} height={220}>
+            <ChartCard title="Catalytic vs Follow-On Capital" sub="Our funding compared with outside investment raised, per cohort (USD)"
+              info="Catalytic funding compared with the external investment raised by funded ventures after it, per cohort. Shows whether funding is sustainable.">
+              <ChartWithPlaceholder data={hasHentData ? catalyticVsFollowOn : null} height={220}>
               <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={D.byCohort} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <BarChart data={catalyticVsFollowOn} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={44} tickFormatter={fmt$} />
-                  <Tooltip content={<ChartTip money />} />
-                  <Line type="monotone" dataKey="Cumulative" stroke="#1F9E9E" strokeWidth={2.5}
-                    dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip money />} />
+                  <Bar dataKey="Catalytic" name="Catalytic" stackId="capital" fill="#1B4332" maxBarSize={38} />
+                  <Bar dataKey="FollowOn" name="Follow-on" stackId="capital" fill="#1F9E9E" radius={[4, 4, 0, 0]} maxBarSize={38} />
                   <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
-                </LineChart>
+                </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
             </ChartCard>
           </div>
         </section>
 
-        {/* ── SECTION 3: Capital Instruments & Venture Outcomes ─── */}
+        {/* ── SECTION 3: Capital Instruments and Outcomes ─── */}
         <section style={{ display: show(3) ? undefined : "none" }}>
-          <SectionHeader title="Capital Instruments & Venture Outcomes"
-            sub="Mix of funding instruments, capital distribution by sector, and milestone delivery performance to show the relationship between capital type and venture outcomes" />
+          <SectionHeader title="Capital Instruments and Outcomes"
+            sub="Which types of funding lead to the best venture results." />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
             <ChartCard title="Funding Instrument Mix" sub="Ventures by funding instrument"
@@ -427,6 +412,23 @@ export default function VentureFundingPage() {
               <DonutRing data={D.byStatus} colors={DISTINCT} total={D.funded.length} totalLabel="Funded" height={300} legendPercent />
             </ChartCard>
 
+            <ChartCard title="Milestone Success by Instrument" sub="Share of ventures meeting milestones, by funding type"
+              info="Share of funded ventures meeting their agreed milestones, grouped by the type of funding they received.">
+              <ChartWithPlaceholder data={hasHentData ? milestoneSuccessByInstrument : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={milestoneSuccessByInstrument} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barCategoryGap="24%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v}%`} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} width={110} interval={0} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar dataKey="value" name="Milestones met %" fill="#1B4332" radius={[0, 4, 4, 0]} maxBarSize={22} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+
+            <div style={{ gridColumn: "1 / -1" }}>
             <ChartCard title="Capital by Sector" sub="Catalytic funding deployed per health sector"
               info="Where catalytic capital lands across health sectors. Highlights concentration and any under-funded sectors.">
               <div style={{ paddingBottom: 12, display: "flex", justifyContent: "flex-end" }}>
@@ -649,10 +651,11 @@ export default function VentureFundingPage() {
                 </ChartWithPlaceholder>
               </div>
             </ChartCard>
+            </div>
           </div>
 
           <div className="mt-4">
-            <ChartCard title="Milestone Delivery — Top Funded Ventures" sub="Largest tranches and the milestone progress achieved against them"
+            <ChartCard title="Milestone Delivery: Top Funded Ventures" sub="Largest tranches and the milestone progress achieved against them"
               info="The largest recipients of catalytic funding and how much of their agreed milestone plan they have actually delivered. Low progress against a large tranche is a flag.">
               <div className="overflow-x-auto">
                 <table className="w-full text-[11px]">
