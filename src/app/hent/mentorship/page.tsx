@@ -272,9 +272,9 @@ function Stars({ score }: { score: number }) {
 
 // â"€â"€â"€ KPI tile map (4 metrics) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 const KPI_TILES = [
-  { label: "Total Fellows",       clr: "#1E3A8A" },  // deep blue
+  { label: "Total Mentees",      clr: "#1E3A8A" },  // deep blue
   { label: "Mentor Engagements",  clr: "#C2410C" },  // orange
-  { label: "Female Fellows",      clr: "#9D174D" },  // rose
+  { label: "Female Mentees",     clr: "#9D174D" },  // rose
   { label: "Avg Completion Rate", clr: "#134E4A" },  // teal
 ] as const;
 
@@ -468,9 +468,10 @@ export default function MentorshipPage() {
         progressRows={progressRows}
           title="Mentorship & Fellowship Metrics"
           cards={[
-            { label: "Total Fellows", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Participants in mentorship and fellowship programs." },
+            { label: "Total Mentees", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Participants in mentorship and fellowship programs." },
+            { label: "Total Mentors", num: headline("Total Mentors"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Mentors across mentorship and fellowship programs." },
             { label: "Mentor Engagements", num: headline("Mentor Engagements"), displayFmt: (n) => String(Math.round(n)), icon: Award, tip: "Mentorship slots deployed across programs." },
-            { label: "Female Fellows", num: headline("Female Fellows"), displayFmt: (n) => `${Math.round(n)}%`, icon: Star, tip: "Percentage of female participation across all programs." },
+            { label: "Female Mentees", num: headline("Female Fellows"), displayFmt: (n) => `${Math.round(n)}%`, icon: Star, tip: "Percentage of female participation across all programs." },
             { label: "Avg Completion Rate", num: headline("Avg Completion Rate"), displayFmt: (n) => `${Math.round(n)}%`, icon: CheckCircle2, tip: "Average completion rate across all programs." },
           ]}
         />
