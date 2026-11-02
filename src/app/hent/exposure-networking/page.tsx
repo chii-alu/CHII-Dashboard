@@ -4,7 +4,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { PortalThemeProvider, ChartCard, SectionHeader, Funnel, BarList, ChartTip, useCountUp } from "@/components/ui";
+import { PortalThemeProvider, ChartCard, Funnel, BarList, ChartTip, useCountUp } from "@/components/ui";
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
@@ -117,6 +117,22 @@ function derive(rows: typeof exposureEvents) {
   };
 }
 
+
+// Section title row, laid out like the HEMP section headers: title and subtitle on the left, an optional control on the right.
+function SectionTitle({ title, sub, children }: { title: string; sub: string; children?: React.ReactNode }) {
+  return (
+    <div style={ { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 16, flexWrap: "wrap" } }>
+      <div style={ { display: "flex", alignItems: "baseline", gap: 8 } }>
+        <span style={ { width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 } } />
+        <div>
+          <p style={ { fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 } }>{title}</p>
+          <p style={ { fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 } }>{sub}</p>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 // Section filter: a pill-style select, matching the other section filters.
 function SectionFilter({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
@@ -289,11 +305,10 @@ export default function ExposureNetworkingPage() {
 
         {/* ── SECTION 1: Reach Over Time ─── */}
         <section style={ { display: show(1) ? undefined : "none" } }>
-          <SectionHeader title="Reach Over Time"
-            sub="How many founders, events and introductions each year." />
-          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+          <SectionTitle title="Reach Over Time" sub="How many founders, events and introductions each year.">
             <SectionFilter label="Platform type" value={reachPlatform} options={PLATFORM_TYPES} onChange={setReachPlatform} />
-          </div>
+          </SectionTitle>
+          <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChartCard title="Events and Founders Reached per Year" sub="Events held (bars) and founders who attended (line) per year"
               info="Events held each year (bars) and the founders who attended them (line).">
@@ -336,11 +351,10 @@ export default function ExposureNetworkingPage() {
 
         {/* ── SECTION 2: From Connection to Commitment ─── */}
         <section style={ { display: show(2) ? undefined : "none" } }>
-          <SectionHeader title="From Connection to Commitment"
-            sub="Whether introductions turn into meetings, deals and signed agreements." />
-          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+          <SectionTitle title="From Connection to Commitment" sub="Whether introductions turn into meetings, deals and signed agreements.">
             <SectionFilter label="Stakeholder type" value={commitStakeholder} options={STAKEHOLDER_TYPES} onChange={setCommitStakeholder} />
-          </div>
+          </SectionTitle>
+          <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChartCard title="Relationship Funnel" sub="Introductions, follow-up meetings, deals opened and deals signed, with % conversion at each step"
               info="Introductions to follow-up meetings, deals opened and deals signed, with the conversion from each step to the next.">
@@ -371,11 +385,10 @@ export default function ExposureNetworkingPage() {
 
         {/* ── SECTION 3: Which Platforms Work ─── */}
         <section style={ { display: show(3) ? undefined : "none" } }>
-          <SectionHeader title="Which Platforms Work"
-            sub="Comparing formats on the deals they produce." />
-          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+          <SectionTitle title="Which Platforms Work" sub="Comparing formats on the deals they produce.">
             <SectionFilter label="Platform type" value={platformFormat} options={PLATFORM_TYPES} onChange={setPlatformFormat} />
-          </div>
+          </SectionTitle>
+          <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 gap-4">
             <ChartCard title="Deals per Event, by Format" sub="Average deals opened per event; higher means more productive"
               info="Average deals opened per event for each format. Higher means more productive.">
@@ -431,11 +444,10 @@ export default function ExposureNetworkingPage() {
 
         {/* ── SECTION 4: Pitch Competitions and Pilots ─── */}
         <section style={ { display: show(4) ? undefined : "none" } }>
-          <SectionHeader title="Pitch Competitions and Pilots"
-            sub="Competitive visibility and hands-on pilot support for ventures." />
-          <div style={ { display: "flex", justifyContent: "flex-end", marginBottom: 12 } }>
+          <SectionTitle title="Pitch Competitions and Pilots" sub="Competitive visibility and hands-on pilot support for ventures.">
             <SectionFilter label="Competition / pilot status" value={pilotStatus} options={PILOT_STATUSES} onChange={setPilotStatus} />
-          </div>
+          </SectionTitle>
+          <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChartCard title="Competition Results" sub="Founders who entered, reached the finals and won each year"
               info="Founders who entered pitch competitions, reached the finals and won, per year.">
