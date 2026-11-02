@@ -183,7 +183,7 @@ export default function HackathonsPage() {
     headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
-  const [trendTab, setTrendTab] = useState<"participants" | "projects" | "winners" | "startups">("participants");
+  const [trendTab, setTrendTab] = useState<"participants" | "projects" | "winners" | "startups">("projects");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterYear, setFilterYear] = useState("All Years");
@@ -480,7 +480,7 @@ export default function HackathonsPage() {
 
         {/* â”€â”€ SECTION 3: HACKATHON TRENDS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <section style={{ display: show(3) ? undefined : "none" }}>
-          <SectionHeader title="Hackathon Trends"
+          <SectionHeader title="Innovation and Impact"
             sub="Year-on-year trends with male vs female comparison" />
 
           {/* Tab filters — pill style matching the section filters */}
@@ -490,7 +490,6 @@ export default function HackathonsPage() {
               value={trendTab}
               onChange={(v: string) => setTrendTab(v as "participants" | "projects" | "winners" | "startups")}
               options={[
-                { label: "Participants",       value: "participants" },
                 { label: "Projects Developed", value: "projects" },
                 { label: "Winning Teams",      value: "winners" },
                 { label: "Startups Created",   value: "startups" },
