@@ -386,7 +386,7 @@ export default function HackathonsPage() {
             sub={hasHentData ? `${total.participants.toLocaleString()} participants across all hackathons` : "In coming data"} />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Gender Composition"
+            <ChartCard title="Gender distribution"
               sub="Distribution of participants by gender across all events"
               accent={VIOLET}>
               <CustomDonut
