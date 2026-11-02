@@ -12,7 +12,7 @@ import {
   AreaChart, Area, LineChart, Line, ComposedChart,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { Briefcase, Zap, Users, Trophy, Lightbulb, Handshake } from "lucide-react";
+import { Briefcase, Zap, Users, Trophy, Lightbulb, Handshake, DollarSign } from "lucide-react";
 import PortalNav from "@/components/layout/portal-nav";
 import { CHART } from "@/theme/tokens";
 import PortalFooter from "@/components/layout/portal-footer";
@@ -322,6 +322,7 @@ export default function HackathonsPage() {
             { label: "Projects Developed", num: headline("Projects Developed"), displayFmt: (n) => String(Math.round(n)), icon: Lightbulb, tip: "Project submissions across all events." },
             { label: "Startups Created", num: headline("Startups Created"), displayFmt: (n) => String(Math.round(n)), icon: Zap, tip: "Ventures founded from hackathon projects." },
             { label: "Partnerships", num: headline("Partnerships"), displayFmt: (n) => String(Math.round(n)), icon: Handshake, tip: "Sponsor and partner organizations engaged." },
+            { label: "Total Funds Disbursed", num: headline("Total Funds Disbursed"), displayFmt: (n) => n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `$${Math.round(n / 1_000)}K` : `$${Math.round(n)}`, icon: DollarSign, tip: "Funds disbursed to hackathon teams and ventures." },
           ]}
         />
 
