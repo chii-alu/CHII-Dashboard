@@ -8,7 +8,7 @@ import { ChartCard, SectionHeader, ChartTip, BarList, useCountUp } from "@/compo
 import { benchColor } from "@/theme/tokens";
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
-  BarChart, Bar, AreaChart, Area, LineChart, Line,
+  BarChart, Bar, AreaChart, Area, LineChart, Line, ComposedChart,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { Star, MapPin, Users, Handshake, Zap, Briefcase, Building2, TrendingUp, CheckCircle2 } from "lucide-react";
@@ -175,6 +175,26 @@ const KPI_TILES = [
 
 // Youth-in-Work-style filter select (green theme)
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function sum(a: number[]) { return a.reduce((x, y) => x + y, 0); }
+const BRAND    = "#2D6A4F";
+const BRAND_DK = "#0E4633";
+const LIGHT_BORDER = "rgba(14, 70, 51, 0.12)";
+
+// Section title row, laid out like the HEMP section headers.
+function SectionTitle({ title, sub }: { title: string; sub: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: BRAND, flexShrink: 0 }} />
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: BRAND_DK, lineHeight: 1.2, margin: 0 }}>{title}</p>
+          <p style={{ fontSize: 11, color: "#6B7280", marginTop: 3, margin: 0 }}>{sub}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FieldVisitsPage() {
   // Live progress against target for the stat cards, from v_progress (HENT rows).
   const progressRows = useProgress("HENT");
@@ -193,6 +213,17 @@ export default function FieldVisitsPage() {
   const [genderView,   setGenderView]   = useState<"All"|"Female"|"Male">("All");
   const [activeSection, setActiveSection] = useState<number>(1);
   const show = (n: number) => activeSection === n;
+  // Chart data the database does not provide yet: empty until those rows exist, so each chart shows "In coming data".
+  const tripsByYear: { Year: string; Trips: number; Participants: number }[] = [];
+  const attendanceByTrip: { name: string; Attendance: number; Target: number }[] = [];
+  const participantsByCountry: { name: string; value: number }[] = [];
+  const participantProfile: { name: string; data: { name: string; value: number }[] }[] = [];
+  const learningByTrip: { name: string; value: number }[] = [];
+  const ratingBreakdown: { name: string; value: number }[] = [];
+  const tripHighlights: { trip: string; quote: string; rating: number }[] = [];
+  const followUpsByYear: { Year: string; Meetings: number; Pilots: number; Mentorships: number; Partnerships: number }[] = [];
+  const impactfulVisits: { host: string; followUps: number }[] = [];
+  const partnershipsBySector: { name: string; value: number }[] = [];
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersActive = (yearFilter !== "All" ? 1 : 0) + (typeFilter !== "All" ? 1 : 0) + (regionFilter !== "All" ? 1 : 0) + (genderView !== "All" ? 1 : 0);
 
@@ -387,10 +418,9 @@ export default function FieldVisitsPage() {
             value={String(activeSection)}
             onChange={(v) => setActiveSection(Number(v))}
             options={[
-              { label: "Ratings", value: "1" }, { label: "Demographics", value: "2" },
-              { label: "Geography", value: "3" }, { label: "Attendance", value: "4" },
-              { label: "Impactful Visits", value: "5" }, { label: "Partnerships", value: "6" },
-              { label: "Highlights", value: "7" }, { label: "Growth", value: "8" },
+              { label: "Reach and Participation", value: "1" },
+              { label: "Learning Experience", value: "2" },
+              { label: "Outcomes and Partnerships", value: "3" },
             ]}
           />
 
@@ -512,362 +542,185 @@ export default function FieldVisitsPage() {
           </div>
         </div>
 
+        {/* ── SECTION 1: Reach and Participation ─── */}
         <section style={{ display: show(1) ? undefined : "none" }}>
-          <SectionHeader title="Participant Ratings & Feedback"
-            sub={`${filtered.length} visits rated across six experience dimensions`} />
+          <SectionTitle title="Reach and Participation" sub="Who joined, where they came from, and whether they showed up." />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Rating Distribution by Criterion"
-              sub="Very High  ·  High  ·  Moderate  ·  Low  -  proportion of visits per level"
-              accent={TEAL}>
-              {TRIP_CRITERIA.map(c => <RatingBar key={c} label={c} visits={filtered} criterion={c} />)}
-              <div className="flex flex-wrap justify-center gap-4 text-[10px] mt-4">
-                {(["Very High","High","Moderate","Low"] as const).map(l => (
-                  <span key={l} className="flex items-center gap-1.5">
-                    <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: RATING_COLORS[l] }} />{l}
-                  </span>
-                ))}
-              </div>
-            </ChartCard>
-
-            <ChartCard title="Ratings by Gender of Participants"
-              sub="Average score per dimension  -  female vs male majority visits"
-              accent={VIOLET}>
-              <div className="flex gap-4 text-[10px] text-gray-500 mb-4">
-                <span className="flex items-center gap-1"><span className="font-bold" style={{ color: VIOLET }}>F</span> Female-majority visits</span>
-                <span className="flex items-center gap-1"><span className="font-bold" style={{ color: SKY }}>M</span> Male-majority visits</span>
-              </div>
-              {TRIP_CRITERIA.map(c => (
-                <GenderRatingBar key={c} label={c} fVisits={fVisits} mVisits={mVisits} criterion={c} />
-              ))}
-            </ChartCard>
-          </div>
-        </section>
-
-        {/* DEMOGRAPHICS */}
-        <section style={{ display: show(2) ? undefined : "none" }}>
-          <SectionHeader title="Participant Demographics"
-            sub="Breakdown by gender, age, venture stage, and social inclusion" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Participant Distribution" sub="By age, venture stage, and visit type" accent={SKY}>
-              {hasHentData ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Age Groups</p>
-                    {ageData.map((d, i) => (
-                      <div key={d.name} className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] w-12 text-gray-500">{d.name}</span>
-                        <div className="flex-1 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: [SKY, PRIMARY, VIOLET, ROSE][i] + "20" }}>
-                          <div className="h-full" style={{ width: `${(d.value / Math.max(...ageData.map(x => x.value))) * 100}%`, backgroundColor: [SKY, PRIMARY, VIOLET, ROSE][i] }} />
-                        </div>
-                        <span className="text-[10px] font-medium w-10 text-right" style={{ color: [SKY, PRIMARY, VIOLET, ROSE][i] }}>{d.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Venture Stage</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {stageData.map((d, i) => (
-                        <div key={d.name} className="text-center">
-                          <p className="text-sm font-bold" style={{ color: [SKY, PRIMARY, INDIGO][i] }}>{d.value}</p>
-                          <p className="text-[9px] text-gray-400 mt-0.5">{d.name}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
-            </ChartCard>
-
-            <ChartCard title="Visit Types & Inclusion" sub="Sector categories and social representation" accent={TEAL}>
-              {hasHentData ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Visit Types (Top 4)</p>
-                    {typeData.slice(0, 4).map((d, i) => (
-                      <div key={d.name} className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] flex-1 text-gray-600 truncate">{d.name}</span>
-                        <div className="flex-1 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: TYPE_COLORS[i] + "20" }}>
-                          <div className="h-full" style={{ width: `${(d.value / Math.max(...typeData.map(x => x.value))) * 100}%`, backgroundColor: TYPE_COLORS[i] }} />
-                        </div>
-                        <span className="text-[10px] font-medium w-8 text-right" style={{ color: TYPE_COLORS[i] }}>{d.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Inclusion Reach</p>
-                    {socialData.map((d, i) => {
-                      const col = SOCIAL_COLORS[i % SOCIAL_COLORS.length];
-                      const pct = tot.participants > 0 ? Math.round((d.value / tot.participants) * 100) : 0;
-                      return (
-                        <div key={d.name} className="flex items-center justify-between text-[10px] mb-1.5">
-                          <span className="text-gray-600 flex-1">{d.name}</span>
-                          <span className="font-bold" style={{ color: col }}>{d.value}</span>
-                          <span className="text-gray-400 ml-2 min-w-fit">({pct}%)</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
-            </ChartCard>
-          </div>
-        </section>
-
-        {/* GEOGRAPHIC */}
-        <section style={{ display: show(3) ? undefined : "none" }}>
-          <SectionHeader title="Geographic Reach & Location Insights"
-            sub="Countries and regions covered across all field excursions" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Visits by Country" sub="Number of excursions conducted per country" accent={SKY}>
-              <ColorBarList data={countryData} colors={BAR_COLORS} />
-            </ChartCard>
-            <ChartCard title="Regional Distribution" sub="Visit count and participant reach by African region" accent={EMERALD}>
-              <div className="space-y-4">
-                {Object.entries(regionCounts).sort((a, b) => b[1].visits - a[1].visits).map(([region, data], ri) => {
-                  const pct = filtered.length > 0 ? Math.round((data.visits / filtered.length) * 100) : 0;
-                  const col = REGION_COLORS[ri % REGION_COLORS.length];
-                  return (
-                    <div key={region}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <MapPin size={12} className="text-gray-400 flex-shrink-0" />
-                          <span className="text-sm font-medium text-gray-700">{region}</span>
-                        </div>
-                        <div className="text-right flex-shrink-0 ml-4">
-                          <span className="text-sm font-bold" style={{ color: col }}>{data.visits} visit{data.visits !== 1 ? "s" : ""}</span>
-                          <span className="text-xs text-gray-400 ml-2"> ·  {data.participants} participants</span>
-                        </div>
-                      </div>
-                      <div className="h-2.5 rounded-sm overflow-hidden" style={{ backgroundColor: col + "1A" }}>
-                        <div className="h-full" style={{ width: `${pct}%`, backgroundColor: col }} />
-                      </div>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{pct}% of all visits</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </ChartCard>
-          </div>
-        </section>
-
-        {/* ATTENDANCE TRENDS */}
-        <section style={{ display: show(4) ? undefined : "none" }}>
-          <SectionHeader title="Attendance & Participation Trends"
-            sub="Yearly gender breakdown and visit-level participation dynamics" />
-          <div className="grid grid-cols-1 gap-4">
-            <ChartCard title="Participation by Gender per Year"
-              sub="Female vs male participants across all study trips by year  —  shows cohort composition trends"
-              accent={VIOLET}>
-              <ChartWithPlaceholder data={hasHentData ? genderTrend : null} height={208}>
-              <ResponsiveContainer width="100%" height={208}>
-                <BarChart data={genderTrend} barCategoryGap="30%" barGap={2} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <ChartCard title="Trips and Participants per Year" sub="Trips held (bars) and participants (line), 2022–2026"
+              info="Trips held each year (bars) and the participants who joined them (line).">
+              <ChartWithPlaceholder data={hasHentData ? tripsByYear : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <ComposedChart data={tripsByYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
                   <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={20} />
-                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
-                  <Bar dataKey="Female" fill={VIOLET} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Male"   fill={SKY}    radius={[4, 4, 0, 0]} />
+                  <YAxis yAxisId="trips" allowDecimals={false} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={32} />
+                  <YAxis yAxisId="participants" orientation="right" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={44} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar yAxisId="trips" dataKey="Trips" name="Trips held" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Line yAxisId="participants" type="monotone" dataKey="Participants" name="Participants" stroke="#1F9E9E" strokeWidth={2.5} dot={{ r: 4, fill: "#1F9E9E", strokeWidth: 0 }} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Attendance Rate by Trip" sub="Share of registered participants who attended each trip"
+              info="Share of registered participants who attended each trip, against the target.">
+              <ChartWithPlaceholder data={hasHentData ? attendanceByTrip : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={attendanceByTrip} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={36} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar dataKey="Attendance" name="Attendance rate" fill="#1B4332" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Line type="monotone" dataKey="Target" name="Target" stroke="#A6C13C" strokeWidth={2} dot={false} />
                   <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
             </ChartCard>
-          </div>
-        </section>
-
-
-        {/* MOST IMPACTFUL + FREQUENTLY VISITED */}
-        <section style={{ display: show(5) ? undefined : "none" }}>
-          <SectionHeader title="Most Impactful Visits & Frequently Visited Organisations"
-            sub="Ranked by participant feedback scores and repeat-visit frequency" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Most Impactful Study Trips"
-              sub="Ranked by average participant feedback across all six dimensions"
-              accent={AMBER}>
-              <div className="space-y-3">
-                {topVisits.map((v, i) => (
-                  <div key={v.id} className="flex items-start gap-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white"
-                      style={{ backgroundColor: RANK_BG[i] ?? ACCENT }}>{i + 1}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{v.organization}</p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <Stars score={v.avgScore} />
-                        <span className="flex items-center gap-1 text-[10px] text-gray-400">
-                          <MapPin size={9}/>{v.city}, {v.country}
-                        </span>
-                        <span className="text-[10px] text-gray-400">{v.participants} participants</span>
-                      </div>
-                      <p className="text-[10px] text-gray-500 mt-1 italic leading-tight">{v.highlight}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ChartCard>
-
-            <ChartCard title="Frequently Visited Organisations"
-              sub="Host sites visited most often across cohort years"
-              accent={TEAL}>
-              <div className="space-y-3">
-                {frequentOrgs.map((org, i) => (
-                  <div key={org.name} className="flex items-center gap-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white"
-                      style={{ backgroundColor: RANK_BG[i] ?? ACCENT }}>{i + 1}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{org.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
-                          style={{ backgroundColor: TEAL + "15", color: TEAL }}>{org.type}</span>
-                        <span className="flex items-center gap-1 text-[10px] text-gray-400">
-                          <MapPin size={9}/>{org.location}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold" style={{ color: TEAL }}>{org.count}x</p>
-                      <p className="text-[10px] text-gray-400">{org.participants} total</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ChartCard>
-          </div>
-        </section>
-
-        {/* PARTNERSHIPS */}
-        <section style={{ display: show(6) ? undefined : "none" }}>
-          <SectionHeader title="Partnerships & Collaborations Established"
-            sub={`${tot.partnerships} new partnerships forged — organized by visit impact`} />
-          <div className="grid grid-cols-1 gap-4">
-            <ChartCard title="Top Partnership Outcomes by Visit"
-              sub="Visits with highest collaboration results — ranked by partnership count"
-              accent={EMERALD}>
-              <div className="space-y-3">
-                {[...filtered].sort((a, b) => b.partnerships - a.partnerships).slice(0, 12).map((v, idx) => {
-                  const maxParts = [...filtered].sort((a, b) => b.partnerships - a.partnerships)[0]?.partnerships || 1;
-                  return (
-                    <div key={v.id} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white"
-                        style={{ backgroundColor: RANK_BG[Math.min(idx, 2)] ?? EMERALD }}>{idx + 1}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-[11px] font-medium text-gray-800">{v.organization}</p>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
-                            style={{ backgroundColor: EMERALD + "15", color: EMERALD }}>{v.type}</span>
-                        </div>
-                        <p className="text-[10px] text-gray-400">{v.city}, {v.country} • {v.year}</p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-24">
-                          <div className="h-2 rounded-sm overflow-hidden" style={{ backgroundColor: EMERALD + "20" }}>
-                            <div className="h-full" style={{ width: `${(v.partnerships / maxParts) * 100}%`, backgroundColor: EMERALD }} />
-                          </div>
-                        </div>
-                        <span className="text-sm font-bold tabular-nums w-6 text-right" style={{ color: EMERALD }}>{v.partnerships}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </ChartCard>
-          </div>
-        </section>
-
-        {/* MEDIA HIGHLIGHTS */}
-        <section style={{ display: show(7) ? undefined : "none" }}>
-          <SectionHeader title="Visit Highlights & Field Notes"
-            sub="Key takeaways and learning moments from recent excursions" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...filtered].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3).map((v) => {
-              return (
-                <div key={v.id} className="bg-white rounded shadow-sm overflow-hidden">
-                  <div className="h-44 overflow-hidden">
-                    <img
-                      src={FV_IMAGES[v.id] ?? `https://picsum.photos/seed/${v.id}/600/360`}
-                      alt={v.organization}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
-                        style={{ backgroundColor: TEAL + "15", color: TEAL }}>{v.type}</span>
-                      <span className="text-[10px] text-gray-400">{v.year}</span>
-                    </div>
-                    <p className="text-sm font-semibold text-gray-900 leading-tight">{v.organization}</p>
-                    <p className="flex items-center gap-1 text-[10px] text-gray-400 mt-1">
-                      <MapPin size={9}/>{v.city}, {v.country}
-                    </p>
-                    <p className="text-[11px] text-gray-600 mt-2 leading-relaxed">{v.highlight}</p>
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
-                      <span className="text-[10px] text-gray-500">
-                        <Users size={9} className="inline mr-1"/>{v.participants} participants
-                      </span>
-                      <Stars score={TRIP_CRITERIA.reduce((s, c) => s + v.scores[c], 0) / TRIP_CRITERIA.length} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* GROWTH + COMPLETION ANALYTICS */}
-        <section style={{ display: show(8) ? undefined : "none" }}>
-          <SectionHeader title="Participation Growth & Completion Quality"
-            sub="Programme expansion and participant completion outcomes" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Cumulative Participant Reach"
-              sub="Running total across all visits  —  programme exposure growth trajectory"
-              accent={EMERALD}>
-              <ChartWithPlaceholder data={hasHentData ? growthData : null} height={240}>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={growthData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="Period" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={30} />
-                  <Tooltip cursor={CHART.tipCursor} content={<ChartTip />} />
-                  <Line type="monotone" dataKey="Cumulative Participants" stroke={EMERALD} strokeWidth={2.5} dot={{ r: 4, fill: EMERALD, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+            <ChartCard title="Participants by Country" sub="Where participants are based"
+              info="Number of participants based in each country.">
+              <ChartWithPlaceholder data={hasHentData ? participantsByCountry : null} height={260}>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={participantsByCountry} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barCategoryGap="22%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar dataKey="value" name="Participants" fill="#1F9E9E" radius={[0, 4, 4, 0]} maxBarSize={22} />
                   <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
-                </LineChart>
+                </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
             </ChartCard>
-
-            <ChartCard title="Completion Insights"
-              sub="Quality metrics for participant engagement and programme effectiveness"
-              accent={INDIGO}>
+            <ChartCard title="Participant Profile" sub="Gender, venture stage and PWD/refugee share"
+              info="Gender, venture stage and PWD or refugee share of participants.">
               {hasHentData ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Completion Rate Summary</p>
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      {[
-                        { value: `${tot.completion}%`, color: INDIGO, label: "Avg rate" },
-                        { value: String(filtered.filter(v => v.completionRate >= 95).length), color: EMERALD, label: "Visits ≥95%" },
-                        { value: String(filtered.filter(v => v.completionRate < 90).length), color: AMBER, label: "Visits <90%" },
-                      ].map(s => (
-                        <div key={s.label} className="text-center">
-                          <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
-                          <p className="text-[9px] text-gray-400 mt-0.5">{s.label}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="text-xs font-bold text-gray-600 mb-3 uppercase tracking-wide">Top 6 Completion Rates</p>
-                    {[...filtered].sort((a, b) => b.completionRate - a.completionRate).slice(0, 6).map((v, i) => (
-                      <div key={v.id} className="flex items-center gap-2 mb-2 text-[10px]">
-                        <span className="text-gray-600 flex-1 truncate">{v.organization}</span>
-                        <div className="w-16 h-2 rounded-sm overflow-hidden" style={{ backgroundColor: INDIGO + "20" }}>
-                          <div className="h-full" style={{ width: `${v.completionRate}%`, backgroundColor: INDIGO }} />
-                        </div>
-                        <span className="font-bold w-8 text-right" style={{ color: INDIGO }}>{v.completionRate}%</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {participantProfile.map(group => (
+                    <DonutRing key={group.name} data={group.data} colors={["#1B4332", "#1F9E9E", "#A6C13C", "#E9C46A"]} total={sum(group.data.map(d => d.value))} totalLabel={group.name} height={180} legendPercent />
+                  ))}
                 </div>
-              ) : <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>}
+              ) : (
+                <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>
+              )}
+            </ChartCard>
+          </div>
+        </section>
+
+        {/* ── SECTION 2: Learning Experience ─── */}
+        <section style={{ display: show(2) ? undefined : "none" }}>
+          <SectionTitle title="Learning Experience" sub="How participants rated the trips and what stood out." />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard title="Learning Rating by Trip" sub="Average participant rating out of 5 for each visit"
+              info="Average participant rating out of 5 for each visit, highest first.">
+              <ChartWithPlaceholder data={hasHentData ? learningByTrip : null} height={260}>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={learningByTrip} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barCategoryGap="22%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar dataKey="value" name="Rating (out of 5)" fill="#1B4332" radius={[0, 4, 4, 0]} maxBarSize={22} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Rating Breakdown" sub="Ratings for content, host engagement, relevance and logistics"
+              info="Average rating for content, host engagement, relevance and logistics.">
+              <ChartWithPlaceholder data={hasHentData ? ratingBreakdown : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={ratingBreakdown} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 5]} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={32} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar dataKey="value" name="Average rating" fill="#1F9E9E" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Trip Highlights" sub="Top-rated visits with a short participant quote"
+              info="The top-rated visits, with a short quote from a participant.">
+              {hasHentData ? (
+                <div className="space-y-3">
+                  {tripHighlights.map(h => (
+                    <div key={h.trip} className="pb-3 border-b border-gray-100 last:border-0">
+                      <p className="text-sm font-semibold text-gray-800">{h.trip} <span className="text-[11px] font-bold" style={{ color: BRAND_DK }}>{h.rating.toFixed(1)}/5</span></p>
+                      <p className="text-[11px] text-gray-500 italic mt-1">&ldquo;{h.quote}&rdquo;</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: 14, color: "#9CA3AF", textAlign: "center", padding: 40 }}>In coming data</p>
+              )}
+            </ChartCard>
+          </div>
+        </section>
+
+        {/* ── SECTION 3: Outcomes and Partnerships ─── */}
+        <section style={{ display: show(3) ? undefined : "none" }}>
+          <SectionTitle title="Outcomes and Partnerships" sub="What trips led to after the visit." />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard title="Follow-Ups by Type" sub="Meetings, pilots, mentorships and partnerships that came from trips"
+              info="Meetings, pilots, mentorships and partnerships that came from study trips, by year.">
+              <ChartWithPlaceholder data={hasHentData ? followUpsByYear : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={followUpsByYear} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
+                  <XAxis dataKey="Year" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={32} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar dataKey="Meetings" name="Meetings" stackId="follow" fill="#1B4332" maxBarSize={38} />
+                  <Bar dataKey="Pilots" name="Pilots" stackId="follow" fill="#1F9E9E" maxBarSize={38} />
+                  <Bar dataKey="Mentorships" name="Mentorships" stackId="follow" fill="#A6C13C" maxBarSize={38} />
+                  <Bar dataKey="Partnerships" name="Partnerships" stackId="follow" fill="#E9C46A" radius={[4, 4, 0, 0]} maxBarSize={38} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </ChartCard>
+            <ChartCard title="Most Impactful Visits" sub="Host organisations ranked by the follow-ups they produced"
+              info="Host organisations ranked by the follow-ups they produced.">
+              <div className="overflow-x-auto">
+                <table className="w-full text-[11px]">
+                  <thead>
+                    <tr>
+                      <th className="text-left text-gray-400 font-bold pb-3 pr-6 uppercase tracking-wider text-[9px]">Host organisation</th>
+                      <th className="text-center text-gray-400 font-bold pb-3 px-2 uppercase tracking-wider text-[9px]">Follow-ups</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {impactfulVisits.map(v => (
+                      <tr key={v.host} style={{ borderTop: `1px solid ${LIGHT_BORDER}` }}>
+                        <td className="py-2.5 pr-6 font-semibold text-gray-700">{v.host}</td>
+                        <td className="py-2.5 px-2 text-center tabular-nums font-bold" style={{ color: BRAND_DK }}>{v.followUps}</td>
+                      </tr>
+                    ))}
+                    {!impactfulVisits.length && (
+                      <tr><td colSpan={2} className="text-center text-gray-400 py-6">In coming data</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </ChartCard>
+            <ChartCard title="Partnerships by Host Sector" sub="Partnerships formed, by the host’s sector (hospital, pharma, government, NGO, etc.)"
+              info="Partnerships formed, grouped by the host organisation's sector.">
+              <ChartWithPlaceholder data={hasHentData ? partnershipsBySector : null} height={240}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={partnershipsBySector} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }} barCategoryGap="22%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: "rgba(0,33,71,0.04)" }} content={<ChartTip />} />
+                  <Bar dataKey="value" name="Partnerships" fill="#2D6A4F" radius={[0, 4, 4, 0]} maxBarSize={22} />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+                </BarChart>
+              </ResponsiveContainer>
+              </ChartWithPlaceholder>
             </ChartCard>
           </div>
         </section>
