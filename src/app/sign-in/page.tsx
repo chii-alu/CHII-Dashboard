@@ -2,6 +2,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Fraunces, Playfair_Display } from "next/font/google";
+import { createClient } from "@/lib/supabase-client";
+import { isRole, canOpen, dashboardsFor, type DashboardCode } from "@/lib/access";
 import {
   ChevronDown, ArrowRight,
   BarChart3, TrendingUp, Zap, FileText,
@@ -64,6 +66,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused]           = useState<string | null>(null);
   const [hovered, setHovered]           = useState(false);
+  const [email, setEmail]               = useState("");
+  const [password, setPassword]         = useState("");
+  const [error, setError]               = useState<string | null>(null);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("error") === "no-access") {
+      setError("Your account does not have access to that dashboard.");
+    }
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -79,11 +90,36 @@ export default function LoginPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [focused]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    const target = PORTALS.find(p => p.id === portal)?.href ?? "/executive";
-    setTimeout(() => router.push(target), 600);
+    const supabase = createClient();
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError || !data.user) {
+      setError("Email or password is not correct.");
+      setLoading(false);
+      return;
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    const role = profile?.role;
+    if (!isRole(role)) {
+      await supabase.auth.signOut();
+      setError("This account has no dashboard access. Ask an administrator.");
+      setLoading(false);
+      return;
+    }
+    const dashboard = (portal === "EXECUTIVE" ? "EXEC" : portal) as DashboardCode;
+    if (!canOpen(role, dashboard)) {
+      setError(`Your account can open: ${dashboardsFor(role).join(", ")}.`);
+      setLoading(false);
+      return;
+    }
+    router.push(PORTALS.find(p => p.id === portal)?.href ?? "/executive");
   }
 
   const field = (name: string): React.CSSProperties => ({
@@ -205,7 +241,9 @@ export default function LoginPage() {
                 <label style={{...LABEL, marginBottom: 6}}>Email address</label>
                 <input
                   type="email"
-                  defaultValue="admin@chii.alu.edu"
+                  autoComplete="username"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="you@chii.alu.edu"
                   onFocus={() => setFocused("email")}
                   onBlur={() => setFocused(null)}
@@ -218,7 +256,9 @@ export default function LoginPage() {
                 <div style={{ position: "relative" }}>
                   <input
                     type={showPassword ? "text" : "password"}
-                    defaultValue="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
                     onFocus={() => setFocused("password")}
                     onBlur={() => setFocused(null)}
@@ -251,6 +291,10 @@ export default function LoginPage() {
                   Forgot password?
                 </button>
               </div>
+
+              {error && (
+                <p role="alert" style={{ fontSize: 13, color: "#B42318", marginBottom: 12, lineHeight: 1.4 }}>{error}</p>
+              )}
 
               <button
                 type="submit"

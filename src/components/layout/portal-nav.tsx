@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { Download, LogOut, Menu, X } from "lucide-react";
 import { getPortalTheme, type Portal } from "@/theme/portals";
 import { PORTAL_NAVS } from "@/config/navigation";
+import { signOutToSignIn } from "@/lib/sign-out";
 
 export default function PortalNav({ portal }: { portal: Portal }) {
   const pathname = usePathname();
@@ -108,6 +109,7 @@ export default function PortalNav({ portal }: { portal: Portal }) {
           <Link
             href="/sign-in"
             title="Sign out"
+            onClick={e => { e.preventDefault(); signOutToSignIn(); }}
             className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border font-bold uppercase tracking-wide transition-colors flex-shrink-0"
             style={{ borderColor: "var(--border-default)", color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}
           >

@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { Award, BookOpen, Film, FlaskConical, LayoutDashboard, Lightbulb, ChevronLeft, ChevronRight, CircleDot, LogOut, Stethoscope, type LucideIcon } from "lucide-react";
 import { getPortalTheme, type Portal } from "@/theme/portals";
 import { PORTAL_NAVS } from "@/config/navigation";
+import { signOutToSignIn } from "@/lib/sign-out";
 
 const STORAGE_KEY = "portal-sidebar-pinned";
 const EXPANDED = 232;
@@ -132,7 +133,7 @@ export default function PortalSidebar({ portal }: { portal: Portal }) {
           </nav>
 
           <div className="border-t border-gray-200 p-2 flex-shrink-0">
-            <Link href="/sign-in" title="Sign out" className="flex items-center gap-3 h-10 rounded-md px-2.5 whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+            <Link href="/sign-in" title="Sign out" onClick={e => { e.preventDefault(); signOutToSignIn(); }} className="flex items-center gap-3 h-10 rounded-md px-2.5 whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
               <LogOut size={16} className="flex-shrink-0" />
               {open && <span className="text-[12px] font-bold uppercase tracking-wide">Logout</span>}
             </Link>
