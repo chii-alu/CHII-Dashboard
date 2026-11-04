@@ -350,7 +350,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
               num: actualOf("Employer Rating"),
               icon: TrendingUp,
               displayFmt: (n) => n.toFixed(1),
-              sub: `Out of 10 | Based on employer feedback`,
+              sub: "Based on employer feedback",
               tip: "Average employer satisfaction rating",
             },
             {

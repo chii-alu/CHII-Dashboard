@@ -25,7 +25,7 @@ const STAGE_COLOURS = ["#479BD6", "#EAB308", "#16A34A", "#D45F2C"];
 
 const CARDS: { label: string; icon: LucideIcon; tip: string }[] = [
   { label: "Research Projects", icon: FlaskConical, tip: "Research projects underway or completed" },
-  { label: "Papers Published", icon: FileText, tip: "Papers published (target: 2 per year)" },
+  { label: "Papers Published", icon: FileText, tip: "Papers published" },
   { label: "Grants Applied For", icon: HandCoins, tip: "Grant applications submitted" },
   { label: "Grants Secured / Funding Raised", icon: HandCoins, tip: "Grants secured and funding raised" },
   { label: "Institutions & Hospitals Engaged", icon: Building2, tip: "Institutions and hospitals engaged in research" },
