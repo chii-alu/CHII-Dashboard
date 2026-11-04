@@ -106,7 +106,7 @@ export default function PortalNav({ portal }: { portal: Portal }) {
           </button>
 
           <Link
-            href="/"
+            href="/sign-in"
             title="Sign out"
             className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border font-bold uppercase tracking-wide transition-colors flex-shrink-0"
             style={{ borderColor: "var(--border-default)", color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}

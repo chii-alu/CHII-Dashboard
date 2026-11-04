@@ -132,7 +132,7 @@ export default function PortalSidebar({ portal }: { portal: Portal }) {
           </nav>
 
           <div className="border-t border-gray-200 p-2 flex-shrink-0">
-            <Link href="/" title="Sign out" className="flex items-center gap-3 h-10 rounded-md px-2.5 whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+            <Link href="/sign-in" title="Sign out" className="flex items-center gap-3 h-10 rounded-md px-2.5 whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
               <LogOut size={16} className="flex-shrink-0" />
               {open && <span className="text-[12px] font-bold uppercase tracking-wide">Logout</span>}
             </Link>

@@ -164,7 +164,7 @@ export default function ImpactNav() {
 
               {/* Logout — returns to the sign-in page */}
               <Link
-                href="/"
+                href="/sign-in"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2 px-3 py-2.5 border-t border-gray-50 hover:bg-gray-50 transition-colors"
               >
@@ -222,7 +222,7 @@ export default function ImpactNav() {
               {dark ? <Sun size={14} /> : <Moon size={14} />}
               {dark ? "Light mode" : "Dark mode"}
             </button>
-            <Link href="/" className="flex items-center gap-1.5 py-2.5 text-[12px] font-bold text-gray-700">
+            <Link href="/sign-in" className="flex items-center gap-1.5 py-2.5 text-[12px] font-bold text-gray-700">
               <LogOut size={14} />
               Logout
             </Link>
