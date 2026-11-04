@@ -71,7 +71,7 @@ function KPICard({ label, value, unit, info, Icon, secondaryText, insight }: {
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 3, marginBottom: 6 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 2, flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", color: HEADER_NAVY, lineHeight: 1.1, margin: 0 }}>{label}</p>
+          <p style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.03em", color: "#06241A", lineHeight: 1.1, margin: 0 }}>{label}</p>
           {info && (
             <div style={{ position: "relative", flexShrink: 0, cursor: "pointer" }}>
               <button

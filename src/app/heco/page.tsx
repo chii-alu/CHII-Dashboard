@@ -33,7 +33,7 @@ function KpiCard({ spec, value, insight }: { spec: CardSpec; value: number | nul
   return (
     <div style={{ backgroundColor: "#fff", borderRadius: 10, border: "1px solid #E5E7EB", borderLeft: `5px solid ${HECO_NAVY}`, padding: "12px 14px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", color: HECO_NAVY, margin: 0 }}>{spec.label}</p>
+        <p style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.03em", color: HECO_NAVY, margin: 0 }}>{spec.label}</p>
         <span style={{ position: "relative", display: "flex", cursor: "pointer" }} onMouseEnter={() => setTip(true)} onMouseLeave={() => setTip(false)}>
           <Info size={11} color={HECO_NAVY} opacity={0.5} />
           {tip && <span style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", backgroundColor: "white", color: HECO_NAVY, fontSize: 10, padding: "6px 9px", borderRadius: 6, width: 180, boxShadow: "0 4px 12px rgba(0,0,0,0.12)", zIndex: 50 }}>{spec.info}</span>}

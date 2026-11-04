@@ -114,7 +114,7 @@ export function HeaderStatsPanel({
             >
               {/* Label with optional tooltip */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginBottom: 8 }}>
-                <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: BRAND_DK, margin: 0 }}>
+                <p style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "#06241A", margin: 0 }}>
                   {card.label}
                 </p>
                 {card.tip && (
