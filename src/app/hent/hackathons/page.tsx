@@ -583,7 +583,7 @@ export default function HackathonsPage() {
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div className="mt-3 pt-3 border-t border-gray-100 text-center">
+              <div className="mt-3 text-center">
                 <p className="text-lg font-bold" style={{ color: VIOLET }}>{hasHentData && recommendRate !== null ? `${recommendRate}%` : "In coming data"}</p>
                 <p className="text-[9px] text-gray-400">Would recommend</p>
               </div>
