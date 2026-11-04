@@ -161,27 +161,27 @@ export default function ExposureNetworkingPage() {
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [fYear, setFYear]       = useState("All Years");
-  const [fType, setFType]       = useState("All Types");
+  const PLATFORM_TYPES = ["All Platform Types", "Pitch Event", "Conference", "Roundtable", "Ecosystem Engagement", "Demo Day"];
+  const [fType, setFType]       = useState("All Platform Types");
   const [fCountry, setFCountry] = useState("All Countries");
+  const [fStakeholder, setFStakeholder] = useState("All Stakeholder Types");
+  const [fPilot, setFPilot] = useState("All Statuses");
+  const PILOT_STATUSES = ["All Statuses", "Ongoing", "Completed", "Converted to Contract"];
+  const STAKEHOLDER_TYPES = ["All Stakeholder Types", "Investors", "Partners", "Health Stakeholders", "Policymakers", "Peers"];
 
   const filtered = useMemo(() => exposureEvents.filter(e =>
     (fYear === "All Years" || String(e.year) === fYear) &&
-    (fType === "All Types" || e.type === fType) &&
-    (fCountry === "All Countries" || e.country === fCountry)
-  ), [fYear, fType, fCountry]);
+    (fType === "All Platform Types" || e.type === fType) &&
+    (fCountry === "All Countries" || e.country === fCountry) &&
+    (fStakeholder === "All Stakeholder Types" || (e.stakeholders?.[fStakeholder] ?? 0) > 0) &&
+    (fPilot === "All Statuses" || e.pilotStatus === fPilot)
+  ), [fYear, fType, fCountry, fStakeholder, fPilot]);
 
   const D = useMemo(() => derive(filtered), [filtered]);
-  const activeCount = (fYear !== "All Years" ? 1 : 0) + (fType !== "All Types" ? 1 : 0) + (fCountry !== "All Countries" ? 1 : 0);
+  const activeCount = (fYear !== "All Years" ? 1 : 0) + (fType !== "All Platform Types" ? 1 : 0) + (fCountry !== "All Countries" ? 1 : 0) + (fStakeholder !== "All Stakeholder Types" ? 1 : 0) + (fPilot !== "All Statuses" ? 1 : 0);
 
   const [activeSection, setActiveSection] = useState<number>(1);
   const show = (n: number) => activeSection === n;
-  const [reachPlatform, setReachPlatform] = useState("All Platform Types");
-  const [commitStakeholder, setCommitStakeholder] = useState("All Stakeholder Types");
-  const [platformFormat, setPlatformFormat] = useState("All Platform Types");
-  const [pilotStatus, setPilotStatus] = useState("All Statuses");
-  const PLATFORM_TYPES = ["All Platform Types", "Pitch Event", "Conference", "Roundtable", "Ecosystem Engagement", "Demo Day"];
-  const STAKEHOLDER_TYPES = ["All Stakeholder Types", "Investors", "Partners", "Health Stakeholders", "Policymakers", "Peers"];
-  const PILOT_STATUSES = ["All Statuses", "Ongoing", "Completed", "Converted to Contract"];
   // Chart data the database does not provide yet: empty until those rows exist, so each chart shows "In coming data".
   const reachByYear: { Year: string; Events: number; Founders: number }[] = [];
   const introductionsByStakeholder: { Year: string; Investors: number; Partners: number; "Health stakeholders": number; Policymakers: number; Peers: number }[] = [];
@@ -265,12 +265,14 @@ export default function ExposureNetworkingPage() {
             />
             <FilterDropdown
               isOpen={filtersOpen}
-              onResetFilters={() => { setFYear("All Years"); setFType("All Types"); setFCountry("All Countries"); }}
+              onResetFilters={() => { setFYear("All Years"); setFType("All Platform Types"); setFCountry("All Countries"); setFStakeholder("All Stakeholder Types"); setFPilot("All Statuses"); }}
             >
               {[
                 { label: "Year", value: fYear, setValue: setFYear, options: ["All Years", ...YEARS.map(String)] },
-                { label: "Type", value: fType, setValue: setFType, options: ["All Types", ...EXPOSURE_TYPES] },
+                { label: "Platform type", value: fType, setValue: setFType, options: PLATFORM_TYPES },
                 { label: "Country", value: fCountry, setValue: setFCountry, options: ["All Countries", ...COUNTRIES] },
+                { label: "Stakeholder type", value: fStakeholder, setValue: setFStakeholder, options: STAKEHOLDER_TYPES },
+                { label: "Competition / pilot status", value: fPilot, setValue: setFPilot, options: PILOT_STATUSES },
               ].map(filter => (
                 <div key={filter.label} style={{ marginBottom: 12 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#0E4633", margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
@@ -306,7 +308,6 @@ export default function ExposureNetworkingPage() {
         {/* ── SECTION 1: Reach Over Time ─── */}
         <section style={ { display: show(1) ? undefined : "none" } }>
           <SectionTitle title="Reach Over Time" sub="How many founders, events and introductions each year.">
-            <SectionFilter label="Platform type" value={reachPlatform} options={PLATFORM_TYPES} onChange={setReachPlatform} />
           </SectionTitle>
           <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -352,7 +353,6 @@ export default function ExposureNetworkingPage() {
         {/* ── SECTION 2: From Connection to Commitment ─── */}
         <section style={ { display: show(2) ? undefined : "none" } }>
           <SectionTitle title="From Connection to Commitment" sub="Whether introductions turn into meetings, deals and signed agreements.">
-            <SectionFilter label="Stakeholder type" value={commitStakeholder} options={STAKEHOLDER_TYPES} onChange={setCommitStakeholder} />
           </SectionTitle>
           <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -386,7 +386,6 @@ export default function ExposureNetworkingPage() {
         {/* ── SECTION 3: Which Platforms Work ─── */}
         <section style={ { display: show(3) ? undefined : "none" } }>
           <SectionTitle title="Which Platforms Work" sub="Comparing formats on the deals they produce.">
-            <SectionFilter label="Platform type" value={platformFormat} options={PLATFORM_TYPES} onChange={setPlatformFormat} />
           </SectionTitle>
           <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 gap-4">
@@ -445,7 +444,6 @@ export default function ExposureNetworkingPage() {
         {/* ── SECTION 4: Pitch Competitions and Pilots ─── */}
         <section style={ { display: show(4) ? undefined : "none" } }>
           <SectionTitle title="Pitch Competitions and Pilots" sub="Competitive visibility and hands-on pilot support for ventures.">
-            <SectionFilter label="Competition / pilot status" value={pilotStatus} options={PILOT_STATUSES} onChange={setPilotStatus} />
           </SectionTitle>
           <div style={ { marginBottom: 24 } } />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -468,10 +466,11 @@ export default function ExposureNetworkingPage() {
             </ChartCard>
             <ChartCard title="Prize and Award Value" sub="Total prize money and awards won by founders (USD)"
               info="Total prize money and awards won by founders, in USD.">
-              <div style={ { textAlign: "center", padding: 32 } }>
-                <p className="text-3xl font-bold" style={ { color: BRAND_DK } }>{prizeValue !== null ? `$${prizeValue.toLocaleString()}` : "In coming data"}</p>
-                <p className="text-[10px] text-gray-400 mt-2">Prize money and awards won</p>
-              </div>
+              <ChartWithPlaceholder data={prizeValue} height={208}>
+                <div style={ { height: 208, display: "flex", alignItems: "center", justifyContent: "center" } }>
+                  <p style={ { fontSize: 28, fontWeight: 800, color: BRAND_DK, lineHeight: 1 } }>{prizeValue !== null ? `$${prizeValue.toLocaleString()}` : ""}</p>
+                </div>
+              </ChartWithPlaceholder>
             </ChartCard>
             <ChartCard title="Pilots by Stage" sub="Pilot engagements per year, split by Expose, Build and Scale"
               info="Pilot engagements each year, split by venture stage.">

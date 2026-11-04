@@ -18,7 +18,7 @@ export const IMPACT_TABS = [
 ] as const;
 
 const PORTAL_LINKS = [
-  { label: "HENT", desc: "Entrepreneurship Pillar", href: "/hent/overview", color: "#7C3AED", bg: "#F5F3FF" },
+  { label: "HENT", desc: "Entrepreneurship Pillar", href: "/hent/at-a-glance", color: "#7C3AED", bg: "#F5F3FF" },
   { label: "Health Missions & HEMP", desc: "Employment Pillar",       href: "/hemp",          color: "#0D9488", bg: "#F0FDFA" },
   { label: "HECO", desc: "Ecosystems Pillar",       href: "/heco",          color: "#2563EB", bg: "#EFF6FF" },
 ] as const;

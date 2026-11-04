@@ -189,7 +189,7 @@ function HentMap({ countries }: { countries: HentCountry[] }) {
         center: [30, 8],
         zoom: 2.6,
         attributionControl: false,
-        cooperativeGestures: true,
+        cooperativeGestures: false,
       });
       map.current.on("style.load", () => renderMarkers(countriesRef.current));
     })();
@@ -209,9 +209,24 @@ function HentMap({ countries }: { countries: HentCountry[] }) {
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={container} style={{ width: "100%", height: "100%", borderRadius: 10, border: "1px solid #E5E7EB", overflow: "hidden", background: "#0B1A33" }} />
-      <div style={{ position: "absolute", top: 12, left: 12, backgroundColor: "rgba(255,255,255,0.92)", borderRadius: 6, padding: "6px 10px", fontSize: 11, fontWeight: 600, color: HEADER_NAVY }}>
-        Participants by country: {countries.length ? `${countries.length} countries` : NOT_AVAILABLE}
-      </div>
+      <button
+        onClick={() => map.current?.flyTo({ center: [30, 8], zoom: 2.6 })}
+        title="Reset map view"
+        style={{
+          position: "absolute", top: 10, right: 10, zIndex: 500,
+          display: "inline-flex", alignItems: "center", gap: 5,
+          fontSize: 11.5, fontWeight: 700, color: HEADER_NAVY,
+          backgroundColor: "white", border: "1px solid rgba(0,33,71,0.12)",
+          borderRadius: 8, padding: "6px 11px", cursor: "pointer",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+        }}
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+          <path d="M3 3v5h5" />
+        </svg>
+        Reset
+      </button>
     </div>
   );
 }
