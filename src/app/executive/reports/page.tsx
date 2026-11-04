@@ -101,7 +101,6 @@ const SECTIONS: Section[] = [
   },
 ];
 
-const HERO_META = ["26 report types", "4 pillars", "Updated June 2026"];
 const SEGMENTS: ("All" | ResourceType)[] = ["All", "HEMP", "HENT", "HECO", "MELA"];
 
 /* ════════════════════════════════════════════════════════

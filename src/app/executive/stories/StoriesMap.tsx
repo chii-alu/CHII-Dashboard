@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { Story } from "@/data/executive/stories";
+import type { Story } from "@/types/stories";
 
 let mapboxTokenReady = false;
 const initMapboxToken = async () => {

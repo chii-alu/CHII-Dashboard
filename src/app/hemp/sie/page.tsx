@@ -8,7 +8,21 @@ import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import { getSieCohortsFromSupabase } from "@/lib/dashboardDataMapper";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import { SIE_DISCIPLINES, SIE_EXPOSURE_AREAS } from "@/data/hemp/sie";
+// Category labels for the charts (not data). The counts and scores come from Supabase.
+const SIE_EXPOSURE_AREAS = [
+  "Health System Function",
+  "Innovation in Practice",
+  "Employment Pathways",
+] as const;
+
+const SIE_DISCIPLINES = [
+  "Business & Entrepreneurship",
+  "Computer Science",
+  "Engineering",
+  "Social Sciences",
+  "Public Policy",
+  "Data Science",
+] as const;
 import { useProgress } from "@/hooks/useProgress";
 import { useState, useMemo } from "react";
 import {

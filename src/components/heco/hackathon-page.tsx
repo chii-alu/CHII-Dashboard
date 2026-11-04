@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 // Public Sector Innovation Hackathon page: six stat cards, hackathon funnel, projects by problem area, participation by round split by gender.
-import { Users, FileText, Lightbulb, Rocket, HandCoins, type LucideIcon } from "lucide-react";
+import { Users, FileText, Lightbulb, HandCoins, type LucideIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
@@ -24,7 +24,6 @@ const CARDS: { label: string; icon: LucideIcon; format?: "percent" | "currency";
   { label: "Student Participants", icon: Users, tip: "Students taking part in the hackathon" },
   { label: "Projects Submitted", icon: FileText, tip: "Projects submitted by teams" },
   { label: "Problem Statements Used", icon: Lightbulb, tip: "Problem statements taken from the PSF fellows" },
-  { label: "Ventures Funded", icon: Rocket, tip: "Ventures funded" },
   { label: "Total Seed Funding Awarded", icon: HandCoins, format: "currency", tip: "Total seed funding awarded to teams" },
   { label: "Female Participation (%)", icon: Users, format: "percent", tip: "Share of female participants" },
 ];

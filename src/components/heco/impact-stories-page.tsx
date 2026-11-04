@@ -5,7 +5,7 @@ import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import dynamic from "next/dynamic";
 import { Info, ChevronDown, FileText, Video, MapPin, Film, BookOpen } from "lucide-react";
 // HECO stories: no stories are loaded yet, so the lists and summary are empty and the cards show "In coming data".
-import type { Story } from "@/data/executive/stories";
+import type { Story } from "@/types/stories";
 const STORIES: Story[] = [];
 const SUMMARY = { stories: null, countries: null, video: null, written: null } as Record<string, number | null>;
 const PROGRAMS: string[] = [];

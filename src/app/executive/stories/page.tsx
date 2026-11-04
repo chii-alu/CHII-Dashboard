@@ -4,10 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import dynamic from "next/dynamic";
 import { Info, ChevronDown, FileText, Video, MapPin, Film, BookOpen } from "lucide-react";
-import {
-  STORIES, SUMMARY, PROGRAMS, MISSION_AREAS, HUMANITARIAN, NATIONALITIES, DISABILITY, GENDERS,
-  type Story,
-} from "@/data/executive/stories";
+import { GENDERS } from "@/types";
+import type { Story } from "@/types/stories";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -16,6 +14,15 @@ import { MetadataHeader } from "@/components/MetadataHeader";
 const StoriesMap = dynamic(() => import("./StoriesMap"), { ssr: false, loading: () =>
   <div style={{ width: "100%", height: "100%", minHeight: 480, borderRadius: 10, backgroundColor: "#E9EEF4", display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF", fontSize: 12 }}>Loading map…</div>
 });
+
+// Story rows, summary totals and filter options come from Supabase; until they load these are empty and show "In coming data".
+const STORIES: Story[] = [];
+const PROGRAMS: string[] = [];
+const MISSION_AREAS: string[] = [];
+const HUMANITARIAN: string[] = [];
+const NATIONALITIES: string[] = [];
+const DISABILITY: string[] = [];
+const SUMMARY = { stories: null as number | null, countries: null as number | null, video: null as number | null, written: null as number | null };
 
 /* ── palette ─────────────────────────────────────────── */
 const NAVY = "#14306B";

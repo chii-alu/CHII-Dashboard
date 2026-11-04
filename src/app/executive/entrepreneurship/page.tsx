@@ -20,10 +20,33 @@ import {
   Scale, LifeBuoy, Activity, ShieldCheck, Globe, TrendingUp, Banknote,
   SlidersHorizontal, X,
 } from "lucide-react";
-import {
-  VENTURES, STATUSES, FUNDING_SOURCES, STAGES,
-  type Gender, type Stage, type Status, type FundingSource,
-} from "@/data/executive/entrepreneurship";
+import { SectionPending } from "@/components/ui/section-pending";
+import { GENDERS, type Gender } from "@/types";
+
+type Stage = "Idea" | "Pre-seed" | "Seed" | "Early-stage" | "Growth" | "Scaling" | "Mature" | "Closed";
+type Status = "Active" | "Pre-seed" | "Seed" | "Early-stage" | "Growth" | "Scaling" | "Closed" | "Non-operational";
+type FundingSource = "Personal / bootstrap" | "Grant" | "Angel / investor" | "Accelerator" | "Loan";
+
+// Category labels for the filters and charts (not data).
+const STAGES: Stage[] = ["Idea", "Early-stage", "Growth", "Scaling"];
+const STATUSES: Status[] = ["Active", "Non-operational", "Closed"];
+const FUNDING_SOURCES: FundingSource[] = ["Personal / bootstrap", "Grant", "Angel / investor", "Accelerator", "Loan"];
+
+// Venture rows come from Supabase; until they load this list is empty and the sections show "In coming data".
+interface Venture {
+  id: number;
+  gender: Gender;
+  stage: Stage;
+  status: Status;
+  fundingSource: FundingSource;
+  formal: boolean;
+  enablerSupport: boolean;
+  yearLaunched: number;
+  jobsCreated: number;
+  rating: number;
+}
+const VENTURES: Venture[] = [];
+const dataReady = VENTURES.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -374,7 +397,8 @@ export default function EntrepreneurshipPage() {
         </section>
 
         {/* ════ SECTION 1 — VENTURE PORTFOLIO ════ */}
-        {show(1) && (
+        {show(1) && !(dataReady) && <SectionPending title="Enterprise Portfolio" />}
+        {show(1) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Enterprise Portfolio" blurb="How large and healthy is the entrepreneurship portfolio?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
@@ -439,11 +463,11 @@ export default function EntrepreneurshipPage() {
 </Panel>
           </div>
         </section>
-
         )}
 
         {/* ════ SECTION 2 — BUSINESS GROWTH & SUSTAINABILITY ════ */}
-        {show(2) && (
+        {show(2) && !(dataReady) && <SectionPending title="Business Growth & Sustainability" />}
+        {show(2) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Business Growth & Sustainability" blurb="Are enterprises becoming sustainable businesses?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
@@ -482,11 +506,11 @@ export default function EntrepreneurshipPage() {
 </Panel>
           </div>
         </section>
-
         )}
 
         {/* ════ SECTION 4 — EMPLOYMENT CREATED ════ */}
-        {show(4) && (
+        {show(4) && !(dataReady) && <SectionPending title="Employment Created" />}
+        {show(4) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Employment Created" blurb="How much work are these enterprises creating?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
@@ -525,11 +549,11 @@ export default function EntrepreneurshipPage() {
 </Panel>
           </div>
         </section>
-
         )}
 
         {/* ════ SECTION 3 — FOUNDER PROFILE ════ */}
-        {show(3) && (
+        {show(3) && !(dataReady) && <SectionPending title="Founder Profile" />}
+        {show(3) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Founder Profile" blurb="Who are the entrepreneurs, and how has entrepreneurship changed their lives?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }} className="ep-two">
@@ -593,7 +617,6 @@ export default function EntrepreneurshipPage() {
 </Panel>
           </div>
         </section>
-
         )}
 
 <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />

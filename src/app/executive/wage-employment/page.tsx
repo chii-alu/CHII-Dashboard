@@ -17,11 +17,52 @@ import {
   Users, Info, Briefcase, Cpu, ShieldCheck,
   ArrowUpRight, Clock, SlidersHorizontal, X,
 } from "lucide-react";
-import {
-  WORKERS, GENDERS, EMPLOYMENT_TYPES, ROLE_LEVELS, ARRANGEMENTS, ORG_TYPES,
-  SECTORS, COUNTRIES, YEARS, COHORTS, PROGRAMS, PROGRAM_NAMES,
-  type Gender, type Worker, type ParticipantType,
-} from "@/data/executive/wage-employment";
+import { SectionPending } from "@/components/ui/section-pending";
+import { GENDERS, type Gender, type ParticipantType } from "@/types";
+
+type EmploymentType = "Full-time" | "Part-time" | "Seasonal";
+type RoleLevel = "Entry" | "Mid" | "Senior" | "Lead/Manager" | "Exec";
+type Arrangement = "Remote" | "On-site" | "Hybrid";
+type OrgType = "Private company" | "Startup" | "NGO/Nonprofit" | "Government" | "Public sector" | "Multinational";
+
+interface Worker {
+  id: number;
+  gender: Gender;
+  participantType: ParticipantType;
+  program: string;
+  employmentType: EmploymentType;
+  roleLevel: RoleLevel;
+  arrangement: Arrangement;
+  orgType: OrgType;
+  sector: string;
+  country: string;
+  year: number;
+  cohort: number;
+  timeToEmployment: number;
+  inTech: boolean;
+  decentWork: boolean;
+  salaryUSD: number;
+  pwd: boolean;
+  refugee: boolean;
+}
+
+// Category labels for the filters and charts (not data).
+const EMPLOYMENT_TYPES: EmploymentType[] = ["Full-time", "Part-time", "Seasonal"];
+const ROLE_LEVELS: RoleLevel[] = ["Entry", "Mid", "Senior", "Lead/Manager", "Exec"];
+const ARRANGEMENTS: Arrangement[] = ["Remote", "On-site", "Hybrid"];
+const ORG_TYPES: OrgType[] = ["Private company", "Startup", "NGO/Nonprofit", "Government", "Public sector", "Multinational"];
+const SECTORS = [
+  "Digital Health", "MedTech", "Mental Health & Wellness", "Public Health & Accessibility",
+  "Healthcare Infrastructure & Operations", "Biotech & Pharma", "Maternal Health",
+  "Fitness & Preventive Health", "Personalized & Precision Medicine", "Other",
+];
+const COUNTRIES = ["Rwanda", "Kenya", "Nigeria", "South Africa", "Ghana", "Uganda", "Other Africa", "Diaspora"];
+const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
+const COHORTS = [2019, 2020, 2021, 2022, 2023, 2024];
+
+// Worker rows come from Supabase; until they load this list is empty and the sections show "In coming data".
+const WORKERS: Worker[] = [];
+const dataReady = WORKERS.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -157,12 +198,12 @@ export default function WageEmploymentPage() {
   const orgByArr = null;
   const trends = null;
   const sectorData = null;
-  const programOutcomes = useMemo(() => ({ rateData: null, typeData: null, count: 0 }), []);
+  const programOutcomes = useMemo(() => ({ rateData: null, typeData: null, count: null as number | null }), []);
 
   // No actual Supabase data for quality indicators
   const quality = useMemo(() => ({
     indicators: null,
-    accessing: 0,
+    accessing: null as number | null,
     household: null,
     contribution: null,
   }), []);
@@ -241,7 +282,8 @@ export default function WageEmploymentPage() {
           </div>
         </section>
 
-        {show(1) && (
+        {show(1) && !(dataReady) && <SectionPending title="Workforce Profile" />}
+        {show(1) && (dataReady) && (
           <section className="space-y-4">
             <SectionHeader title="Workforce Profile" blurb="Who is employed?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
@@ -293,7 +335,8 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        {show(2) && (
+        {show(2) && !(dataReady) && <SectionPending title="Employment Trends" />}
+        {show(2) && (dataReady) && (
           <section className="space-y-4">
             <SectionHeader title="Employment Trends" blurb="How is employment evolving over time?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
@@ -332,7 +375,8 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        {show(3) && (
+        {show(3) && !(dataReady) && <SectionPending title="Program Outcomes" />}
+        {show(3) && (dataReady) && (
           <section className="space-y-4">
             <SectionHeader title="Program Outcomes" blurb="Which programs drive employment?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
@@ -373,7 +417,8 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        {show(4) && (
+        {show(4) && !(dataReady) && <SectionPending title="Quality & Impact" />}
+        {show(4) && (dataReady) && (
           <section className="space-y-4">
             <SectionHeader title="Quality & Impact" blurb="Is the work dignified, and is it improving lives?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">

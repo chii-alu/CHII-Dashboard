@@ -15,8 +15,9 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Info } from "lucide-react";
-import { ventures as ALL_VENTURES } from "@/data/ventures";
-import { events as ALL_EVENTS } from "@/data/events";
+// Venture-level rows come from Supabase; until that source is wired in these lists are empty.
+const ALL_VENTURES: any[] = [];
+const ALL_EVENTS: any[] = [];
 
 const STAGE_COLORS: Record<string, "indigo" | "blue" | "cyan" | "teal" | "emerald" | "green"> = {
   Ideation: "indigo", Validation: "blue", "Prototype/MVP": "cyan",
@@ -36,7 +37,7 @@ export default function VentureShowPage() {
   if (!venture) {
     return (
       <div className="p-8 text-center text-gray-500">
-        <p className="text-lg font-medium">Venture not found</p>
+        <p className="text-lg font-medium">In coming data</p>
         <Link href="/hent/ventures" className="text-sm text-hent-700 hover:underline mt-2 inline-block">
           ← Back to ventures
         </Link>
@@ -202,7 +203,7 @@ export default function VentureShowPage() {
             <Text className="text-xs text-gray-400 mt-3">Entered programme at current stage.</Text>
           ) : (
             <div className="mt-3 space-y-2">
-              {venture.stageHistory.map((h, i) => (
+              {venture.stageHistory.map((h: any, i: number) => (
                 <div key={i} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
                   <div className="w-2 h-2 rounded-full bg-hent-500 flex-shrink-0" />
                   <div className="flex-1">
