@@ -382,21 +382,30 @@ export default function HackathonsPage() {
             <ChartCard title="Gender distribution"
               sub="Distribution of participants by gender across all events"
               accent={VIOLET}>
-              <CustomDonut
-                data={hasHentData ? [
+              <ChartWithPlaceholder data={hasHentData ? [
                   { name: "Male Participants",   value: total.participants - total.female },
                   { name: "Female Participants", value: total.female },
-                ] : []}
+                ] : null} height={176}>
+              <CustomDonut
+                data={[
+                  { name: "Male Participants",   value: total.participants - total.female },
+                  { name: "Female Participants", value: total.female },
+                ]}
                 colors={[SKY, VIOLET]}
                 className="h-44"
-                label={hasHentData ? `${total.participants}` : "In coming data"}
+                label={`${total.participants}`}
                 valueFormatter={(v: number) => `${v} participants`}
               />
+              </ChartWithPlaceholder>
             </ChartCard>
 
             <ChartCard title="Student vs Alumni Participation"
               sub="Breakdown of participants by academic status"
               accent={ROSE}>
+              <ChartWithPlaceholder data={hasHentData ? [
+                  { name: "Student Participants", value: total.students },
+                  { name: "Alumni Participants",  value: alumniTotal    },
+                ] : null} height={176}>
               <CustomDonut
                 data={[
                   { name: "Student Participants", value: total.students },
@@ -404,9 +413,10 @@ export default function HackathonsPage() {
                 ]}
                 colors={[SKY, ROSE]}
                 className="h-44"
-                label={hasHentData ? `${total.participants}` : "In coming data"}
+                label={`${total.participants}`}
                 valueFormatter={(v: number) => `${v} participants`}
               />
+              </ChartWithPlaceholder>
             </ChartCard>
 
 
