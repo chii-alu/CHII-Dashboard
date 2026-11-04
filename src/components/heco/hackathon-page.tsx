@@ -24,7 +24,7 @@ const CARDS: { label: string; icon: LucideIcon; format?: "percent" | "currency";
   { label: "Student Participants", icon: Users, tip: "Students taking part in the hackathon" },
   { label: "Projects Submitted", icon: FileText, tip: "Projects submitted by teams" },
   { label: "Problem Statements Used", icon: Lightbulb, tip: "Problem statements taken from the PSF fellows" },
-  { label: "Ventures Funded", icon: Rocket, tip: "Ventures funded (target: about 25)" },
+  { label: "Ventures Funded", icon: Rocket, tip: "Ventures funded" },
   { label: "Total Seed Funding Awarded", icon: HandCoins, format: "currency", tip: "Total seed funding awarded to teams" },
   { label: "Female Participation (%)", icon: Users, format: "percent", tip: "Share of female participants" },
 ];

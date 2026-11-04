@@ -21,7 +21,7 @@ type CardSpec = { label: string; icon: any; format: "count" | "percent"; info: s
 const CARDS: CardSpec[] = [
   { label: "Total Beneficiaries Reached", icon: Users, format: "count", info: "Everyone reached across all five interventions, each person counted once." },
   { label: "Countries Reached", icon: Users, format: "count", info: "African countries with at least one beneficiary." },
-  { label: "PSF Fellows Graduated", icon: GraduationCap, format: "count", info: "Public Sector Fellowship fellows who graduated, against the target of 72." },
+  { label: "PSF Fellows Graduated", icon: GraduationCap, format: "count", info: "Public Sector Fellowship fellows who graduated." },
   { label: "Female Participation (%)", icon: Users, format: "percent", info: "Share of women across all interventions." },
   { label: "Partner Organisations Engaged", icon: Briefcase, format: "count", info: "Governments, hospitals, institutions and funders engaged across every programme." },
   { label: "Research Outputs", icon: FileText, format: "count", info: "Research papers produced." },
