@@ -6,7 +6,7 @@ export function sourceLabel(workbook: string): string {
 }
 
 export function useDataSource(dashboard: "EXEC" | "HEMP" | "HENT" | "HECO"): string {
-  const [label, setLabel] = useState<string>("Loading...");
+  const [label, setLabel] = useState<string>("");
   useEffect(() => {
     fetch(`/api/data-source?dashboard=${dashboard}`)
       .then(r => r.json())
@@ -24,7 +24,7 @@ export function formatSynced(iso: string): string {
 }
 
 export function useSyncedAt(dashboard: "EXEC" | "HEMP" | "HENT" | "HECO"): string {
-  const [synced, setSynced] = useState<string>("Loading...");
+  const [synced, setSynced] = useState<string>("");
   useEffect(() => {
     fetch(`/api/data-source?dashboard=${dashboard}`)
       .then(r => r.json())

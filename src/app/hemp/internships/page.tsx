@@ -264,15 +264,6 @@ export default function HEMPInternships() {
   const msAvgGPA: string | null = null;
   const msVenturesCreated = null;
 
-  if (loading) {
-    return (
-      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 16, color: "#666" }}>Loading Internships data…</p>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (

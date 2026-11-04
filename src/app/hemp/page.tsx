@@ -589,15 +589,6 @@ export default function HEMPPage() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
 
-  if (loading) {
-    return (
-      <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 16, color: "#666" }}>Loading HEMP dashboard…</p>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (

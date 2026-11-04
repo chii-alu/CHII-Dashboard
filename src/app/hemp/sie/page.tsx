@@ -396,16 +396,6 @@ export default function HEMPSie() {
   const msAvgGPA = "3.2";
   const msVenturesCreated = null;
 
-  if (loading) {
-    return (
-      <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 16, color: "#666" }}>Loading SIE data…</p>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div style={{ backgroundColor: LIGHT_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
