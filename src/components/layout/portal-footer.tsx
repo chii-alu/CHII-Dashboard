@@ -47,7 +47,7 @@ export default function PortalFooter({
             <span style={{ color: theme.heroAccent, fontWeight: 600 }}>Source:</span> {sourceLabel}
           </span>
           <span className="text-[12px] sm:text-[13px]" style={{ color: theme.heroText, opacity: 0.6 }}>|</span>
-          <a href="mailto:insights@chii.org" className="text-[12px] sm:text-[13px]"
+          <a href="mailto:patadja@si.alueducation.com" className="text-[12px] sm:text-[13px]"
             style={{ fontWeight: 600, color: "white", border: `1px solid ${theme.heroAccent}66`, borderRadius: 6, padding: "4px 11px", textDecoration: "none", whiteSpace: "nowrap" }}>
             Contact Analyst
           </a>
