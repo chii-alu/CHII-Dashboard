@@ -53,6 +53,7 @@ const TREND_YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
+import RankedBars from "@/components/charts/ranked-bars";
 
 /* ── palette ─────────────────────────────────────────── */
 const NAVY = "var(--brand-secondary)";
@@ -526,30 +527,10 @@ export default function OutreachPage() {
 
             <Panel title="Participation by Intervention" subtitle="Reach per outreach program"
               info="Reach per outreach intervention.">
-              <ChartWithPlaceholder data={byIntervention || []} height={250}>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart layout="vertical" data={byIntervention || []} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
-                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} width={104} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Bar dataKey="value" name="Participants" radius={[0, 4, 4, 0]}
-                      label={{ position: "right", fontSize: 10, fill: "#374151", fontWeight: 700 }}>
-                      {(byIntervention || []).map((d: any) => (
-                        <Cell key={d.name} fill={PILLAR_COLOR[d.pillar as Pillar]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartWithPlaceholder>
-              <div style={{ display: "flex", gap: 14, marginTop: 4, justifyContent: "center" }}>
-                {PILLARS.map(p => (
-                  <span key={p} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
-                    <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, backgroundColor: PILLAR_COLOR[p], flexShrink: 0 }} />
-                    {p}
-                  </span>
-                ))}
-              </div>
+              <RankedBars
+                data={byIntervention}
+                series={[{ key: "value", label: "Participants", color: "#122B5E" }]}
+              />
             </Panel>
           </div>
 
@@ -573,37 +554,25 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Graduation Status" subtitle="Graduated vs current students per programme"
               info="Students per academic programme, split into graduated and current.">
-              <ChartWithPlaceholder data={graduationStatus || []} height={300}>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart layout="vertical" data={graduationStatus || []} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
-                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                    <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} />
-                    <Bar dataKey="Graduated" stackId="p" fill="#A81B2D" barSize={16} />
-                    <Bar dataKey="Not graduated" stackId="p" fill="#C5D2E0" barSize={16} radius={[0, 3, 3, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartWithPlaceholder>
+              <RankedBars
+                data={graduationStatus}
+                series={[
+                  { key: "Graduated", label: "Graduated", color: "#122B5E" },
+                  { key: "Not graduated", label: "Not graduated", color: "#9FB4E0" },
+                ]}
+              />
             </Panel>
 
             <Panel title="Gender Split" subtitle="Female vs male per programme"
               info="Female vs male students per academic programme.">
-              <ChartWithPlaceholder data={genderSplit || []} height={300}>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart layout="vertical" data={genderSplit || []} margin={{ top: 4, right: 28, bottom: 0, left: 8 }} barCategoryGap="26%">
-                    <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
-                    <XAxis type="number" tick={{ fontSize: 9, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 9.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} />
-                    <Bar dataKey="Female" stackId="g" fill={C_FEMALE} barSize={16} />
-                    <Bar dataKey="Male" stackId="g" fill={C_MALE} barSize={16} />
-                    <Bar dataKey="Non-binary" stackId="g" fill="#D45F2C" barSize={16} radius={[0, 3, 3, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartWithPlaceholder>
+              <RankedBars
+                data={genderSplit}
+                series={[
+                  { key: "Female", label: "Female", color: "#102C5E" },
+                  { key: "Male", label: "Male", color: "#479BD6" },
+                  { key: "Non-binary", label: "Non-binary", color: "#A6C13C" },
+                ]}
+              />
             </Panel>
           </div>
         </section>

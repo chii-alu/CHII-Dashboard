@@ -87,7 +87,7 @@ export default function ProgramQuality() {
       })}
 
       {/* Legend — score-band colour key */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 18, paddingTop: 14, borderTop: "1px solid rgba(0,33,71,0.06)" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 18, paddingTop: 14 }}>
         {([
           { label: "80–100 · Excellent", color: "#102C5E" },
           { label: "70–79 · Good",       color: "#479BD6" },

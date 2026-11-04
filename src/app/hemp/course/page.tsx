@@ -409,7 +409,7 @@ export default function HEMPCourses() {
                     <Bar dataKey="september" stackId="cohort" fill="#D17A86" barSize={46} name="September" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#102C5E" }} /> January</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> May</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#D17A86" }} /> September</span>
@@ -431,7 +431,7 @@ export default function HEMPCourses() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Count</span>
                 </div>
               </Panel>
@@ -481,7 +481,7 @@ export default function HEMPCourses() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Avg Completion %</span>
                 </div>
               </Panel>
@@ -516,7 +516,7 @@ export default function HEMPCourses() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Average Score</span>
                 </div>
               </Panel>
@@ -532,7 +532,7 @@ export default function HEMPCourses() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Count</span>
                 </div>
               </Panel>

@@ -212,7 +212,7 @@ export default function ImpactStoriesPage() {
               </label>
 
               {/* legend */}
-              <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(0,33,71,0.07)" }}>
+              <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 12 }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#374151" }}>
                   <span style={{ width: 18, height: 18, borderRadius: 5, backgroundColor: "var(--brand-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}><FileText size={11} color="white" /></span>
                   Text story
