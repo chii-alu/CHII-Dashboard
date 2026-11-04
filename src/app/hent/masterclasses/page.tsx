@@ -85,6 +85,39 @@ function ratingLabel(score: number): string {
 
 // Custom SVG donut  -  same as overview, guarantees hex fill colours
 const DISTINCT = ["#2E7D5B","#E76F51","#2A6F97","#E9C46A","#6A4C93","#E63946","#43AA8B","#F4A261","#577590","#9B5DE5","#00BBF9","#BC6C25","#8AB17D","#D62828","#3D405B"];
+// Chart panel in the HEMP design: a header band, then the chart inside a placeholder.
+// With no data it shows only "In coming data" (no legend, no dividers).
+function DemographicPanel({ title, subtitle, info, data, color }: {
+  title: string; subtitle: string; info: string;
+  data: { name: string; value: number }[] | null; color: string;
+}) {
+  return (
+    <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden" }}>
+      <div style={{ backgroundColor: NAVY, padding: "12px 20px", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 3, height: 15, borderRadius: 999, backgroundColor: "#D4AF87", flexShrink: 0 }} />
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "white", lineHeight: 1.2 }} title={info}>{title}</p>
+          <p style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", marginTop: 1 }}>{subtitle}</p>
+        </div>
+      </div>
+      <div style={{ padding: "16px 20px 20px" }}>
+        <ChartWithPlaceholder data={data} height={240}>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={data ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" horizontal={false} />
+              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 10.5, fill: "#374151" }} axisLine={false} tickLine={false} />
+              <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+              <Bar dataKey="value" name="Attendees" fill={color} radius={[0, 4, 4, 0]} barSize={18} />
+              <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartWithPlaceholder>
+      </div>
+    </div>
+  );
+}
+
 function CustomDonut({ data, className = "" }: {
   data: { name: string; value: number }[];
   colors?: string[];
@@ -565,92 +598,14 @@ export default function MasterclassesPage() {
           <SectionHeader title="Participant Demographics"
             sub="Attendance breakdown by gender, age, stage, region, and social inclusion" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="Age Group Distribution" sub="Participants by age bracket" accent={SKY}>
-              <CustomDonut data={ageData} colors={AGE_COLORS} className="h-36" valueFormatter={v => `${v}`} />
-              <div className="mt-2 flex flex-wrap gap-4 justify-center">
-                {ageData.map((d, i) => (
-                  <div key={d.name} className="flex items-center gap-1.5 text-[10px]">
-                    <span className="flex items-center gap-1.5 text-gray-500">
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: AGE_COLORS[i] }} />{d.name}
-                    </span>
-                    <span className="font-medium" style={{ color: AGE_COLORS[i] }}>{d.value}</span>
-                  </div>
-                ))}
-              </div>
-            </ChartCard>
-
-            <ChartCard title="Geographic Region" sub="Participants by region of origin" accent={EMERALD_MC}>
-              <CustomDonut data={regionData} colors={REGION_COLORS} className="h-36" valueFormatter={v => `${v}`} />
-              <div className="mt-2 flex flex-wrap gap-4 justify-center">
-                {regionData.map((d, i) => (
-                  <div key={d.name} className="flex items-center gap-1.5 text-[10px]">
-                    <span className="flex items-center gap-1.5 text-gray-500">
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: REGION_COLORS[i] }} />
-                      <span>{d.name}</span>
-                    </span>
-                    <span className="font-medium" style={{ color: REGION_COLORS[i] }}>{d.value}</span>
-                  </div>
-                ))}
-              </div>
-            </ChartCard>
-
-            <ChartCard title="Venture Stage" sub="Attendees by venture development stage" accent={VIOLET_MC}>
-              <CustomDonut data={stageData} colors={STAGE_COLORS} className="h-36" valueFormatter={v => `${v}`} />
-              <div className="mt-3 grid grid-cols-3 gap-1 pt-2 border-t border-gray-100 text-center">
-                {stageData.map((d, i) => (
-                  <div key={d.name}>
-                    <p className="text-sm font-black" style={{ color: STAGE_COLORS[i] }}>{d.value}</p>
-                    <p className="text-[9px] text-gray-400">{d.name}</p>
-                  </div>
-                ))}
-              </div>
-            </ChartCard>
-
-            <ChartCard title="Inclusion Reach" sub="PWD and refugee-displaced" accent={AMBER_MC}>
-              <ChartWithPlaceholder data={hasHentData ? socialData.map((s, i) => ({
-                    name: s.name,
-                    value: s.value,
-                    percentage: tot.attendees > 0 ? Math.round((s.value / tot.attendees) * 100) : 0,
-                    idx: i,
-                  })) : null} height={240}>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart
-                  data={socialData.map((s, i) => ({
-                    name: s.name,
-                    value: s.value,
-                    percentage: tot.attendees > 0 ? Math.round((s.value / tot.attendees) * 100) : 0,
-                    idx: i,
-                  }))}
-                  margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
-                  barCategoryGap="30%"
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} width={40} />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload?.[0]) {
-                        const data = payload[0].payload as typeof socialData[0] & { percentage: number };
-                        return (
-                          <div style={{ backgroundColor: "white", padding: "8px 10px", borderRadius: 4, border: "1px solid #E5E7EB" }}>
-                            <p style={{ fontSize: 10, fontWeight: 600, color: "#0E4633", margin: "0 0 4px 0" }}>{data.name}</p>
-                            <p style={{ fontSize: 10, color: "#6B7280", margin: 0 }}>{data.value} participants ({data.percentage}%)</p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {socialData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={SOCIAL_COLORS[index % SOCIAL_COLORS.length]} />
-                    ))}
-                  </Bar>
-                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: 10 }} />
-                </BarChart>
-              </ResponsiveContainer>
-              </ChartWithPlaceholder>
-            </ChartCard>
+            <DemographicPanel title="Age Group Distribution" subtitle="Participants by age bracket"
+              info="Masterclass attendees by age bracket." data={hasHentData ? ageData : null} color={SKY} />
+            <DemographicPanel title="Geographic Region" subtitle="Participants by region of origin"
+              info="Masterclass attendees by region of origin." data={hasHentData ? regionData : null} color={EMERALD_MC} />
+            <DemographicPanel title="Venture Stage" subtitle="Attendees by venture development stage"
+              info="Masterclass attendees by venture development stage." data={hasHentData ? stageData : null} color={VIOLET_MC} />
+            <DemographicPanel title="Inclusion Reach" subtitle="PWD and refugee-displaced"
+              info="Masterclass attendees who are persons with disability or refugee-displaced." data={hasHentData ? socialData : null} color={AMBER_MC} />
           </div>
         </section>
         )}
@@ -700,7 +655,7 @@ export default function MasterclassesPage() {
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div className="mt-3 grid grid-cols-1 gap-2 pt-3 border-t border-gray-100 text-center">
+              <div className="mt-3 grid grid-cols-1 gap-2 text-center">
                 <div>
                   <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{hasHentData && recommendRate !== null ? `${recommendRate}%` : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Would recommend</p>
