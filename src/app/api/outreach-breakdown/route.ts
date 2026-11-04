@@ -89,9 +89,10 @@ export async function GET() {
       byPillar[pillar] = interventions.reduce((sum: number, i: any) => sum + i.value, 0);
 
       // Distribute by gender based on overall female percentage
-      const femalePct = demographics.femalePct || 60;
-      byPillarGender[pillar]["Female"] = Math.round(byPillar[pillar] * femalePct / 100);
-      byPillarGender[pillar]["Male"] = byPillar[pillar] - byPillarGender[pillar]["Female"];
+      // No estimate: the split is null until the female share is in Supabase.
+      const femalePct = demographics.femalePct ?? null;
+      byPillarGender[pillar]["Female"] = femalePct === null ? null : Math.round(byPillar[pillar] * femalePct / 100);
+      byPillarGender[pillar]["Male"] = femalePct === null ? null : byPillar[pillar] - byPillarGender[pillar]["Female"];
     });
 
     // Check if actual "Participants By Program" data exists in Supabase
@@ -107,10 +108,10 @@ export async function GET() {
     const hasInclusionData = data?.some((r: any) => r.metric?.includes("Inclusion"));
     const inclusionByProgramChart = hasInclusionData ? PILLARS.map(p => ({
       program: p,
-      Female: demographics.femalePct || 60,
-      Male: 100 - (demographics.femalePct || 60),
-      "Refugee / IDP": 4.05,
-      PwD: 1.90,
+      Female: demographics.femalePct ?? null,
+      Male: demographics.femalePct == null ? null : 100 - demographics.femalePct,
+      "Refugee / IDP": null,
+      PwD: null,
     })) : null;
 
     // Build status data - ONLY if actual completion data exists in Supabase

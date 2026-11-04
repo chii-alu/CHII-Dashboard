@@ -18,7 +18,6 @@ import {
   Users, Briefcase, Accessibility, Shield, ShieldCheck, Layers,
   Info, Hammer, GraduationCap, Rocket, Globe, SlidersHorizontal, X,
 } from "lucide-react";
-import { SectionPending } from "@/components/ui/section-pending";
 import { GENDERS, type Gender, type ParticipantType } from "@/types";
 
 type Program = "HEMP" | "HENT" | "HECO";
@@ -78,9 +77,7 @@ const EMPLOYED_PATHWAYS: Pathway[] = ["Wage Employment", "Wage & Venture"];
 const VENTURE_PATHWAYS: Pathway[] = ["Enterprise", "Wage & Venture"];
 
 // Youth and venture rows come from Supabase; until they load these lists are empty and the sections show "In coming data".
-const YOUTH: Youth[] = [];
 const VENTURES: Venture[] = [];
-const dataReady = YOUTH.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -382,6 +379,7 @@ export default function YouthInWorkPage() {
     africaPct: totals.africaPct ?? null,
   }), [totals]);
 
+
   /* ── Section 1: work pathways ──────────────────────── */
   const pathwayDist = useMemo(() => {
     // No actual Supabase breakdown data for Work Pathway Distribution
@@ -456,7 +454,6 @@ export default function YouthInWorkPage() {
       empType: null,             // Show "In coming data"
       indicators: null,          // Show "In coming data"
       dignified: null,           // Show "In coming data"
-      dignifiedTotal: 0,
       beforeAfter: null,         // Show "In coming data"
       sectors: null,             // Show "In coming data"
       employers: null,           // Show "In coming data"
@@ -548,8 +545,7 @@ export default function YouthInWorkPage() {
         </section>
 
         {/* ════ SECTION 1 — WORK PATHWAYS ════ */}
-        {show(1) && !(dataReady) && <SectionPending title="Work Pathways" />}
-        {show(1) && (dataReady) && (
+        {show(1) && (
         <section className="space-y-4">
           <SectionHeader title="Work Pathways" blurb="How are participants progressing into work?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
@@ -603,8 +599,7 @@ export default function YouthInWorkPage() {
         )}
 
         {/* ════ SECTION 2 — JOBS CREATED ════ */}
-        {show(2) && !(dataReady) && <SectionPending title="Jobs Created" />}
-        {show(2) && (dataReady) && (
+        {show(2) && (
         <section className="space-y-4">
           <SectionHeader title="Jobs Created" blurb="How many work opportunities are being created across the ecosystem, and how is it trending?" />
 
@@ -737,8 +732,7 @@ export default function YouthInWorkPage() {
         )}
 
         {/* ════ SECTION 3 — INCLUSION ════ */}
-        {show(3) && !(dataReady) && <SectionPending title="Inclusion Reach" />}
-        {show(3) && (dataReady) && (
+        {show(3) && (
         <section className="space-y-4">
           <SectionHeader title="Inclusion Reach" blurb="Who is accessing work opportunities?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
@@ -789,8 +783,7 @@ export default function YouthInWorkPage() {
         )}
 
         {/* ════ SECTION 4 — QUALITY OF WORK ════ */}
-        {show(4) && !(dataReady) && <SectionPending title="Quality of Work" />}
-        {show(4) && (dataReady) && (
+        {show(4) && (
         <section className="space-y-4">
           <SectionHeader title="Quality of Work" blurb="Are participants accessing meaningful and sustainable work?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
@@ -825,7 +818,7 @@ export default function YouthInWorkPage() {
             <Panel title="Dignified Work Status" subtitle="Accessing vs progressing"
               info="Working participants accessing dignified work versus those still progressing toward it.">
               <ChartWithPlaceholder data={quality.dignified || []} height={340}>
-                <Donut data={quality.dignified || []} colors={[C_BLUE, "#C5D2E0"]} total={quality.dignifiedTotal} totalLabel="Working" height={340} legendPercent />
+                <Donut data={quality.dignified || []} colors={[C_BLUE, "#C5D2E0"]} total={(quality.dignified || []).reduce((sum: number, d: any) => sum + d.value, 0)} totalLabel="Working" height={340} legendPercent />
               </ChartWithPlaceholder>
             </Panel>
           </div>

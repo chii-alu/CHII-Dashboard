@@ -18,7 +18,6 @@ import {
   Users, Info, GraduationCap, BookOpen, Wallet,
   SlidersHorizontal, X, Globe, MapPin, TrendingUp,
 } from "lucide-react";
-import { SectionPending } from "@/components/ui/section-pending";
 import { GENDERS, type Gender } from "@/types";
 
 // Category labels for the filters and charts (not data).
@@ -31,7 +30,6 @@ const COUNTRIES = ["Rwanda", "Kenya", "Nigeria", "Ghana", "Uganda", "South Afric
 const PROGRAMMES = ["BSc Software Eng", "Computer Science", "Entrepreneurial Leadership", "International Business & Trade", "Global Challenges"];
 const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 
-// Student rows come from Supabase; until they load this list is empty and the sections show "In coming data".
 interface FeStudent {
   id: number;
   gender: Gender;
@@ -48,7 +46,6 @@ interface FeStudent {
   active: boolean;
 }
 const FE_STUDENTS: FeStudent[] = [];
-const dataReady = FE_STUDENTS.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -353,8 +350,7 @@ export default function FurtherEducationPage() {
         </section>
 
         {/* ════ PARTICIPANTS & STUDY PATHWAYS ════ */}
-        {show(1) && !(dataReady) && <SectionPending title="Participants" />}
-        {show(1) && (dataReady) && (
+        {show(1) && (
         <section className="space-y-4">
           <SectionHeader title="Participants" blurb="Who is pursuing further education and what pathways are they following - profiles, qualifications, fields, and destinations." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>

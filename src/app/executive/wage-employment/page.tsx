@@ -17,7 +17,6 @@ import {
   Users, Info, Briefcase, Cpu, ShieldCheck,
   ArrowUpRight, Clock, SlidersHorizontal, X,
 } from "lucide-react";
-import { SectionPending } from "@/components/ui/section-pending";
 import { GENDERS, type Gender, type ParticipantType } from "@/types";
 
 type EmploymentType = "Full-time" | "Part-time" | "Seasonal";
@@ -60,9 +59,7 @@ const COUNTRIES = ["Rwanda", "Kenya", "Nigeria", "South Africa", "Ghana", "Ugand
 const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 const COHORTS = [2019, 2020, 2021, 2022, 2023, 2024];
 
-// Worker rows come from Supabase; until they load this list is empty and the sections show "In coming data".
 const WORKERS: Worker[] = [];
-const dataReady = WORKERS.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -282,8 +279,7 @@ export default function WageEmploymentPage() {
           </div>
         </section>
 
-        {show(1) && !(dataReady) && <SectionPending title="Workforce Profile" />}
-        {show(1) && (dataReady) && (
+        {show(1) && (
           <section className="space-y-4">
             <SectionHeader title="Workforce Profile" blurb="Who is employed?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
@@ -335,8 +331,7 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        {show(2) && !(dataReady) && <SectionPending title="Employment Trends" />}
-        {show(2) && (dataReady) && (
+        {show(2) && (
           <section className="space-y-4">
             <SectionHeader title="Employment Trends" blurb="How is employment evolving over time?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
@@ -375,8 +370,7 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        {show(3) && !(dataReady) && <SectionPending title="Program Outcomes" />}
-        {show(3) && (dataReady) && (
+        {show(3) && (
           <section className="space-y-4">
             <SectionHeader title="Program Outcomes" blurb="Which programs drive employment?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
@@ -417,13 +411,13 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        {show(4) && !(dataReady) && <SectionPending title="Quality & Impact" />}
-        {show(4) && (dataReady) && (
+        {show(4) && (
           <section className="space-y-4">
             <SectionHeader title="Quality & Impact" blurb="Is the work dignified, and is it improving lives?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
               <Panel title="Household Impact" subtitle="Reported impact areas, ranked"
                 info="How wage employment improved participants' households, sorted from most to least reported.">
+                <ChartWithPlaceholder data={quality.household} height={220}>
                 <ResponsiveContainer width="100%" height={Math.max(220, ((quality.household || []).length) * 40)}>
                   <BarChart layout="vertical" data={quality.household || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
@@ -435,9 +429,11 @@ export default function WageEmploymentPage() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="CHII Support Assessment" subtitle="Agreement with: CHII's support contributed to my employment"
                 info="How participants rate CHII's contribution to their employment outcomes.">
+                <ChartWithPlaceholder data={quality.contribution} height={240}>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={quality.contribution || []} margin={{ top: 16, right: 10, bottom: 0, left: -16 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
@@ -450,6 +446,7 @@ export default function WageEmploymentPage() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </ChartWithPlaceholder>
               </Panel>
             </div>
           </section>
