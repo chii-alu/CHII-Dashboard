@@ -584,8 +584,8 @@ export default function AtAGlancePage() {
     return Math.round((count / total) * 1000) / 10;
   };
 
-  const femaleShare = segmentPct('Total Beneficiaries', 'female');
-  const maleShare = segmentPct('Total Beneficiaries', 'male');
+  const femaleShare = segmentPct('Total Outreach', 'female');
+  const maleShare = segmentPct('Total Outreach', 'male');
 
   const currentlyEnrolled = atAGlanceHeadlines?.find((h: any) => h.metric === 'Currently Enrolled')?.value ?? null;
   const enrolledFemalePct = segmentPct('Currently Enrolled', 'female');

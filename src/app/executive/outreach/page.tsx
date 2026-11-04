@@ -19,7 +19,6 @@ import {
   Users, Info,
   SlidersHorizontal, X, Layers, BookOpen, Shield, Accessibility,
 } from "lucide-react";
-import { SectionPending } from "@/components/ui/section-pending";
 import { GENDERS, type Gender } from "@/types";
 
 type Institution = "ALX" | "ALU" | "ALCHE" | "Other";
@@ -51,9 +50,6 @@ const INTERVENTIONS: string[] = Object.values(INTERVENTIONS_BY_PILLAR).flat();
 const STATUSES: EngagementStatus[] = ["Registered", "Completed"];
 const TREND_YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 
-// Participant rows come from Supabase; until they load this list is empty and the sections show "In coming data".
-const OUTREACH_PARTICIPANTS: OutreachParticipant[] = [];
-const dataReady = OUTREACH_PARTICIPANTS.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -503,8 +499,7 @@ export default function OutreachPage() {
         </section>
 
         {/* ════ SECTION 2 — REACH & PARTICIPATION ════ */}
-        {show(1) && !(dataReady) && <SectionPending title="Reach & Participation" />}
-        {show(1) && (dataReady) && (
+        {show(1) && (
         <section className="space-y-4">
           <SectionHeader title="Reach & Participation" blurb="How many people we reached, who we're reaching, and the wider student population we draw from." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
@@ -615,8 +610,7 @@ export default function OutreachPage() {
         )}
 
         {/* ════ SECTION 3 — ENGAGEMENT OUTCOMES ════ */}
-        {show(2) && !(dataReady) && <SectionPending title="Engagement Outcomes" />}
-        {show(2) && (dataReady) && (
+        {show(2) && (
         <section className="space-y-4">
           <SectionHeader title="Engagement Outcomes" blurb="What happened after people participated." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
