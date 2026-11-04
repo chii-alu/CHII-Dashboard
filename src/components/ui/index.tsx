@@ -267,7 +267,7 @@ export function ChartTip({ active, payload, label, hideLabel, unit, accent = DEF
 /** Centred swatch row beneath a chart. */
 export function ChartLegend({ items }: { items: readonly (readonly [string, string])[] }) {
   return (
-    <div className="flex flex-wrap justify-center gap-4 text-[11px] text-gray-500 mt-4 pt-3 border-t border-gray-100">
+    <div className="flex flex-wrap justify-center gap-4 text-[11px] text-gray-500 mt-4 pt-3">
       {items.map(([label, color]) => (
         <span key={label} className="flex items-center gap-1.5">
           <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: color }} />

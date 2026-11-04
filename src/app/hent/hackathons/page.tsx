@@ -689,7 +689,7 @@ export default function HackathonsPage() {
                   });
                 })()}
               </div>
-              <p style={{ fontSize: 10, color: "#6B7280", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LIGHT_BORDER}`, textAlign: "center" }}>
+              <p style={{ fontSize: 10, color: "#6B7280", marginTop: 16, paddingTop: 12, textAlign: "center" }}>
                 {hasHentData ? `${total.projects ? Math.round(total.startups / total.projects * 100) : 0}% of hackathon projects go on to become startups` : "In coming data"}
               </p>
             </ChartCard>

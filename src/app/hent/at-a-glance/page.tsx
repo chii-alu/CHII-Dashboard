@@ -101,7 +101,7 @@ function KPICard({ label, value, unit, info, Icon, secondaryText, insight }: {
       </div>
 
       {insight ? (
-        <div style={{ paddingTop: 4, borderTop: "1px solid #E5E7EB" }}>
+        <div style={{ paddingTop: 4 }}>
           {insight.barPct != null && (
             <div style={{ height: 6, borderRadius: 2, backgroundColor: "#E5E7EB", overflow: "hidden", marginBottom: 4 }}>
               <div style={{ height: "100%", width: `${insight.barPct}%`, backgroundColor: PROGRESS_COLOR[insight.status], transition: "width 300ms ease" }} />
@@ -110,7 +110,7 @@ function KPICard({ label, value, unit, info, Icon, secondaryText, insight }: {
           <p style={{ fontSize: 9, fontWeight: 600, color: "#6B7280", lineHeight: 1.2, margin: 0, textAlign: "center" }}>{insight.caption}</p>
         </div>
       ) : (
-        <div style={{ display: "flex", gap: 3, paddingTop: 4, borderTop: "1px solid #E5E7EB", justifyContent: "flex-start", alignItems: "center", minHeight: 14 }}>
+        <div style={{ display: "flex", gap: 3, paddingTop: 4, justifyContent: "flex-start", alignItems: "center", minHeight: 14 }}>
           <p style={{ fontSize: 9, fontWeight: 600, color: "#6B7280", lineHeight: 1.2, margin: 0, textAlign: "center", width: "100%" }}>
             {secondaryText || "—"}
           </p>

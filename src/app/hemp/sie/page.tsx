@@ -637,7 +637,7 @@ export default function HEMPSie() {
                     <Bar dataKey="completed" fill={BRAND} barSize={30} name="Completed" />
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#A8C5E6" }} /> Applied</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Selected</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: BRAND }} /> Completed</span>
@@ -658,7 +658,7 @@ export default function HEMPSie() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Participants</span>
                 </div>
               </Panel>
@@ -696,7 +696,7 @@ export default function HEMPSie() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Exposure Score</span>
                 </div>
               </Panel>
@@ -715,7 +715,7 @@ export default function HEMPSie() {
                     <Bar dataKey="internship" fill="#479BD6" barSize={30} name="Internship" />
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex flex-wrap justify-center gap-4 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#1D9E75" }} /> Employment</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Internship</span>
                 </div>
@@ -751,7 +751,7 @@ export default function HEMPSie() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#7FA5D6" }} /> Rating (0-5 scale)</span>
                 </div>
               </Panel>
@@ -767,7 +767,7 @@ export default function HEMPSie() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
-                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Score</span>
                 </div>
               </Panel>

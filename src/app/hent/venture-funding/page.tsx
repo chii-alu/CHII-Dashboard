@@ -571,7 +571,7 @@ export default function VentureFundingPage() {
                     </div>
 
                     {/* Ventures section */}
-                    <div style={{ padding: "12px 12px 0", borderTop: "1px solid rgba(14,70,51,0.08)" }}>
+                    <div style={{ padding: "12px 12px 0" }}>
                       <p style={{ fontSize: 9, fontWeight: 700, color: BRAND_DK, margin: "12px 0 8px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
                         {selectedSector ? `${selectedSector} Ventures` : "All Ventures"}
                       </p>

@@ -49,7 +49,7 @@ export default function SatisfactionRadar({
       </ResponsiveContainer>
 
       {/* Bottom legend: dot + name + AVG (mono) */}
-      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-3 pt-3 border-t"
+      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-3"
         style={{ borderColor: PALETTE.border }}>
         {series.map(s => (
           <span key={s.name} className="flex items-center gap-2" style={{ fontSize: 12, color: PALETTE.mutedText }}>

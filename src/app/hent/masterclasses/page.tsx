@@ -573,7 +573,7 @@ export default function MasterclassesPage() {
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-center">
+              <div className="mt-3 grid grid-cols-3 gap-2 pt-3 text-center">
                 <div>
                   <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{hasHentData ? `${tot.completion}%` : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Avg completion</p>
@@ -706,7 +706,7 @@ export default function MasterclassesPage() {
                 </BarChart>
               </ResponsiveContainer>
               </ChartWithPlaceholder>
-              <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-center">
+              <div className="mt-3 grid grid-cols-3 gap-2 pt-3 text-center">
                 <div>
                   <p className="text-lg font-bold" style={{ color: VIOLET_MC }}>{hasHentData ? `${tot.completion}%` : "In coming data"}</p>
                   <p className="text-[9px] text-gray-400">Avg completion</p>

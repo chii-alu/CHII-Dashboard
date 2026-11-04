@@ -442,7 +442,7 @@ function KPICard({
       )}
 
       {/* Row 4: Gender split or secondary text */}
-      <div style={{ display: "flex", gap: 8, paddingTop: 8, borderTop: "1px solid var(--border-subtle)", justifyContent: "center", alignItems: "center", minHeight: 16 }}>
+      <div style={{ display: "flex", gap: 8, paddingTop: 8, justifyContent: "center", alignItems: "center", minHeight: 16 }}>
         {femalePct !== undefined && malePct !== undefined ? (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
