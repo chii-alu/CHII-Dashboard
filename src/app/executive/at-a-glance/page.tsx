@@ -398,7 +398,7 @@ function KPICard({
       {/* Row 1: Label + Info icon + Chevron */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 3, marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 3, flex: 1 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--brand-secondary)", lineHeight: 1.2 }}>{label}</p>
+          <p style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--brand-secondary)", lineHeight: 1.2 }}>{label}</p>
           {info && (
             <div style={{ position: "relative", flexShrink: 0, cursor: "pointer" }}>
               <button
