@@ -28,6 +28,13 @@ const SECONDARY = "#5E6C84"; // 5.3:1 on white — passes WCAG AA
 // Where the Intervention Manager link goes. Left empty until its address is ready.
 const INTERVENTION_MANAGER_HREF: string | null = null;
 
+const CAPABILITIES = [
+  { icon: BarChart3,  title: "Outcomes" },
+  { icon: TrendingUp, title: "Evidence" },
+  { icon: Zap,        title: "Insights" },
+  { icon: FileText,   title: "Stories" },
+] as const;
+
 const PORTALS = [
   { id: "HEMP",      label: "HEMP",         href: "/hemp" },
   { id: "HENT",      label: "HENT",      href: "/hent" },
@@ -36,13 +43,6 @@ const PORTALS = [
 ] as const;
 
 /** What the platform does — four capabilities, not a description of the org. */
-const CAPABILITIES = [
-  { icon: BarChart3,  title: "Real Outcomes",       body: "Monitor progress toward your mission." },
-  { icon: TrendingUp, title: "Impact Evidence",     body: "Data that proves change happens." },
-  { icon: Zap,        title: "Strategic Insights",  body: "Evidence guiding better decisions." },
-  { icon: FileText,   title: "Transform Stories",   body: "Reports that inspire action." },
-] as const;
-
 const PARTNERS = [
   { src: "/logos/alu.png", alt: "African Leadership University" },
   { src: "/logos/ahc.jpg", alt: "Africa Health Collaborative" },
@@ -377,64 +377,40 @@ export default function LoginPage() {
 
         {/* ══ RIGHT (brand panel) ═══════════════════════════════════════ */}
         <div
-          className="relative w-full lg:w-[50%] flex flex-col overflow-hidden px-12 py-10"
+          className="relative w-full lg:w-[50%] flex flex-col items-center justify-between overflow-hidden px-12 py-10"
           style={{ background: "#102C5E" }}
         >
-          <div className="relative z-10 flex flex-col h-full justify-between">
-            {/* Logo */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 28, margin: "auto 0" }}>
             <img
               src="/logos/CHII-Logo.png"
               alt="Centre for Health Innovation and Impact"
-              style={{ height: 40, width: "auto", objectFit: "contain", display: "block", flexShrink: 0, marginBottom: 28 }}
+              style={{ height: 48, width: "auto", objectFit: "contain", display: "block" }}
             />
-
-            {/* Mission narrative */}
-            <div style={{ marginBottom: 32 }}>
-              <p style={{ fontSize: 15, lineHeight: 1.8, color: "white", fontWeight: 500, maxWidth: "340px", margin: 0 }}>
-                Explore how CHII builds the evidence base for health innovation across Africa, tracking how young people move through programmes into dignified work, ventures, and lasting impact on health systems across the continent.
-              </p>
-            </div>
-
-            {/* Capabilities — enhanced visual treatment */}
-            <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 20 }}>
-                Platform Capabilities
-              </p>
-              <ul className="flex flex-col" style={{ listStyle: "none", margin: 0, padding: 0, gap: 18, maxWidth: "340px" }}>
-                {CAPABILITIES.map(({ icon: Icon, title, body }) => (
-                  <li key={title} className="flex items-start gap-3">
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        minWidth: 32,
-                        borderRadius: 8,
-                        background: "rgba(255,255,255,0.08)",
-                        border: "1px solid rgba(255,255,255,0.15)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginTop: 1,
-                      }}
-                    >
-                      <Icon size={16} color="white" strokeWidth={1.5} />
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "white", lineHeight: 1.3, margin: 0, marginBottom: 2 }}>{title}</p>
-                      <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, margin: 0 }}>{body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Copyright */}
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", flexShrink: 0, margin: 0 }}>
-              © 2026 CHII · African Leadership University
+            <p style={{ fontSize: 14, color: "white", fontWeight: 500, textAlign: "center", margin: 0 }}>
+              Evidence for health innovation across Africa
             </p>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
+              {CAPABILITIES.map(({ icon: Icon, title }) => (
+                <li
+                  key={title}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "7px 12px", borderRadius: 999,
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    color: "white", fontSize: 12, fontWeight: 600,
+                  }}
+                >
+                  <Icon size={14} color="white" strokeWidth={1.5} />
+                  {title}
+                </li>
+              ))}
+            </ul>
           </div>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}>
+            © 2026 CHII · African Leadership University
+          </p>
         </div>
-
       </div>
     </div>
   );

@@ -36,7 +36,7 @@ export default function PortalFooter({
 
       <div style={{ position: "relative", zIndex: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 8, padding: "18px 24px" }}>
         <span className="text-[13px] sm:text-sm" style={{ fontWeight: 700, fontStyle: "italic", color: "white" }}>
-          Africa&apos;s Oasis for Health &amp; Education Transformation
+          Nurturing the next generation of health leaders committed to transforming healthcare in Africa.
         </span>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
           <span className="text-[12px] sm:text-[13px]" style={{ color: theme.heroText }}>
