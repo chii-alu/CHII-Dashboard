@@ -20,7 +20,7 @@ const RED_FEMALE = "#DC2626";
 const BLUE_MALE = "#479BD6";
 const NOT_AVAILABLE = "In coming data";
 
-const PROGRAMMES = ["Masterclasses", "Mentorship", "Hackathons", "Ventures", "Venture Funding", "Exposure & Networking", "Study Trips"];
+const PROGRAMMES = ["Masterclasses", "Mentorship", "Hackathons", "Ventures", "Venture Funding", "Exposure & Networking"];
 
 let mapboxTokenReady = false;
 const initMapboxToken = async () => {

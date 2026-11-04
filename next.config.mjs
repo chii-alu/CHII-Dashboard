@@ -4,9 +4,6 @@ const nextConfig = {
 
   async redirects() {
     return [
-      // "Field Visits" was renamed to "Study Trips" — keep the old URL working.
-      { source: "/hent/fieldvisits", destination: "/hent/study-trips", permanent: true },
-
       // "Intro to Global Health" is its own Course page again.
       { source: "/hemp/global-health", destination: "/hemp/course", permanent: true },
 
