@@ -32,7 +32,6 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
       { label: "Hackathon",             href: "/hent/hackathons" },
       { label: "Mentorship",            href: "/hent/mentorship" },
       { label: "Exposure & Networking", href: "/hent/exposure-networking" },
-      { label: "Study Trips",           href: "/hent/study-trips" },
     ],
   },
 
