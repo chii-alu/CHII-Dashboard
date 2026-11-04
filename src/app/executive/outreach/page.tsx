@@ -19,11 +19,41 @@ import {
   Users, Info,
   SlidersHorizontal, X, Layers, BookOpen, Shield, Accessibility,
 } from "lucide-react";
-import {
-  OUTREACH_PARTICIPANTS, INSTITUTIONS, PILLARS, INTERVENTIONS,
-  INTERVENTIONS_BY_PILLAR, GENDERS, STATUSES, TREND_YEARS,
-  type OutreachParticipant, type Pillar, type Gender,
-} from "@/data/executive/outreach";
+import { SectionPending } from "@/components/ui/section-pending";
+import { GENDERS, type Gender } from "@/types";
+
+type Institution = "ALX" | "ALU" | "ALCHE" | "Other";
+type Pillar = "HEMP" | "HENT" | "HECO";
+type EngagementStatus = "Registered" | "Completed";
+
+interface OutreachParticipant {
+  id: string;
+  institution: Institution;
+  pillar: Pillar;
+  intervention: string;
+  gender: Gender;
+  refugee: boolean;
+  pwd: boolean;
+  missionStudent: boolean;
+  status: EngagementStatus;
+  yearEngaged: number;
+}
+
+// Category labels for the filters and charts (not data).
+const INSTITUTIONS: Institution[] = ["ALX", "ALU", "ALCHE", "Other"];
+const PILLARS: Pillar[] = ["HEMP", "HENT", "HECO"];
+const INTERVENTIONS_BY_PILLAR: Record<Pillar, string[]> = {
+  HEMP: ["Career Workshops", "Exposure Events", "SIE", "Courses", "Internships"],
+  HENT: ["Ventures", "Venture Funding", "Masterclasses", "Mentorship"],
+  HECO: ["Hackathon", "Study Trips", "Exposure & Networking"],
+};
+const INTERVENTIONS: string[] = Object.values(INTERVENTIONS_BY_PILLAR).flat();
+const STATUSES: EngagementStatus[] = ["Registered", "Completed"];
+const TREND_YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
+
+// Participant rows come from Supabase; until they load this list is empty and the sections show "In coming data".
+const OUTREACH_PARTICIPANTS: OutreachParticipant[] = [];
+const dataReady = OUTREACH_PARTICIPANTS.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -473,7 +503,8 @@ export default function OutreachPage() {
         </section>
 
         {/* ════ SECTION 2 — REACH & PARTICIPATION ════ */}
-        {show(1) && (
+        {show(1) && !(dataReady) && <SectionPending title="Reach & Participation" />}
+        {show(1) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Reach & Participation" blurb="How many people we reached, who we're reaching, and the wider student population we draw from." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
@@ -581,11 +612,11 @@ export default function OutreachPage() {
             </Panel>
           </div>
         </section>
-
         )}
 
         {/* ════ SECTION 3 — ENGAGEMENT OUTCOMES ════ */}
-        {show(2) && (
+        {show(2) && !(dataReady) && <SectionPending title="Engagement Outcomes" />}
+        {show(2) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Engagement Outcomes" blurb="What happened after people participated." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
-import { missionStudents } from "@/data/hemp/mission-students";
 
 const GEO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -70,20 +69,8 @@ export default function AfricaChoropleth() {
     name: string; value: number; x: number; y: number;
   } | null>(null);
 
-  const counts = useMemo(() => {
-    const enrolled:  Record<string, number> = {};
-    const graduated: Record<string, number> = {};
-    const inwork:    Record<string, number> = {};
-    for (const s of missionStudents) {
-      if (s.status === "Active")
-        enrolled[s.country] = (enrolled[s.country] || 0) + 1;
-      if (s.status === "Completed")
-        graduated[s.country] = (graduated[s.country] || 0) + 1;
-      if (s.employment === "Employed" || s.employment === "Entrepreneur")
-        inwork[s.country] = (inwork[s.country] || 0) + 1;
-    }
-    return { enrolled, graduated, inwork } as Record<Metric, Record<string, number>>;
-  }, []);
+  // Country counts come from Supabase; until they load every country shows "no data".
+  const counts: Record<Metric, Record<string, number>> = { enrolled: {}, graduated: {}, inwork: {} };
 
   const current  = counts[metric];
   const maxVal   = Math.max(...Object.values(current), 1);
@@ -278,6 +265,9 @@ export default function AfricaChoropleth() {
           <div>
             <p style={{ fontSize: 9, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Top Countries</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              {topCountries.length === 0 && (
+                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>In coming data</span>
+              )}
               {topCountries.map(([country, value]) => (
                 <div key={country} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 6 }}>
                   <span style={{ fontSize: 11, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

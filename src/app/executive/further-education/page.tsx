@@ -18,11 +18,37 @@ import {
   Users, Info, GraduationCap, BookOpen, Wallet,
   SlidersHorizontal, X, Globe, MapPin, TrendingUp,
 } from "lucide-react";
-import {
-  FE_STUDENTS, GENDERS, QUALIFICATIONS, FIELDS, FUNDING_SOURCES, DESTINATIONS,
-  RELEVANCE, COUNTRIES, PROGRAMMES, YEARS,
-  type Gender,
-} from "@/data/executive/further-education";
+import { SectionPending } from "@/components/ui/section-pending";
+import { GENDERS, type Gender } from "@/types";
+
+// Category labels for the filters and charts (not data).
+const QUALIFICATIONS = ["Bachelor's top-up", "Postgraduate diploma", "Master's", "Doctorate", "Professional cert"];
+const FIELDS = ["Business & Management", "Engineering & Tech", "Public Health / Policy", "Education", "Sciences", "Arts / Other"];
+const FUNDING_SOURCES = ["Scholarship / funded", "Self-funded", "Employer", "Loan"];
+const DESTINATIONS = ["Within Africa", "Europe", "North America", "Asia / Other"];
+const RELEVANCE = ["Directly related", "Somewhat related", "Different field"];
+const COUNTRIES = ["Rwanda", "Kenya", "Nigeria", "Ghana", "Uganda", "South Africa", "Ethiopia", "Other Africa"];
+const PROGRAMMES = ["BSc Software Eng", "Computer Science", "Entrepreneurial Leadership", "International Business & Trade", "Global Challenges"];
+const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
+
+// Student rows come from Supabase; until they load this list is empty and the sections show "In coming data".
+interface FeStudent {
+  id: number;
+  gender: Gender;
+  scholar: boolean;
+  country: string;
+  programme: string;
+  qualification: string;
+  field: string;
+  funding: string;
+  destination: string;
+  countryOfStudy: string;
+  relevance: string;
+  year: number;
+  active: boolean;
+}
+const FE_STUDENTS: FeStudent[] = [];
+const dataReady = FE_STUDENTS.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -327,7 +353,8 @@ export default function FurtherEducationPage() {
         </section>
 
         {/* ════ PARTICIPANTS & STUDY PATHWAYS ════ */}
-        {show(1) && (
+        {show(1) && !(dataReady) && <SectionPending title="Participants" />}
+        {show(1) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Participants" blurb="Who is pursuing further education and what pathways are they following - profiles, qualifications, fields, and destinations." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>

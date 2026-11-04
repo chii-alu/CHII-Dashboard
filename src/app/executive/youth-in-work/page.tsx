@@ -18,11 +18,69 @@ import {
   Users, Briefcase, Accessibility, Shield, ShieldCheck, Layers,
   Info, Hammer, GraduationCap, Rocket, Globe, SlidersHorizontal, X,
 } from "lucide-react";
-import {
-  YOUTH, VENTURES, PATHWAYS, PROGRAMS, PARTICIPANT_TYPES, GENDERS, COUNTRIES, SECTORS,
-  EMPLOYER_TYPES, WORK_CATEGORIES, YEARS, COHORTS, EMPLOYED_PATHWAYS, VENTURE_PATHWAYS,
-  type Pathway, type Program, type ParticipantType, type Gender, type Youth,
-} from "@/data/executive/youth-in-work";
+import { SectionPending } from "@/components/ui/section-pending";
+import { GENDERS, type Gender, type ParticipantType } from "@/types";
+
+type Program = "HEMP" | "HENT" | "HECO";
+type Pathway = "Wage Employment" | "Internship" | "Enterprise" | "Wage & Venture" | "Further Education" | "Seeking Employment" | "Other";
+type EmploymentType = "Full-time" | "Part-time" | "Contract" | "None";
+type EmployerType = "Startup" | "Corporate" | "Public Sector" | "NGO" | "Self-employed";
+
+interface Youth {
+  id: number;
+  participantType: ParticipantType;
+  program: Program;
+  gender: Gender;
+  country: string;
+  basedInAfrica: boolean;
+  refugee: boolean;
+  pwd: boolean;
+  scholar: boolean;
+  pathway: Pathway;
+  year: number;
+  cohort: number;
+  employmentType: EmploymentType;
+  employerType: EmployerType;
+  decentWork: boolean;
+  permanent: boolean;
+  leadership: boolean;
+  sector: string;
+  primaryJob: boolean;
+  secondaryJob: boolean;
+  jobsCreated: number;
+}
+
+interface Venture {
+  name: string;
+  program: Program;
+  employees: number;
+  studentEmployees: number;
+  alumniEmployees: number;
+}
+
+// Category labels for the filters and charts (not data).
+const PROGRAMS: Program[] = ["HEMP", "HENT", "HECO"];
+const PARTICIPANT_TYPES: ParticipantType[] = ["Student", "Alumni", "Venture Employee"];
+const PATHWAYS: Pathway[] = ["Wage Employment", "Internship", "Enterprise", "Wage & Venture", "Further Education", "Seeking Employment", "Other"];
+const EMPLOYMENT_TYPES: EmploymentType[] = ["Full-time", "Part-time", "Contract"];
+const EMPLOYER_TYPES: EmployerType[] = ["Startup", "Corporate", "Public Sector", "NGO", "Self-employed"];
+const WORK_CATEGORIES = ["Full-time", "Part-time", "Contract", "Internship", "Self-employed", "Enterprise"];
+const COHORTS = [2019, 2020, 2021, 2022, 2023, 2024];
+const COUNTRIES = ["Rwanda", "Kenya", "Nigeria", "Ghana", "Uganda", "South Africa", "Ethiopia", "Other Africa", "Diaspora"];
+const SECTORS = [
+  "Digital Health", "MedTech", "Biotech & Pharma", "Mental Health & Wellness",
+  "Fitness & Preventive Health", "Healthcare Infrastructure & Operations",
+  "Personalized & Precision Medicine", "Public Health & Accessibility",
+  "Maternal Health", "Other",
+];
+const YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
+const EMPLOYED_PATHWAYS: Pathway[] = ["Wage Employment", "Wage & Venture"];
+const VENTURE_PATHWAYS: Pathway[] = ["Enterprise", "Wage & Venture"];
+
+// Youth and venture rows come from Supabase; until they load these lists are empty and the sections show "In coming data".
+const YOUTH: Youth[] = [];
+const VENTURES: Venture[] = [];
+const dataReady = YOUTH.length > 0;
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
@@ -490,7 +548,8 @@ export default function YouthInWorkPage() {
         </section>
 
         {/* ════ SECTION 1 — WORK PATHWAYS ════ */}
-        {show(1) && (
+        {show(1) && !(dataReady) && <SectionPending title="Work Pathways" />}
+        {show(1) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Work Pathways" blurb="How are participants progressing into work?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
@@ -544,7 +603,8 @@ export default function YouthInWorkPage() {
         )}
 
         {/* ════ SECTION 2 — JOBS CREATED ════ */}
-        {show(2) && (
+        {show(2) && !(dataReady) && <SectionPending title="Jobs Created" />}
+        {show(2) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Jobs Created" blurb="How many work opportunities are being created across the ecosystem, and how is it trending?" />
 
@@ -677,7 +737,8 @@ export default function YouthInWorkPage() {
         )}
 
         {/* ════ SECTION 3 — INCLUSION ════ */}
-        {show(3) && (
+        {show(3) && !(dataReady) && <SectionPending title="Inclusion Reach" />}
+        {show(3) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Inclusion Reach" blurb="Who is accessing work opportunities?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
@@ -728,7 +789,8 @@ export default function YouthInWorkPage() {
         )}
 
         {/* ════ SECTION 4 — QUALITY OF WORK ════ */}
-        {show(4) && (
+        {show(4) && !(dataReady) && <SectionPending title="Quality of Work" />}
+        {show(4) && (dataReady) && (
         <section className="space-y-4">
           <SectionHeader title="Quality of Work" blurb="Are participants accessing meaningful and sustainable work?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
