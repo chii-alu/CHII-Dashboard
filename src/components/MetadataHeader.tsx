@@ -15,7 +15,7 @@ export function MetadataHeader({
   title,
   subtitle,
   dataSource = "CHII MELA Consolidated Database",
-  lastUpdated = "Loading...",
+  lastUpdated = "",
   participantsCount,
   period = "2022–2026",
   customContent,
