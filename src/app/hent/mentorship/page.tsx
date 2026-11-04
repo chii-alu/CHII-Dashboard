@@ -485,7 +485,6 @@ export default function MentorshipPage() {
           title="Mentorship & Fellowship Metrics"
           cards={[
             { label: "Total cohorts", num: headline("Total cohorts"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Target, tip: "Mentorship and fellowship cohorts across all programs." },
-            { label: "Active cohorts", num: headline("Active cohorts"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Zap, tip: "Cohorts currently running." },
             { label: "Unique ventures in register", num: headline("Unique ventures in register"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Briefcase, tip: "Distinct ventures registered on mentorship and fellowship programs." },
             { label: "Mentors in register", num: headline("Mentors in register"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Award, tip: "Mentors registered on mentorship and fellowship programs." },
             { label: "Mentees in Register", num: headline("Total Fellows"), displayFmt: (n) => Math.round(n).toLocaleString(), icon: Users, tip: "Mentees registered on mentorship and fellowship programs." },
@@ -684,15 +683,21 @@ export default function MentorshipPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Age Group Distribution"
                 subtitle="Fellows by age bracket">
-                <CustomDonut data={ageData} className="h-36" />
+                <ChartWithPlaceholder data={hasHentData ? ageData : null} height={260}>
+                  <CustomDonut data={ageData} className="h-36" />
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Geographic Region"
                 subtitle="Fellows by region of origin">
-                <CustomDonut data={regionData} className="h-36" />
+                <ChartWithPlaceholder data={hasHentData ? regionData : null} height={260}>
+                  <CustomDonut data={regionData} className="h-36" />
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Venture Stage Distribution"
                 subtitle="Fellows by development stage">
-                <CustomDonut data={stageData} className="h-36" />
+                <ChartWithPlaceholder data={hasHentData ? stageData : null} height={260}>
+                  <CustomDonut data={stageData} className="h-36" />
+                </ChartWithPlaceholder>
               </Panel>
               <Panel title="Inclusion Reach"
                 subtitle="PWD and refugee-displaced">
