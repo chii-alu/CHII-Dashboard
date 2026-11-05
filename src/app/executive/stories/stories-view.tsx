@@ -145,7 +145,6 @@ export default function StoriesView({ stories, summary, cities }: {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [showCities, setShowCities] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [nameQuery, setNameQuery] = useState("");
   const [type, setType] = useState("All");
@@ -306,8 +305,6 @@ export default function StoriesView({ stories, summary, cities }: {
               <StoriesMap
                 stories={mapStories}
                 cities={cities}
-                showCities={showCities}
-                onToggleCities={() => setShowCities(v => !v)}
                 cluster={false}
                 onSelect={(s: { id: number; location: string; count?: number }) => {
                   // A country bubble opens the country and shows one marker per story.

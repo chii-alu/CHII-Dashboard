@@ -134,15 +134,13 @@ function createCountBubble(count: number): HTMLDivElement {
   return el;
 }
 
-export default function StoriesMap({ stories, cluster, onSelect, cities = [], showCities = false, onToggleCities }: {
+export default function StoriesMap({ stories, cluster, onSelect, cities = [] }: {
   stories: MapStory[];
   cluster: boolean;
   // Called with the story that was clicked; the caller passes its own story type.
   onSelect: (s: any) => void;
-  // Optional: the Executive page passes the city markers and the on/off toggle.
+  // Optional: the Executive page passes the city markers.
   cities?: CityMarker[];
-  showCities?: boolean;
-  onToggleCities?: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -160,9 +158,7 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [], sh
   // City markers form their own layer, drawn on top of the country bubbles.
   const cityMarkersRef = useRef<mapboxgl.Marker[]>([]);
   const citiesRef = useRef(cities);
-  const showCitiesRef = useRef(showCities);
   citiesRef.current = cities;
-  showCitiesRef.current = showCities;
 
   const clearCityMarkers = () => {
     cityMarkersRef.current.forEach(marker => marker.remove());
@@ -171,7 +167,6 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [], sh
 
   const renderCities = (map: mapboxgl.Map) => {
     clearCityMarkers();
-    if (!showCitiesRef.current) return;
 
     citiesRef.current.forEach(c => {
       const size = 22 + Math.min(c.stories, 10) * 2;
@@ -417,7 +412,7 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [], sh
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
       renderCities(mapRef.current);
     }
-  }, [cities, showCities]);
+  }, [cities]);
 
   const resetView = async () => {
     if (!mapRef.current || !containerRef.current) return;
@@ -452,34 +447,6 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [], sh
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", minHeight: 480 }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%", minHeight: 480, borderRadius: 10 }} />
-      {onToggleCities && (
-      <button
-        onClick={onToggleCities}
-        title="Show or hide impact story cities"
-        aria-pressed={showCities}
-        style={{
-          position: "absolute",
-          top: 10,
-          left: 10,
-          zIndex: 500,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          fontSize: 11.5,
-          fontWeight: 700,
-          color: "var(--brand-secondary)",
-          backgroundColor: "white",
-          border: "1px solid rgba(0,33,71,0.15)",
-          borderRadius: 8,
-          padding: "6px 11px",
-          cursor: "pointer",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.18)"
-        }}
-      >
-        <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: showCities ? "#D17A86" : "#D1D5DB", display: "inline-block" }} />
-        Impact stories
-      </button>
-      )}
       <button
         onClick={resetView}
         title="Reset map view"
