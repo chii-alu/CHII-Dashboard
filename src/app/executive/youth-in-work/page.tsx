@@ -301,6 +301,8 @@ export default function YouthInWorkPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
+  // The header and footer show the chosen year, or the full period when all years are selected
+  const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [program, setProgram] = useState<"all" | Program>("all");
   const [ptype, setPtype] = useState<"all" | ParticipantType>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");
@@ -317,12 +319,11 @@ export default function YouthInWorkPage() {
 
   // Fetch Youth in Work data from Supabase
   useEffect(() => {
-    fetch('/api/youth-in-work-participants')
+    fetch(`/api/youth-in-work-participants${year === "all" ? "" : `?year=${year}`}`)
       .then(r => r.json())
       .then(result => {
-        if (result.metrics) {
-          setApiMetrics(result.metrics);
-        }
+        // A year with no figures leaves the values empty, so they show "In coming data".
+        setApiMetrics(result.metrics ?? {});
         setMetricsLoaded(true);
         if (result.participants && result.participants.length > 0) {
           setYouthData(result.participants);
@@ -352,7 +353,7 @@ export default function YouthInWorkPage() {
         }
       })
       .catch(err => console.error('Error fetching Youth in Work data:', err));
-  }, [refreshTick]);
+  }, [refreshTick, year]);
 
   const scope = useMemo(() =>
     youthData.filter(y => {
@@ -368,7 +369,7 @@ export default function YouthInWorkPage() {
   [youthData, year, program, ptype, gender, country, cohort, pathway]);
 
   /* ── Executive snapshot KPIs ───────────────────────── */
-  const totals = year === "all" ? apiMetrics : {};
+  const totals = apiMetrics;
 
   const kpis = useMemo(() => ({
     total: totals.totalParticipants ?? null,
@@ -477,7 +478,7 @@ export default function YouthInWorkPage() {
         subtitle="How are CHII participants accessing and creating meaningful work?"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2024–2030"
+        period={periodLabel}
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
@@ -872,7 +873,7 @@ export default function YouthInWorkPage() {
         </section>
         )}
 
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodLabel} />
       </div>
 
       <style>{`

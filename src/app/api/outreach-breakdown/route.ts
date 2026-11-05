@@ -4,7 +4,10 @@ import { getSupabaseServer } from "@/lib/supabaseServer";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: Request) {
+    // A year selects that year's values; without one, the all-years rows are used.
+    const yearParam = new URL(request.url).searchParams.get("year");
+    const year = yearParam && /^\d{4}$/.test(yearParam) ? yearParam : null;
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -19,7 +22,7 @@ export async function GET() {
       .select("*")
       .eq("dashboard", "EXEC")
       .eq("section", "Outreach")
-      .is("year", null)
+      .filter("year", year ? "eq" : "is", year ?? "null")
       .eq("value_type", "actual")
       .order("metric");
 
