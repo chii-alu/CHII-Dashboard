@@ -230,18 +230,17 @@ function KPICard({
         {femalePct !== undefined ? (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={RED_FEMALE} strokeWidth="2.2">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M12 14v8M8 18h8" />
+              <svg width="11" height="11" viewBox="0 0 24 24" aria-label="Female">
+                <circle cx="12" cy="4.5" r="3.5" fill={RED_FEMALE} />
+                <path d="M8.5 9.5h7l2.5 11h-2.6l-.6 3.5h-4.6l-.6-3.5H6z" fill={RED_FEMALE} />
               </svg>
               <span style={{ fontSize: 10, fontWeight: 600, color: "#6B7280" }}>{femalePct}%</span>
             </div>
             {malePct !== undefined && (
               <div style={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={BLUE_MALE} strokeWidth="2.2">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M12 14v8" />
-                  <path d="M8 18h8" />
+                <svg width="11" height="11" viewBox="0 0 24 24" aria-label="Male">
+                  <circle cx="12" cy="4.5" r="3.5" fill={BLUE_MALE} />
+                  <path d="M7.5 9h9a2 2 0 0 1 2 2v6.5h-2.2V23h-4.6v-5.5h-1.2V23H7.5v-7.5H5.5V11a2 2 0 0 1 2-2z" fill={BLUE_MALE} />
                 </svg>
                 <span style={{ fontSize: 10, fontWeight: 600, color: "#6B7280" }}>{malePct}%</span>
               </div>
