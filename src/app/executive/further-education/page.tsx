@@ -1,4 +1,5 @@
 "use client";
+import { downloadChart } from "@/lib/download-chart";
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight } from "@/lib/progressInsight";
 import { progressFor } from "@/lib/progressLabels";
@@ -141,7 +142,7 @@ function Panel({ title, subtitle, info, children }: {
           </div>
         </div>
       </div>
-      <div style={{ padding: "16px 18px 18px" }}>{children}</div>
+      <div onClick={(e) => downloadChart(e.currentTarget, title)} title="Click to download as PNG" style={{ cursor: "pointer", padding: "16px 18px 18px" }}>{children}</div>
     </div>
   );
 }

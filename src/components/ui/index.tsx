@@ -117,10 +117,10 @@ export function ChartCard({ title, sub, info, accent, headerRight, children }: {
   return (
     <div
       ref={cardRef}
-      onContextMenu={(e) => { e.preventDefault(); download(); }}
-      title="Right-click to download this chart"
+      onClick={() => download()}
+      title="Click to download this chart"
       className="overflow-hidden"
-      style={{ backgroundColor: COLORS.surface, borderRadius: 10, border: CHART.cardBorder }}
+      style={{ backgroundColor: COLORS.surface, borderRadius: 10, border: CHART.cardBorder, cursor: "pointer" }}
     >
       <div className="flex items-center gap-2.5" style={{ backgroundColor: headerColor, padding: "12px 20px" }}>
         <div className="flex-shrink-0" style={{ width: 3, height: 15, borderRadius: 999, backgroundColor: COLORS.pink }} />

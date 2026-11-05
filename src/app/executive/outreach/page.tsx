@@ -54,6 +54,7 @@ import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import HeaderDesign from "@/components/layout/header-design";
 import StatsKpiCard from "@/components/ui/stat-kpi-card";
 import RankedBars from "@/components/charts/ranked-bars";
+import { downloadChart } from "@/lib/download-chart";
 
 /* ── palette ─────────────────────────────────────────── */
 const NAVY = "var(--brand-secondary)";
@@ -102,39 +103,6 @@ function SectionHeader({ title, blurb }: { title: string; blurb: string }) {
   );
 }
 
-/* serialize the panel's chart SVG and download it as a PNG */
-function downloadChart(container: HTMLElement, name: string) {
-  const svg = container.querySelector("svg") as SVGSVGElement | null;
-  if (!svg) return;
-  const w = svg.clientWidth || 600;
-  const h = svg.clientHeight || 360;
-  const clone = svg.cloneNode(true) as SVGSVGElement;
-  clone.setAttribute("width", String(w));
-  clone.setAttribute("height", String(h));
-  const xml = new XMLSerializer().serializeToString(clone);
-  const url = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml;charset=utf-8" }));
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = w * 2; canvas.height = h * 2;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.scale(2, 2);
-      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0, w, h);
-      canvas.toBlob(b => {
-        if (!b) return;
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(b);
-        a.download = `${name.replace(/[^\w]+/g, "-").toLowerCase()}.png`;
-        a.click();
-        URL.revokeObjectURL(a.href);
-      });
-    }
-    URL.revokeObjectURL(url);
-  };
-  img.src = url;
-}
 
 function Panel({ title, subtitle, info, children }: { title: string; subtitle: string; info?: string; children: React.ReactNode }) {
   const [tip, setTip] = useState(false);
@@ -160,9 +128,9 @@ function Panel({ title, subtitle, info, children }: { title: string; subtitle: s
           <p style={{ fontSize: 9.5, color: "rgba(181,212,244,0.7)", marginTop: 1 }}>{subtitle}</p>
         </div>
       </div>
-      <div style={{ padding: "16px 18px 18px" }}
-        onContextMenu={(e) => { e.preventDefault(); downloadChart(e.currentTarget as HTMLElement, title); }}
-        title="Right-click to download as PNG">
+      <div style={{ padding: "16px 18px 18px", cursor: "pointer" }}
+        onClick={(e) => downloadChart(e.currentTarget, title)}
+        title="Click to download as PNG">
         {children}
       </div>
     </div>

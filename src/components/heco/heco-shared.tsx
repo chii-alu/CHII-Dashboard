@@ -1,5 +1,6 @@
 "use client";
 // Shared HECO pieces: the same header, footer, data hooks and card design as the HEMP dashboard.
+import { downloadChart } from "@/lib/download-chart";
 import { useState } from "react";
 import { Info, ChevronDown } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -112,7 +113,7 @@ export function Panel({ title, subtitle, info, legend, children, filterOptions, 
         </div>
       </div>
 
-      <div style={{ padding: "0 18px 18px" }}>
+      <div onClick={(e) => downloadChart(e.currentTarget, title)} title="Click to download as PNG" style={{ cursor: "pointer", padding: "0 18px 18px" }}>
         {children}
         {legend && legend.length > 0 && (
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
