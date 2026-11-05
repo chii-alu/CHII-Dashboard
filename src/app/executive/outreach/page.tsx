@@ -324,6 +324,10 @@ export default function OutreachPage() {
     return null;
   }, [breakdownData]);
 
+  // Stacked by gender only when Supabase has the gender split for each program;
+  // otherwise the program totals are drawn as solid bars.
+  const hasGenderSplit = !!byProgram?.some((r: any) => r.Female != null && r.Male != null);
+
   // Participation by intervention, coloured by program
   const EXCLUDED_INTERVENTIONS = ["Community Outreach", "STEM Clubs"];
   const byIntervention = useMemo(() => {
@@ -403,6 +407,13 @@ export default function OutreachPage() {
     return null;
   }, [breakdownData]);
 
+  // Total per programme, shown at the end of each bar
+  const graduationRows = useMemo(() => graduationStatus?.map((r: any) => {
+    const graduated = r.Graduated ?? null;
+    const notGraduated = r["Not graduated"] ?? null;
+    const total = graduated === null && notGraduated === null ? null : (graduated ?? 0) + (notGraduated ?? 0);
+    return { ...r, Total: total };
+  }) ?? null, [graduationStatus]);
   // Gender split by program
   const genderSplit = useMemo(() => {
     if (breakdownData?.genderSplit && breakdownData.genderSplit.length > 0) {
@@ -411,6 +422,12 @@ export default function OutreachPage() {
     // No fallback - return null for ChartWithPlaceholder to show "In coming data"
     return null;
   }, [breakdownData]);
+
+  // Total per programme across the three gender groups, shown at the end of each bar
+  const genderRows = useMemo(() => genderSplit?.map((r: any) => {
+    const parts = [r.Female, r.Male, r["Non-binary"]].filter((v: any) => v !== null && v !== undefined);
+    return { ...r, Total: parts.length === 0 ? null : parts.reduce((sum: number, v: number) => sum + v, 0) };
+  }) ?? null, [genderSplit]);
 
   const activeCount = [program !== "All", institution !== "all", population !== "all", year !== "all", intervention !== "all"].filter(Boolean).length;
   const reset = () => { setProgram("All"); setInstitution("all"); setPopulation("all"); setYear("all"); setIntervention("all"); };
@@ -508,29 +525,56 @@ export default function OutreachPage() {
               info="Participant counts per program, split by gender (Female / Male).">
               <ChartWithPlaceholder data={byProgram || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={byProgram || []} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke="rgba(0,33,71,0.08)" />
+                  <BarChart data={byProgram || []} margin={{ top: 28, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
+                    <CartesianGrid vertical={false} stroke="rgba(16, 44, 94, 0.12)" />
                     <XAxis dataKey="program" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} />
-                    {REACH_GENDERS.map((g, i) => (
+                    <YAxis domain={[0, 1000]} tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
+                    {hasGenderSplit && <Legend wrapperStyle={{ fontSize: 10 }} />}
+                    {hasGenderSplit && REACH_GENDERS.map((g, i) => (
                       <Bar key={g} dataKey={g} stackId="g" fill={GENDER_COLOR[g]} barSize={46}
                         radius={i === REACH_GENDERS.length - 1 ? [4, 4, 0, 0] : undefined}>
                         {i === REACH_GENDERS.length - 1 && <LabelList dataKey="Total" position="top" fontSize={11} fill={NAVY} fontWeight={700} />}
                       </Bar>
                     ))}
+                    {!hasGenderSplit && (
+                      <Bar dataKey="Total" fill="#479BD6" barSize={46} radius={[4, 4, 0, 0]}>
+                        <LabelList dataKey="Total" position="top" fontSize={11} fill="#0C447C" fontWeight={700} />
+                      </Bar>
+                    )}
                   </BarChart>
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
+              {!hasGenderSplit && (
+                <div className="flex items-center justify-center gap-5 text-[10px] text-gray-400 mt-4 pt-3">
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Count</span>
+                </div>
+              )}
             </Panel>
 
             <Panel title="Participation by Intervention" subtitle="Reach per outreach program"
               info="Reach per outreach intervention.">
-              <RankedBars
-                data={byIntervention}
-                series={[{ key: "value", label: "Participants", color: "#122B5E" }]}
-              />
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <ChartWithPlaceholder data={byIntervention} height={300}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={byIntervention || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(16, 44, 94, 0.12)" />
+                      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" width={200} tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTip />} />
+                      <Bar dataKey="value" name="Participants" fill="#479BD6" radius={[0, 4, 4, 0]}>
+                        <LabelList dataKey="value" position="right" fontSize={10} fill="#0C447C" fontWeight={700} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ width: 12, height: 12, backgroundColor: "#479BD6", borderRadius: 2 }} />
+                    <span style={{ fontSize: 10, color: "#6B7280" }}>Participant Count</span>
+                  </div>
+                </div>
+              </div>
             </Panel>
           </div>
 
@@ -554,25 +598,59 @@ export default function OutreachPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Graduation Status" subtitle="Graduated vs current students per programme"
               info="Students per academic programme, split into graduated and current.">
-              <RankedBars
-                data={graduationStatus}
-                series={[
-                  { key: "Graduated", label: "Graduated", color: "#122B5E" },
-                  { key: "Not graduated", label: "Not graduated", color: "#9FB4E0" },
-                ]}
-              />
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <ChartWithPlaceholder data={graduationRows} height={300}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={graduationRows || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(16, 44, 94, 0.12)" />
+                      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" width={200} tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTip />} />
+                      <Bar dataKey="Graduated" name="Graduated" stackId="g" fill="#122B5E" />
+                      <Bar dataKey="Not graduated" name="Not graduated" stackId="g" fill="#9FB4E0" radius={[0, 4, 4, 0]}>
+                        <LabelList dataKey="Total" position="right" fontSize={10} fill="#0C447C" fontWeight={700} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
+                  {[{ label: "Graduated", color: "#122B5E" }, { label: "Not graduated", color: "#9FB4E0" }].map(s => (
+                    <span key={s.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, backgroundColor: s.color, flexShrink: 0 }} />
+                      {s.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </Panel>
 
             <Panel title="Gender Split" subtitle="Female vs male per programme"
               info="Female vs male students per academic programme.">
-              <RankedBars
-                data={genderSplit}
-                series={[
-                  { key: "Female", label: "Female", color: "#102C5E" },
-                  { key: "Male", label: "Male", color: "#479BD6" },
-                  { key: "Non-binary", label: "Non-binary", color: "#A6C13C" },
-                ]}
-              />
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <ChartWithPlaceholder data={genderRows} height={300}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={genderRows || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(16, 44, 94, 0.12)" />
+                      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" width={200} tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTip />} />
+                      <Bar dataKey="Female" name="Female" stackId="g" fill="#102C5E" />
+                      <Bar dataKey="Male" name="Male" stackId="g" fill="#479BD6" />
+                      <Bar dataKey="Non-binary" name="Non-binary" stackId="g" fill="#A6C13C" radius={[0, 4, 4, 0]}>
+                        <LabelList dataKey="Total" position="right" fontSize={10} fill="#0C447C" fontWeight={700} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
+                  {[{ label: "Female", color: "#102C5E" }, { label: "Male", color: "#479BD6" }, { label: "Non-binary", color: "#A6C13C" }].map(s => (
+                    <span key={s.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, backgroundColor: s.color, flexShrink: 0 }} />
+                      {s.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </Panel>
           </div>
         </section>

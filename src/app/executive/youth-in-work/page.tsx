@@ -416,7 +416,11 @@ export default function YouthInWorkPage() {
       createdByProgram: null,
       jobCategories: null,
       youthTrend: totals.femaleYouthInWork != null || totals.refugeeYouthInWork != null || totals.pwdYouthInWork != null
-        ? [{ period: "All years", Female: totals.femaleYouthInWork ?? null, PWD: totals.pwdYouthInWork ?? null, Refugee: totals.refugeeYouthInWork ?? null }]
+        ? [
+            { name: "Female", Total: totals.femaleYouthInWork ?? null },
+            { name: "PWD", Total: totals.pwdYouthInWork ?? null },
+            { name: "Refugee", Total: totals.refugeeYouthInWork ?? null },
+          ]
         : null,
       psTrend: null,
     };
@@ -615,7 +619,7 @@ export default function YouthInWorkPage() {
                   <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Total" fill={C_BLUE} barSize={46} radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="Total" fill="#14306B" barSize={46} radius={[4, 4, 0, 0]}>
                     <LabelList dataKey="Total" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
                   </Bar>
                 </BarChart>
@@ -670,26 +674,30 @@ export default function YouthInWorkPage() {
             </Panel>
             <Panel title="Youth in Work Trend by Inclusion" subtitle="Participants in work, by year"
               info="Youth holding a primary or secondary job each year, including female, PWD, and refugee participants.">
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <ChartWithPlaceholder data={jobs.youthTrend || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={jobs.youthTrend || []} margin={{ top: 18, right: 12, bottom: 0, left: -8 }} barGap={6} barCategoryGap="36%">
+                  <BarChart data={jobs.youthTrend || []} margin={{ top: 18, right: 12, bottom: 0, left: -8 }} barCategoryGap="36%">
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,33,71,0.06)" vertical={false} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#374151" }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} />
-                    <Bar dataKey="Female" fill="#479BD6" barSize={36} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="Female" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                    </Bar>
-                    <Bar dataKey="PWD" fill="#E0A458" barSize={36} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="PWD" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
-                    </Bar>
-                    <Bar dataKey="Refugee" fill="#D45F2C" barSize={36} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="Refugee" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
+                    <Bar dataKey="Total" barSize={46} radius={[4, 4, 0, 0]}>
+                      {["#479BD6", "#E0A458", "#D45F2C"].map((c, i) => <Cell key={i} fill={c} />)}
+                      <LabelList dataKey="Total" position="top" fontSize={10.5} fill={NAVY} fontWeight={700} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </ChartWithPlaceholder>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
+                {[{ label: "Female", color: "#479BD6" }, { label: "PWD", color: "#E0A458" }, { label: "Refugee", color: "#D45F2C" }].map(s => (
+                  <span key={s.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
+                    <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, backgroundColor: s.color, flexShrink: 0 }} />
+                    {s.label}
+                  </span>
+                ))}
+              </div>
+              </div>
             </Panel>
           </div>
 
@@ -757,20 +765,32 @@ export default function YouthInWorkPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
             <Panel title="Primary & Secondary Jobs by Priority Group" subtitle="Women · Refugees / displaced · Persons w/ disability"
               info="Primary and secondary job holders who belong to each priority group.">
-              <ChartWithPlaceholder data={inclusion.primaryByGroup || []} height={230}>
-                <ResponsiveContainer width="100%" height={230}>
-                  <BarChart layout="vertical" data={inclusion.primaryByGroup || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10.5, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
-                    <Legend wrapperStyle={{ fontSize: 10 }} />
-                    <Bar dataKey="Primary" name="Primary jobs" fill={C_BLUE} radius={[0, 4, 4, 0]} barSize={20} />
-                    <Bar dataKey="Secondary" name="Secondary jobs" fill={C_GREEN} radius={[0, 4, 4, 0]} barSize={20}>
-                      <LabelList dataKey="Secondary" position="right" fontSize={10} fill="#374151" fontWeight={700} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartWithPlaceholder>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <ChartWithPlaceholder data={inclusion.primaryByGroup || []} height={250}>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={inclusion.primaryByGroup || []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }} barCategoryGap="28%">
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(16, 44, 94, 0.12)" />
+                      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 10.5, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
+                      <Bar dataKey="Primary" name="Primary jobs" fill={C_BLUE} barSize={20} radius={[0, 4, 4, 0]}>
+                        <LabelList dataKey="Primary" position="right" fontSize={10} fill="#0C447C" fontWeight={700} />
+                      </Bar>
+                      <Bar dataKey="Secondary" name="Secondary jobs" fill={C_GREEN} barSize={20} radius={[0, 4, 4, 0]}>
+                        <LabelList dataKey="Secondary" position="right" fontSize={10} fill="#0C447C" fontWeight={700} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
+                  {[{ label: "Primary jobs", color: C_BLUE }, { label: "Secondary jobs", color: C_GREEN }].map(s => (
+                    <span key={s.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "#6B7280" }}>
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, backgroundColor: s.color, flexShrink: 0 }} />
+                      {s.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </Panel>
             <Panel title="Geographic Distribution" subtitle="Africa vs outside Africa"
               info="Share of participants based in Africa versus the diaspora.">
