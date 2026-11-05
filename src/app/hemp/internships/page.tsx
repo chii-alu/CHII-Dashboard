@@ -697,7 +697,7 @@ export default function HEMPInternships() {
             <div style={{ marginBottom: 32 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               <Panel title="Internship Quality & Relevance" subtitle="Student perception of internship experience" info="Average student ratings for quality, relevance, clarity, support, and usefulness (1-5 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
-                <ChartWithPlaceholder data={hasData ? true : null} height={240}><ResponsiveContainer width="100%" height={240}>
+                <ChartWithPlaceholder data={null} height={240}><ResponsiveContainer width="100%" height={240}>
                   <BarChart data={[]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 190 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} domain={[0, 5]} axisLine={false} tickLine={false} />
