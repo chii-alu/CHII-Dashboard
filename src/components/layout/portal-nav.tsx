@@ -3,17 +3,30 @@
 // identical apart from their colour, wordmark and nav items.
 
 import { downloadDashboard } from "@/lib/download-dashboard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Download, LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, Download, LayoutGrid, LogOut, Menu, X } from "lucide-react";
 import { getPortalTheme, type Portal } from "@/theme/portals";
 import { PORTAL_NAVS } from "@/config/navigation";
 import { signOutToSignIn } from "@/lib/sign-out";
+import { createClient } from "@/lib/supabase-client";
+import { dashboardsFor, isRole, type DashboardCode, type Role } from "@/lib/access";
+
+// Every portal the Portals switcher can open. Each user sees only the ones their role allows.
+const SWITCH_TO: { portal: Portal; code: DashboardCode; label: string; desc: string }[] = [
+  { portal: "executive", code: "EXEC", label: "Executive", desc: "Executive Dashboard" },
+  { portal: "hent", code: "HENT", label: "HENT", desc: "Entrepreneurship Pillar" },
+  { portal: "hemp", code: "HEMP", label: "Health Missions & HEMP", desc: "Employment Pillar" },
+  { portal: "heco", code: "HECO", label: "HECO", desc: "Ecosystems Pillar" },
+];
 
 export default function PortalNav({ portal }: { portal: Portal }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [role, setRole] = useState<Role | null>(null);
+  const [switchOpen, setSwitchOpen] = useState(false);
+  const switchRef = useRef<HTMLDivElement>(null);
 
   const theme = getPortalTheme(portal);
   const config = PORTAL_NAVS[portal];
@@ -25,7 +38,23 @@ export default function PortalNav({ portal }: { portal: Portal }) {
   // Route changes should close any open mobile menu.
   useEffect(() => {
     setMenuOpen(false);
+    setSwitchOpen(false);
   }, [pathname]);
+
+  // Read the signed-in user's role, to decide which portals the switcher offers.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+      if (active && isRole(data?.role)) setRole(data.role);
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const switchChoices = SWITCH_TO.filter(c => c.portal !== portal && dashboardsFor(role).includes(c.code));
 
   return (
     <div data-export-ignore className="border-b border-gray-200 sticky top-0 z-50" style={{ backgroundColor: "var(--bg-surface)", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
@@ -98,6 +127,36 @@ export default function PortalNav({ portal }: { portal: Portal }) {
           >
             {menuOpen ? <X size={16} /> : <Menu size={16} />}
           </button>
+
+          {switchChoices.length > 0 && (
+            <div className="relative flex-shrink-0" ref={switchRef}>
+              <button
+                onClick={() => setSwitchOpen(v => !v)}
+                className="hidden sm:flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border font-medium transition-colors"
+                style={{ borderColor: "var(--border-default)", color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}
+              >
+                <LayoutGrid size={10} />
+                Portals
+                <ChevronDown size={9} style={{ transform: switchOpen ? "rotate(180deg)" : "none" }} />
+              </button>
+              {switchOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden z-50">
+                  <div className="px-3 py-2 border-b border-gray-50">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-gray-400">Switch Portal</p>
+                  </div>
+                  {switchChoices.map(c => (
+                    <Link key={c.code} href={PORTAL_NAVS[c.portal].rootHref} onClick={() => setSwitchOpen(false)}
+                      className="flex items-center px-3 py-2.5 hover:bg-gray-50 transition-colors">
+                      <div>
+                        <p className="text-[12px] font-bold text-gray-900 leading-none">{c.label}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{c.desc}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             title="Download this dashboard as PNG"
