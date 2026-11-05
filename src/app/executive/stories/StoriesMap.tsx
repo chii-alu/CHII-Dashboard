@@ -119,8 +119,8 @@ function buildCityPopup(c: CityMarker): { node: HTMLElement; load: () => void } 
   return { node, load };
 }
 
-const DEFAULT_CENTER: [number, number] = [19, 1.5];
-const DEFAULT_ZOOM = 3;
+const DEFAULT_CENTER: [number, number] = [20, 0];
+const DEFAULT_ZOOM = 3.2;
 
 // Numbered bubble for one country's stories.
 function createCountBubble(count: number): HTMLDivElement {

@@ -186,8 +186,8 @@ function HentMap({ countries }: { countries: HentCountry[] }) {
       map.current = new mapboxgl.Map({
         container: container.current,
         style: "mapbox://styles/mapbox/dark-v11",
-        center: [30, 8],
-        zoom: 2.6,
+        center: [20, 0],
+        zoom: 3.2,
         attributionControl: false,
         cooperativeGestures: false,
       });
@@ -210,7 +210,7 @@ function HentMap({ countries }: { countries: HentCountry[] }) {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div ref={container} style={{ width: "100%", height: "100%", borderRadius: 10, border: "1px solid #E5E7EB", overflow: "hidden", background: "#0B1A33" }} />
       <button
-        onClick={() => map.current?.flyTo({ center: [30, 8], zoom: 2.6 })}
+        onClick={() => map.current?.flyTo({ center: [20, 0], zoom: 3.2 })}
         title="Reset map view"
         style={{
           position: "absolute", top: 10, right: 10, zIndex: 500,

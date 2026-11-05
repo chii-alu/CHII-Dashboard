@@ -61,8 +61,8 @@ export default function HecoMap({ intervention }: { intervention?: string }) {
       map.current = new mapboxgl.Map({
         container: container.current,
         style: "mapbox://styles/mapbox/dark-v11",
-        center: [20, 3],
-        zoom: 2.6,
+        center: [20, 0],
+        zoom: 3.2,
         attributionControl: false,
         cooperativeGestures: true,
       });

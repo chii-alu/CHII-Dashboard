@@ -369,8 +369,8 @@ function MapContainer({
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/dark-v11",
-        center: [20, 3],
-        zoom: 2.6,
+        center: [20, 0],
+        zoom: 3.2,
         attributionControl: false,
         cooperativeGestures: true,
       });
@@ -451,7 +451,7 @@ function MapContainer({
       <button
         onClick={() => {
           if (map.current) {
-            map.current.flyTo({ center: [20, 3], zoom: 2.6, duration: 1000 });
+            map.current.flyTo({ center: [20, 0], zoom: 3.2, duration: 1000 });
             setSelectedCountry(null);
           }
         }}

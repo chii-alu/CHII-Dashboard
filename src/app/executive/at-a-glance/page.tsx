@@ -83,8 +83,8 @@ function MapContainer({
 
   const handleReset = () => {
     map.current?.flyTo({
-      center: [30, 8],
-      zoom: 2.6,
+      center: [20, 0],
+      zoom: 3.2,
       duration: 1000
     });
     setSelectedCountry(null);
@@ -106,8 +106,8 @@ function MapContainer({
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/dark-v11",
-        center: [30, 8],
-        zoom: 2.6,
+        center: [20, 0],
+        zoom: 3.2,
         attributionControl: false,
         cooperativeGestures: true
       });
