@@ -47,6 +47,59 @@ function formatDate(value: string | null): string | null {
   return isNaN(d.getTime()) ? null : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+/* ── story media ─────────────────────────────────────── */
+// Turns a story link into something playable on the page. Returns null for anything that is
+// not a recognised video address (for example the sheet's "No" placeholder).
+type MediaSource = { kind: "iframe" | "file"; src: string };
+
+function videoSource(url: string | null): MediaSource | null {
+  if (!url || !/^https?:\/\//i.test(url)) return null;
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    const lastSegment = u.pathname.split("/").filter(Boolean).pop();
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const id = u.searchParams.get("v") ?? lastSegment;
+      return id ? { kind: "iframe", src: `https://www.youtube.com/embed/${id}` } : null;
+    }
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1);
+      return id ? { kind: "iframe", src: `https://www.youtube.com/embed/${id}` } : null;
+    }
+    if (host === "vimeo.com" && lastSegment) return { kind: "iframe", src: `https://player.vimeo.com/video/${lastSegment}` };
+    // Asset-library links carry the file name in a `path` query value, e.g. ...&path=PRAISE.mp4
+    const file = decodeURIComponent(u.searchParams.get("path") ?? u.pathname);
+    if (/\.(mp4|webm|mov)$/i.test(file)) return { kind: "file", src: url };
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function StoryMedia({ url, isVideo }: { url: string | null; isVideo: boolean }) {
+  const source = videoSource(url);
+  if (source?.kind === "iframe") {
+    return (
+      <iframe src={source.src} title="Story video" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen
+        style={{ width: "100%", aspectRatio: "16 / 9", border: 0, borderRadius: 8, marginTop: 12, backgroundColor: "#000" }} />
+    );
+  }
+  if (source?.kind === "file") {
+    return <video src={source.src} controls preload="metadata" style={{ width: "100%", borderRadius: 8, marginTop: 12, backgroundColor: "#000" }} />;
+  }
+  const hasLink = !!url && /^https?:\/\//i.test(url);
+  if (!hasLink) {
+    return isVideo ? <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 12 }}>In coming data</p> : null;
+  }
+  // Links that are not direct media files open in a new tab, where the asset library plays them.
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer"
+      style={{ display: "inline-block", marginTop: 12, fontSize: 12, fontWeight: 700, color: NAVY }}>
+      {isVideo ? "Watch video →" : "Read story →"}
+    </a>
+  );
+}
+
 /* ── panel (header strip + body) ─────────────────────── */
 function Panel({ title, info, collapsible, collapsed, onToggle, children }: {
   title: string; info?: boolean; collapsible?: boolean; collapsed?: boolean; onToggle?: () => void; children: React.ReactNode;
@@ -202,12 +255,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
                     {selected.program || "In coming data"}
                   </p>
                   {selected.date && <p style={{ fontSize: 11, color: "#6B7280", marginTop: 4 }}>{selected.date}</p>}
-                  {selected.url && (
-                    <a href={selected.url} target="_blank" rel="noopener noreferrer"
-                      style={{ display: "inline-block", marginTop: 12, fontSize: 12, fontWeight: 700, color: NAVY }}>
-                      Watch story →
-                    </a>
-                  )}
+                  <StoryMedia url={selected.url} isVideo={selected.type === "Video"} />
                 </div>
               ) : (
                 <div style={{ textAlign: "center", padding: "26px 12px" }}>
