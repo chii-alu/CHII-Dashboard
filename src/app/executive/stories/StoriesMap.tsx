@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { Story } from "@/types/stories";
+// Only what the map needs: a story with a point to draw. Works for the HECO stories too.
+export type MapStory = { id: number; name: string; type: string; location: string; lat: number; lng: number; count?: number };
 
 let mapboxTokenReady = false;
 const initMapboxToken = async () => {
@@ -53,15 +54,36 @@ function createMarkerElement(svg: string, bg: string): HTMLElement {
 const DEFAULT_CENTER: [number, number] = [19, 1.5];
 const DEFAULT_ZOOM = 3;
 
+// Numbered bubble for one country's stories.
+function createCountBubble(count: number): HTMLDivElement {
+  const el = document.createElement("div");
+  el.textContent = String(count);
+  Object.assign(el.style, {
+    width: "34px", height: "34px", borderRadius: "50%", backgroundColor: "#14306B", color: "white",
+    fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center",
+    border: "2px solid white", boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+  });
+  return el;
+}
+
 export default function StoriesMap({ stories, cluster, onSelect }: {
-  stories: Story[];
+  stories: MapStory[];
   cluster: boolean;
-  onSelect: (s: Story) => void;
+  // Called with the story that was clicked; the caller passes its own story type.
+  onSelect: (s: any) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  // Markers we added, so they can be removed by reference. Removing the marker's parent
+  // element would also remove Mapbox's canvas container.
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+
+  const clearMarkers = () => {
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+  };
 
   /* init map once */
   useEffect(() => {
@@ -79,7 +101,8 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
         cooperativeGestures: true
       });
 
-      map.on("load", () => {
+      // style.load fires once the map style is ready; the markers are drawn then.
+      map.on("style.load", () => {
         renderMarkers(map, stories, cluster);
       });
 
@@ -97,14 +120,10 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
   }, []);
 
   /* (re)render markers when data / cluster flag changes */
-  const renderMarkers = (map: mapboxgl.Map, storiesToRender: Story[], useCluster: boolean) => {
-    if (!map.isStyleLoaded()) return;
+  const renderMarkers = (map: mapboxgl.Map, storiesToRender: MapStory[], useCluster: boolean) => {
+    if (useCluster && !map.isStyleLoaded()) return;
 
-    // Remove only story markers (not cluster/other markers)
-    document.querySelectorAll(".story-marker").forEach(el => {
-      const parent = el.parentElement;
-      if (parent) parent.remove();
-    });
+    clearMarkers();
 
     // Remove existing source and layers if they exist
     if (map.getSource("stories")) {
@@ -141,6 +160,51 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
       clusterRadius: 50
     });
 
+    // Function to add individual story markers
+    const addIndividualMarkers = () => {
+      storiesToRender.forEach(s => {
+        const isVideo = /video/i.test(s.type);
+        const svg = isVideo ? VIDEO_SVG : TEXT_SVG;
+        const bgColor = isVideo ? "#D45F2C" : "#60a5fa";
+
+        // A country bubble shows how many stories it holds; otherwise the story's type icon.
+        const el = s.count !== undefined ? createCountBubble(s.count) : createMarkerElement(svg, bgColor);
+        el.className = "story-marker";
+
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([s.lng, s.lat])
+          .addTo(map);
+        markersRef.current.push(marker);
+
+        // Create popup
+        const popup = new mapboxgl.Popup({ offset: [0, -15] })
+          .setHTML(s.count !== undefined
+            ? `<strong>${s.location}</strong><br/>${s.count} ${s.count === 1 ? "story" : "stories"}`
+            : `<strong>${s.name}</strong><br/>${s.location}`);
+
+        el.addEventListener("click", () => {
+          map.flyTo({ center: [s.lng, s.lat], zoom: 6, duration: 1000 });
+          popup.addTo(map);
+          onSelectRef.current(s);
+        });
+
+        el.addEventListener("mouseenter", () => {
+          el.style.opacity = "0.8";
+          el.style.filter = "brightness(1.2)";
+          popup.addTo(map);
+        });
+
+        el.addEventListener("mouseleave", () => {
+          el.style.opacity = "1";
+          el.style.filter = "brightness(1)";
+          popup.remove();
+        });
+
+        el.style.cursor = "pointer";
+        el.style.transition = "transform 200ms ease";
+      });
+    };
+
     if (useCluster) {
       // Add cluster layer
       map.addLayer({
@@ -173,61 +237,15 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
         }
       });
 
-      // Function to add individual story markers
-      const addIndividualMarkers = () => {
-        storiesToRender.forEach(s => {
-          const isVideo = s.type === "Video story";
-          const svg = isVideo ? VIDEO_SVG : TEXT_SVG;
-          const bgColor = isVideo ? "#D45F2C" : "#60a5fa";
-
-          const el = createMarkerElement(svg, bgColor);
-          el.className = "story-marker";
-
-          const marker = new mapboxgl.Marker({ element: el })
-            .setLngLat([s.lng, s.lat])
-            .addTo(map);
-
-          // Create popup
-          const popup = new mapboxgl.Popup({ offset: [0, -15] })
-            .setHTML(`<strong>${s.name}</strong><br/>${s.location}`);
-
-          el.addEventListener("click", () => {
-            map.flyTo({ center: [s.lng, s.lat], zoom: 6, duration: 1000 });
-            popup.addTo(map);
-            onSelectRef.current(s);
-          });
-
-          el.addEventListener("mouseenter", () => {
-            el.style.opacity = "0.8";
-            el.style.filter = "brightness(1.2)";
-            popup.addTo(map);
-          });
-
-          el.addEventListener("mouseleave", () => {
-            el.style.opacity = "1";
-            el.style.filter = "brightness(1)";
-            popup.remove();
-          });
-
-          el.style.cursor = "pointer";
-          el.style.transition = "transform 200ms ease";
-        });
-      };
-
       // Function to remove individual markers
-      const removeIndividualMarkers = () => {
-        document.querySelectorAll(".story-marker").forEach(el => {
-          const parent = el.parentElement;
-          if (parent) parent.remove();
-        });
-      };
+      const removeIndividualMarkers = clearMarkers;
 
       // Handle zoom to show/hide individual markers
       const handleZoom = () => {
         const currentZoom = map.getZoom();
         if (currentZoom > 5) {
           // Show individual markers at zoom > 5
-          if (document.querySelectorAll(".story-marker").length === 0) {
+          if (markersRef.current.length === 0) {
             addIndividualMarkers();
           }
         } else {
@@ -270,6 +288,9 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
 
       // Add zoom handler to show/hide markers based on zoom level
       map.on("zoom", handleZoom);
+    } else {
+      // No clustering: one marker per item, always shown
+      addIndividualMarkers();
     }
   };
 
@@ -282,11 +303,7 @@ export default function StoriesMap({ stories, cluster, onSelect }: {
   const resetView = async () => {
     if (!mapRef.current || !containerRef.current) return;
 
-    // Remove individual markers
-    document.querySelectorAll(".story-marker").forEach(el => {
-      const parent = el.parentElement;
-      if (parent) parent.remove();
-    });
+    clearMarkers();
 
     // Remove old map
     mapRef.current.remove();
