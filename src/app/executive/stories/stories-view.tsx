@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
+import type { CityMarker } from "./StoriesMap";
 import { COUNTRY_COORDS } from "@/lib/country-coords";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { Info, ChevronDown, FileText, Video, MapPin, BookOpen } from "lucide-react";
@@ -25,6 +26,8 @@ export type StoryRow = {
   pillars: { code: string } | { code: string }[] | null;
   academic_programs: { code: string; name: string } | { code: string; name: string }[] | null;
 };
+
+export type { CityMarker };
 
 export type StorySummary = {
   total_stories: number;
@@ -136,16 +139,21 @@ function Dropdown({ label, value, options, onChange }: {
   );
 }
 
-export default function StoriesView({ stories, summary }: { stories: StoryRow[]; summary: StorySummary | null }) {
+export default function StoriesView({ stories, summary, cities }: {
+  stories: StoryRow[]; summary: StorySummary | null; cities: CityMarker[];
+}) {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showCities, setShowCities] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [nameQuery, setNameQuery] = useState("");
   const [type, setType] = useState("All");
   const [pillar, setPillar] = useState("All");
   const [country, setCountry] = useState("All");
   const [program, setProgram] = useState("All");
+  // Country whose bubble was clicked: its stories are shown as separate markers on the map.
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const rows = useMemo(() => stories.map(s => ({
     id: s.story_id,
@@ -181,7 +189,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
   // so every bubble stays on the map when one is clicked.
   const mapStories = useMemo(() => {
     const q = nameQuery.trim().toLowerCase();
-    const groups = new Map<string, { ids: number[] }>();
+    const groups = new Map<string, typeof rows>();
     rows.filter(r =>
       (type === "All" || r.type === type) &&
       (pillar === "All" || r.pillar === pillar) &&
@@ -189,15 +197,22 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
       (!q || r.name.toLowerCase().includes(q))
     ).forEach(r => {
       if (!r.country || !COUNTRY_COORDS[r.country]) return;
-      const g = groups.get(r.country) ?? { ids: [] };
-      g.ids.push(r.id);
-      groups.set(r.country, g);
+      const list = groups.get(r.country) ?? [];
+      list.push(r);
+      groups.set(r.country, list);
     });
-    return Array.from(groups.entries()).map(([country, g]) => {
+    return Array.from(groups.entries()).flatMap(([country, list]) => {
       const [lat, lng] = COUNTRY_COORDS[country];
-      return { id: g.ids[0], name: country, type: "", location: country, lat, lng, count: g.ids.length };
+      // Clicked country: one marker per story, spread on a small circle around the country.
+      if (country === expanded) {
+        return list.map((r, i) => {
+          const angle = (2 * Math.PI * i) / list.length;
+          return { id: r.id, name: r.name, type: r.type, location: country, lat: lat + 1.2 * Math.sin(angle), lng: lng + 1.2 * Math.cos(angle) };
+        });
+      }
+      return [{ id: list[0].id, name: country, type: "", location: country, lat, lng, count: list.length }];
     });
-  }, [rows, type, pillar, program, nameQuery]);
+  }, [rows, type, pillar, program, nameQuery, expanded]);
 
   useEffect(() => {
     if (selectedId !== null && !filtered.some(r => r.id === selectedId)) setSelectedId(null);
@@ -290,9 +305,16 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
             <div style={{ height: "100%", minHeight: 520 }}>
               <StoriesMap
                 stories={mapStories}
+                cities={cities}
+                showCities={showCities}
+                onToggleCities={() => setShowCities(v => !v)}
                 cluster={false}
-                onSelect={(s: { id: number; location: string }) => {
-                  setCountry(s.location);
+                onSelect={(s: { id: number; location: string; count?: number }) => {
+                  // A country bubble opens the country and shows one marker per story.
+                  if (s.count !== undefined) {
+                    setCountry(s.location);
+                    setExpanded(s.location);
+                  }
                   setSelectedId(s.id);
                 }}
               />
