@@ -101,13 +101,13 @@ export default function PortalNav({ portal }: { portal: Portal }) {
               <Link
                 key={href}
                 href={href}
-                className="relative flex flex-col items-center justify-center px-2.5 sm:px-3 h-16 transition-colors group flex-shrink-0"
+                className="relative flex flex-col items-center justify-center px-2 h-16 transition-colors group flex-shrink-0"
                 style={{ color: isActive ? tabAccent : `${tabAccent}80` }}
               >
                 {!isActive && (
                   <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: "var(--bg-surface-raised)" }} />
                 )}
-                <span className="relative text-[12px] font-bold leading-tight whitespace-nowrap">{label}</span>
+                <span className="relative text-[11px] font-bold leading-tight whitespace-nowrap">{label}</span>
                 {isActive && (
                   <span className="absolute bottom-0 left-2 right-2 h-[2.5px] rounded-t-full" style={{ backgroundColor: tabAccent }} />
                 )}
