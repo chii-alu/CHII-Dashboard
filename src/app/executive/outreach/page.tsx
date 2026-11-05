@@ -186,6 +186,8 @@ export default function OutreachPage() {
   const [institution, setInstitution] = useState<string>("all");
   const [population, setPopulation] = useState<PopulationFilter>("all");
   const [year, setYear] = useState<"all" | number>("all");
+  // The header and footer show the chosen year, or the full period when all years are selected
+  const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [intervention, setIntervention] = useState<string>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -197,10 +199,11 @@ export default function OutreachPage() {
 
   // Fetch Outreach data from Supabase
   useEffect(() => {
+    const query = year === "all" ? "" : `?year=${year}`;
     Promise.all([
-      fetch('/api/outreach-data').then(r => r.json()),
-      fetch('/api/outreach-breakdown').then(r => r.json()),
-      fetch('/api/outreach-participants').then(r => r.json()),
+      fetch(`/api/outreach-data${query}`).then(r => r.json()),
+      fetch(`/api/outreach-breakdown${query}`).then(r => r.json()),
+      fetch(`/api/outreach-participants${query}`).then(r => r.json()),
     ])
       .then(([headlinesResult, breakdownResult, participantsResult]) => {
         setSupabaseData(headlinesResult.headlines || []);
@@ -238,7 +241,7 @@ export default function OutreachPage() {
         }
       })
       .catch(err => console.error('Error fetching Outreach data:', err));
-  }, [refreshTick]);
+  }, [refreshTick, year]);
 
   const scope = useMemo(() =>
     participants.filter(p => {
@@ -443,7 +446,7 @@ export default function OutreachPage() {
         dataSource={dataSource}
         lastUpdated={syncedAt}
         participantsCount={kpis.total}
-        period="2024–2030"
+        period={periodLabel}
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
@@ -691,7 +694,7 @@ export default function OutreachPage() {
         </section>
         )}
 
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodLabel} />
       </div>
     </div>
   );

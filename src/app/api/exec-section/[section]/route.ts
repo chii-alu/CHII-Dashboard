@@ -13,6 +13,9 @@ export async function GET(
     const section = decodeURIComponent(params.section);
     // Optional: only rows of one metric_group, e.g. ?metricGroup=Entrepreneurship%20Metrics
     const metricGroup = new URL(request.url).searchParams.get("metricGroup");
+    // A year selects that year's values; without one, the all-years rows are used.
+    const yearParam = new URL(request.url).searchParams.get("year");
+    const year = yearParam && /^\d{4}$/.test(yearParam) ? yearParam : null;
     const supabase = getSupabaseServer();
 
     const [values, sync] = await Promise.all([
@@ -23,7 +26,7 @@ export async function GET(
             .eq("dashboard", "EXEC")
             .eq("section", section)
             .eq("metric_group", metricGroup)
-            .is("year", null)
+            .filter("year", year ? "eq" : "is", year ?? "null")
             .eq("value_type", "actual")
             .order("metric")
         : supabase
@@ -31,7 +34,7 @@ export async function GET(
             .select("*")
             .eq("dashboard", "EXEC")
             .eq("section", section)
-            .is("year", null)
+            .filter("year", year ? "eq" : "is", year ?? "null")
             .eq("value_type", "actual")
             .order("metric")),
       supabase

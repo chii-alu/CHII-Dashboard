@@ -189,6 +189,8 @@ export default function FurtherEducationPage() {
   const [funding, setFunding] = useState<string>("all");
   const [destination, setDestination] = useState<string>("all");
   const [year, setYear] = useState<"all" | number>("all");
+  // The header and footer show the chosen year, or the full period when all years are selected
+  const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
@@ -324,7 +326,7 @@ export default function FurtherEducationPage() {
         subtitle="Further Education, Study Pathways, and Lifelong Learning"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2024–2030"
+        period={periodLabel}
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
@@ -394,7 +396,7 @@ export default function FurtherEducationPage() {
         </section>
         )}
 
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodLabel} />
       </div>
     </div>
   );

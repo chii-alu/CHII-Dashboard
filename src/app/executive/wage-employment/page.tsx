@@ -168,6 +168,8 @@ export default function WageEmploymentPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [year, setYear] = useState<"all" | number>("all");
+  // The header and footer show the chosen year, or the full period when all years are selected
+  const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
@@ -216,7 +218,7 @@ export default function WageEmploymentPage() {
         subtitle="CHII Employment Outcomes, Trends, Performance, and Work Quality"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2024–2030"
+        period={periodLabel}
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
@@ -453,7 +455,7 @@ export default function WageEmploymentPage() {
           </section>
         )}
 
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodLabel} />
       </div>
     </div>
   );

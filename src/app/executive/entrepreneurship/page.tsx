@@ -180,18 +180,20 @@ export default function EntrepreneurshipPage() {
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
+  const [year, setYear] = useState<"all" | number>("all");
+  // The header and footer show the chosen year, or the full period when all years are selected
+  const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [entHeadlines, setEntHeadlines] = useState<any[] | null>(null);
   useEffect(() => {
-    fetch("/api/exec-section/Entrepreneurship?metricGroup=Entrepreneurship%20Metrics")
+    fetch(`/api/exec-section/Entrepreneurship?metricGroup=Entrepreneurship%20Metrics${year === "all" ? "" : `&year=${year}`}`)
       .then(r => r.json())
       .then(result => setEntHeadlines(Array.isArray(result.headlines) ? result.headlines : []))
       .catch(() => setEntHeadlines([]));
-  }, [refreshTick]);
+  }, [refreshTick, year]);
   const ent = (metric: string): number | null =>
     entHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const entLoaded = entHeadlines !== null;
 
-  const [year, setYear] = useState<"all" | number>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");
   const [stage, setStage] = useState<"all" | Stage>("all");
   const [status, setStatus] = useState<"all" | Status>("all");
@@ -324,7 +326,7 @@ export default function EntrepreneurshipPage() {
         subtitle="The journey from founder to enterprise growth, jobs created, and long-term economic impact"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2024–2030"
+        period={periodLabel}
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
@@ -613,7 +615,7 @@ export default function EntrepreneurshipPage() {
         </section>
         )}
 
-<FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+<FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodLabel} />
       </div>
 
       <style>{`

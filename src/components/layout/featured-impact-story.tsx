@@ -14,6 +14,7 @@ export default function FeaturedImpactStory({
   mission = "Nurturing the next generation of health leaders committed to transforming healthcare in Africa.",
   dataSynced = "18 June 2026, 16:30 CAT",
   dataSource = "CHII MELA Consolidated Database",
+  period = "2024–2030",
   analystEmail = "patadja@si.alueducation.com",
 }: {
   eyebrow?: string;
@@ -26,6 +27,7 @@ export default function FeaturedImpactStory({
   mission?: string;
   dataSynced?: string;
   dataSource?: string;
+  period?: string;
   analystEmail?: string;
 } = {}) {
   return (
@@ -77,6 +79,10 @@ export default function FeaturedImpactStory({
             <span className="text-[12px] sm:text-[13px]" style={{ color: "rgba(133,183,235,0.55)" }}>|</span>
             <span className="text-[12px] sm:text-[13px]" style={{ color: "#B5D4F4" }}>
               <span style={{ color: "#85B7EB", fontWeight: 600 }}>Source:</span> {dataSource}
+            </span>
+            <span className="text-[12px] sm:text-[13px]" style={{ color: "rgba(133,183,235,0.55)" }}>|</span>
+            <span className="text-[12px] sm:text-[13px]" style={{ color: "#B5D4F4" }}>
+              <span style={{ color: "#85B7EB", fontWeight: 600 }}>Period:</span> {period}
             </span>
             <span className="text-[12px] sm:text-[13px]" style={{ color: "rgba(133,183,235,0.55)" }}>|</span>
             <a href={`mailto:${analystEmail}`} className="text-[12px] sm:text-[13px]" style={{ fontWeight: 600, color: "white", border: "1px solid rgba(133,183,235,0.4)", borderRadius: 6, padding: "4px 11px", textDecoration: "none", whiteSpace: "nowrap" }}>
