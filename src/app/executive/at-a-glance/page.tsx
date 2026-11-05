@@ -446,15 +446,16 @@ function KPICard({
         {femalePct !== undefined && malePct !== undefined ? (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={RED_FEMALE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M12 14v8M8 18h8" />
+              <svg width="12" height="12" viewBox="0 0 24 24" aria-label="Female">
+                <circle cx="12" cy="4.5" r="3.5" fill={RED_FEMALE} />
+                <path d="M8.5 9.5h7l2.5 11h-2.6l-.6 3.5h-4.6l-.6-3.5H6z" fill={RED_FEMALE} />
               </svg>
               <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-secondary)" }}>{femalePct === null ? "—" : `${femalePct}%`}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={BLUE_MALE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM9 11l5 9M14 20h-10" />
+              <svg width="12" height="12" viewBox="0 0 24 24" aria-label="Male">
+                <circle cx="12" cy="4.5" r="3.5" fill={BLUE_MALE} />
+                <path d="M7.5 9h9a2 2 0 0 1 2 2v6.5h-2.2V23h-4.6v-5.5h-1.2V23H7.5v-7.5H5.5V11a2 2 0 0 1 2-2z" fill={BLUE_MALE} />
               </svg>
               <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-secondary)" }}>{malePct === null ? "—" : `${malePct}%`}</span>
             </div>
