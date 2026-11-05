@@ -1,4 +1,5 @@
 "use client";
+import { downloadDashboard } from "@/lib/download-dashboard";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -68,7 +69,7 @@ export default function ImpactNav() {
   }, [pathname]);
 
   return (
-    <div className="bg-white border-b border-gray-200 sticky top-0 z-50" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+    <div data-export-ignore className="bg-white border-b border-gray-200 sticky top-0 z-50" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 flex items-center h-16 gap-2 sm:gap-3">
 
         {/* Logo */}
@@ -121,7 +122,8 @@ export default function ImpactNav() {
 
         {/* Export */}
         <button
-          title="Export"
+          title="Download this dashboard as PNG"
+            onClick={() => downloadDashboard(document.title || "dashboard")}
           className="hidden sm:flex items-center justify-center w-7 h-7 rounded-md border transition-colors flex-shrink-0"
           style={{ borderColor: "#E5E7EB", color: "#6B7280", backgroundColor: "white" }}
         >

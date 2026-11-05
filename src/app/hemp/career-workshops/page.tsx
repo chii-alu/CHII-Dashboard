@@ -238,8 +238,9 @@ export default function CareerWorkshopsPage() {
     if (refugee === null || pwd === null) return null;
     const asPct = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
     return [
-      { category: 'Refugee', value: asPct(refugee), percentage: asPct(refugee) },
-      { category: 'PWD', value: asPct(pwd), percentage: asPct(pwd) },
+      // Colours match the legend under the chart
+      { category: 'Refugee', value: asPct(refugee), percentage: asPct(refugee), fill: '#8B5CF6' },
+      { category: 'PWD', value: asPct(pwd), percentage: asPct(pwd), fill: '#F97316' },
     ];
   }, [inclusionRaw, filterYear]);
 
