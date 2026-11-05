@@ -1,4 +1,5 @@
 "use client";
+import { downloadChart } from "@/lib/download-chart";
 import { useProgress } from "@/hooks/useProgress";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -169,7 +170,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
           </div>
         </div>
       )}
-      <div style={{ padding: "12px 18px 18px", backgroundColor: "white" }}>
+      <div onClick={(e) => downloadChart(e.currentTarget, title)} title="Click to download as PNG" style={{ cursor: "pointer", padding: "12px 18px 18px", backgroundColor: "white" }}>
         {children}
       </div>
     </div>

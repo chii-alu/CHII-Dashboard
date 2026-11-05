@@ -1,4 +1,5 @@
 "use client";
+import { downloadChart } from "@/lib/download-chart";
 import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
@@ -146,7 +147,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
           </div>
         </div>
       )}
-      <div style={{ padding: "12px 18px 18px" }}>
+      <div onClick={(e) => downloadChart(e.currentTarget, title)} title="Click to download as PNG" style={{ cursor: "pointer", padding: "12px 18px 18px" }}>
         {children}
       </div>
     </div>
