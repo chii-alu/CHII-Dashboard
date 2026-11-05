@@ -14,7 +14,7 @@ export default async function ImpactStoriesPage() {
   const [storiesResult, summaryResult] = await Promise.all([
     supabase
       .from("impact_stories")
-      .select("story_id, story_name, story_type, story_url, date_captured, featured, countries(name), pillars(code)")
+      .select("story_id, story_name, story_type, story_url, date_captured, featured, academic_program, countries(name), pillars(code), academic_programs(code, name)")
       .order("featured", { ascending: false })
       .order("story_id"),
     supabase.from("v_story_summary").select("*").maybeSingle(),

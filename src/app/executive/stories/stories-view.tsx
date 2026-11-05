@@ -20,8 +20,10 @@ export type StoryRow = {
   story_url: string | null;
   date_captured: string | null;
   featured: boolean;
+  academic_program: string | null;
   countries: { name: string } | { name: string }[] | null;
   pillars: { code: string } | { code: string }[] | null;
+  academic_programs: { code: string; name: string } | { code: string; name: string }[] | null;
 };
 
 export type StorySummary = {
@@ -90,6 +92,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
   const [type, setType] = useState("All");
   const [pillar, setPillar] = useState("All");
   const [country, setCountry] = useState("All");
+  const [program, setProgram] = useState("All");
 
   const rows = useMemo(() => stories.map(s => ({
     id: s.story_id,
@@ -97,6 +100,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
     type: s.story_type,
     country: first(s.countries)?.name ?? "",
     pillar: first(s.pillars)?.code ?? "",
+    program: s.academic_program ?? "",
     date: formatDate(s.date_captured),
     url: s.story_url,
     featured: s.featured,
@@ -105,16 +109,18 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
   const types = useMemo(() => Array.from(new Set(rows.map(r => r.type).filter(Boolean))).sort(), [rows]);
   const pillars = useMemo(() => Array.from(new Set(rows.map(r => r.pillar).filter(Boolean))).sort(), [rows]);
   const countries = useMemo(() => Array.from(new Set(rows.map(r => r.country).filter(Boolean))).sort(), [rows]);
+  const programs = useMemo(() => Array.from(new Set(rows.map(r => r.program).filter(Boolean))).sort(), [rows]);
 
   const filtered = useMemo(() => {
     const q = nameQuery.trim().toLowerCase();
     return rows.filter(r =>
       (type === "All" || r.type === type) &&
       (pillar === "All" || r.pillar === pillar) &&
+      (program === "All" || r.program === program) &&
       (country === "All" || r.country === country) &&
       (!q || r.name.toLowerCase().includes(q))
     );
-  }, [rows, type, pillar, country, nameQuery]);
+  }, [rows, type, pillar, program, country, nameQuery]);
 
   const selected = filtered.find(r => r.id === selectedId) ?? null;
 
@@ -126,6 +132,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
     rows.filter(r =>
       (type === "All" || r.type === type) &&
       (pillar === "All" || r.pillar === pillar) &&
+      (program === "All" || r.program === program) &&
       (!q || r.name.toLowerCase().includes(q))
     ).forEach(r => {
       if (!r.country || !COUNTRY_COORDS[r.country]) return;
@@ -137,7 +144,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
       const [lat, lng] = COUNTRY_COORDS[country];
       return { id: g.ids[0], name: country, type: "", location: country, lat, lng, count: g.ids.length };
     });
-  }, [rows, type, pillar, nameQuery]);
+  }, [rows, type, pillar, program, nameQuery]);
 
   useEffect(() => {
     if (selectedId !== null && !filtered.some(r => r.id === selectedId)) setSelectedId(null);
@@ -191,6 +198,9 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
                   <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4, color: "#6B7280" }}>
                     <MapPin size={12} /><span style={{ fontSize: 11 }}>{[selected.country, selected.pillar].filter(Boolean).join(" · ")}</span>
                   </div>
+                  <p style={{ fontSize: 11, color: selected.program ? "#374151" : "#9CA3AF", marginTop: 4 }}>
+                    {selected.program || "In coming data"}
+                  </p>
                   {selected.date && <p style={{ fontSize: 11, color: "#6B7280", marginTop: 4 }}>{selected.date}</p>}
                   {selected.url && (
                     <a href={selected.url} target="_blank" rel="noopener noreferrer"
@@ -216,6 +226,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
                 <Dropdown label="Story type" value={type} options={types} onChange={setType} />
                 <Dropdown label="Pillar" value={pillar} options={pillars} onChange={setPillar} />
                 <Dropdown label="Country" value={country} options={countries} onChange={setCountry} />
+                <Dropdown label="Academic programme" value={program} options={programs} onChange={setProgram} />
               </div>
 
               <label style={{ display: "block", marginTop: 12 }}>
