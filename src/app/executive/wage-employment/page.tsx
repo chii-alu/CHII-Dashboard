@@ -164,10 +164,10 @@ const WE_SECTIONS: { n: number; label: string }[] = [
 
 export default function WageEmploymentPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC", undefined, "Wage Employment");
+  const [year, setYear] = useState<"all" | number>("all");
+  const progressRows = useProgress("EXEC", undefined, "Wage Employment", undefined, year);
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
-  const [year, setYear] = useState<"all" | number>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
   const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [activeSection, setActiveSection] = useState<number>(1);

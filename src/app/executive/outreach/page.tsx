@@ -178,14 +178,14 @@ const OA_SECTIONS: { n: number; label: string }[] = [
 ═══════════════════════════════════════════════════════ */
 export default function OutreachPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC", undefined, "Outreach");
+  const [year, setYear] = useState<"all" | number>("all");
+  const progressRows = useProgress("EXEC", undefined, "Outreach", undefined, year);
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [program, setProgram] = useState<ProgramFilter>("All");
   const [institution, setInstitution] = useState<string>("all");
   const [population, setPopulation] = useState<PopulationFilter>("all");
-  const [year, setYear] = useState<"all" | number>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
   const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [intervention, setIntervention] = useState<string>("all");

@@ -175,7 +175,8 @@ const FE_SECTIONS: { n: number; label: string }[] = [
 
 export default function FurtherEducationPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC", undefined, "Further Education");
+  const [year, setYear] = useState<"all" | number>("all");
+  const progressRows = useProgress("EXEC", undefined, "Further Education", undefined, year);
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [activeSection, setActiveSection] = useState<number>(1);
@@ -188,7 +189,6 @@ export default function FurtherEducationPage() {
   const [field, setField] = useState<string>("all");
   const [funding, setFunding] = useState<string>("all");
   const [destination, setDestination] = useState<string>("all");
-  const [year, setYear] = useState<"all" | number>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
   const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [filtersOpen, setFiltersOpen] = useState(false);

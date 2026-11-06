@@ -12,13 +12,16 @@ export async function GET(request: Request) {
     const intervention = searchParams.get("intervention");
     const section = searchParams.get("section");
     const metricGroup = searchParams.get("metricGroup");
+    // Overall targets apply to all years only; a chosen year gets its own rows and no target until one is set.
+    const yearParam = searchParams.get("year");
+    const year = yearParam && /^\d{4}$/.test(yearParam) ? Number(yearParam) : null;
 
     let query = getSupabaseServer()
       .from("v_progress")
       .select("metric, unit, actual, target, progress_pct, intervention, section, metric_group")
       .eq("dashboard", dashboard)
-      .is("year", null)
       .eq("segment", "all");
+    query = year !== null ? query.eq("year", year) : query.is("year", null);
 
     query = intervention ? query.eq("intervention", intervention) : query.is("intervention", null);
     if (section) query = query.eq("section", section);
