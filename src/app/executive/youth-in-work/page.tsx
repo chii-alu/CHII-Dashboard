@@ -158,12 +158,13 @@ function SectionHeader({ title, blurb }: { title: string; blurb: string }) {
   );
 }
 
-function Panel({ title, subtitle, info, children }: {
+function Panel({ id, title, subtitle, info, children }: {
+  id?: string;
   title: string; subtitle: string; info?: string; children: React.ReactNode;
 }) {
   const [tip, setTip] = useState(false);
   return (
-    <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div id={id} style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ backgroundColor: BAND, padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
           <div style={{ width: 3, height: 15, borderRadius: 999, backgroundColor: TICK, flexShrink: 0 }} />
@@ -310,6 +311,20 @@ export default function YouthInWorkPage() {
   const [cohort, setCohort] = useState<"all" | number>("all");
   const [pathway, setPathway] = useState<"all" | Pathway>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
+
+  // A link from another page can name a chart (e.g. #graduation-status): open its section and scroll to it.
+  useEffect(() => {
+    const CHART_SECTION: Record<string, number> = { "work-pathway-distribution": 1, "employment-outcomes": 1, "primary-secondary-jobs": 2, "job-categories": 2 };
+    const id = window.location.hash.slice(1);
+    if (!CHART_SECTION[id]) return;
+    setActiveSection(CHART_SECTION[id]);
+    const t = setTimeout(() => {
+      // Stop short of the sticky navigation bar so the chart header stays visible
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: "smooth" });
+    }, 300);
+    return () => clearTimeout(t);
+  }, []);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [youthData, setYouthData] = useState<any[]>([]);
@@ -555,13 +570,13 @@ export default function YouthInWorkPage() {
         <section className="space-y-4">
           <SectionHeader title="Work Pathways" blurb="How are participants progressing into work?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Work Pathway Distribution" subtitle="Where are our youth today?"
+            <Panel id="work-pathway-distribution" title="Work Pathway Distribution" subtitle="Where are our youth today?"
               info="The mix of pathways youth follow: wage employment, internships, enterprises, further education, and more.">
               <ChartWithPlaceholder data={pathwayDist || []} height={300}>
                 <Donut data={pathwayDist || []} colors={PATHWAY_COLOR} total={kpis.total} totalLabel="Youth" height={300} legendPercent />
               </ChartWithPlaceholder>
             </Panel>
-            <Panel title="Employment Outcomes by Program" subtitle="Employment · Internships · Enterprise across HEMP · HENT · HECO"
+            <Panel id="employment-outcomes" title="Employment Outcomes by Program" subtitle="Employment · Internships · Enterprise across HEMP · HENT · HECO"
               info="Participant counts for each work outcome, stacked within each program.">
               <ChartWithPlaceholder data={byProgram || []} height={270}>
                 <ResponsiveContainer width="100%" height={270}>
@@ -611,7 +626,7 @@ export default function YouthInWorkPage() {
 
           {/* Primary & secondary jobs + job categories */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-          <Panel title="Primary &amp; Secondary Jobs" subtitle="Participants by job type"
+          <Panel id="primary-secondary-jobs" title="Primary &amp; Secondary Jobs" subtitle="Participants by job type"
             info="Participants holding a primary (main) or secondary (additional) job.">
             <ChartWithPlaceholder data={jobs.primarySecondary || []} height={250}>
               <ResponsiveContainer width="100%" height={250}>
@@ -628,7 +643,7 @@ export default function YouthInWorkPage() {
               </ResponsiveContainer>
             </ChartWithPlaceholder>
           </Panel>
-          <Panel title="Job Categories" subtitle="New · Additional · Improved"
+          <Panel id="job-categories" title="Job Categories" subtitle="New · Additional · Improved"
             info="New: first job or re-entry after a break. Additional: a second income source alongside existing work. Improved: better pay, conditions, or advancement.">
             <ChartWithPlaceholder data={jobs.jobCategories || []} height={250}>
               <ResponsiveContainer width="100%" height={250}>

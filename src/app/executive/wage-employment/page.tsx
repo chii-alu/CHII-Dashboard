@@ -113,10 +113,11 @@ function SectionHeader({ title, blurb }: { title: string; blurb: string }) {
   );
 }
 
-function Panel({ title, subtitle, info, children }: { title: string; subtitle: string; info?: string; children: React.ReactNode }) {
+function Panel({ id, title, subtitle, info, children }: {
+  id?: string; title: string; subtitle: string; info?: string; children: React.ReactNode }) {
   const [tip, setTip] = useState(false);
   return (
-    <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div id={id} style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ backgroundColor: BAND, padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
           <div style={{ width: 3, height: 15, borderRadius: 999, backgroundColor: TICK, flexShrink: 0 }} />
@@ -171,6 +172,20 @@ export default function WageEmploymentPage() {
   // The header and footer show the chosen year, or the full period when all years are selected
   const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [activeSection, setActiveSection] = useState<number>(1);
+
+  // A link from another page can name a chart (e.g. #graduation-status): open its section and scroll to it.
+  useEffect(() => {
+    const CHART_SECTION: Record<string, number> = { "employment-rate-by-program": 3, "yearly-wage-jobs-trend": 2 };
+    const id = window.location.hash.slice(1);
+    if (!CHART_SECTION[id]) return;
+    setActiveSection(CHART_SECTION[id]);
+    const t = setTimeout(() => {
+      // Stop short of the sticky navigation bar so the chart header stays visible
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: "smooth" });
+    }, 300);
+    return () => clearTimeout(t);
+  }, []);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
@@ -338,7 +353,7 @@ export default function WageEmploymentPage() {
           <section className="space-y-4">
             <SectionHeader title="Employment Trends" blurb="How is employment evolving over time?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
-              <Panel title="Yearly Wage Jobs Trend" subtitle="Total · Female · PWD · Refugee/IDP"
+              <Panel id="yearly-wage-jobs-trend" title="Yearly Wage Jobs Trend" subtitle="Total · Female · PWD · Refugee/IDP"
                 info="Employment numbers across demographic groups over time.">
                 <ChartWithPlaceholder data={trends || []} height={280}>
                   <ResponsiveContainer width="100%" height={280}>
@@ -377,7 +392,7 @@ export default function WageEmploymentPage() {
           <section className="space-y-4">
             <SectionHeader title="Program Outcomes" blurb="Which programs drive employment?" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="we-two">
-              <Panel title="Employment Rate by Program" subtitle="Program employment rates"
+              <Panel id="employment-rate-by-program" title="Employment Rate by Program" subtitle="Program employment rates"
                 info="Employment rate for each program.">
                 <ChartWithPlaceholder data={programOutcomes.rateData || []} height={260}>
                 <ResponsiveContainer width="100%" height={260}>

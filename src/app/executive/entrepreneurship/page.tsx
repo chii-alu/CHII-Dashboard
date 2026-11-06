@@ -98,12 +98,13 @@ function SectionHeader({ title, blurb }: { title: string; blurb: string }) {
   );
 }
 
-function Panel({ title, subtitle, info, children }: {
+function Panel({ id, title, subtitle, info, children }: {
+  id?: string;
   title: string; subtitle: string; info?: string; children: React.ReactNode;
 }) {
   const [tip, setTip] = useState(false);
   return (
-    <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <div id={id} style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ backgroundColor: BAND, padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
           <div style={{ width: 3, height: 15, borderRadius: 999, backgroundColor: TICK, flexShrink: 0 }} />
@@ -199,6 +200,20 @@ export default function EntrepreneurshipPage() {
   const [status, setStatus] = useState<"all" | Status>("all");
   const [funding, setFunding] = useState<"all" | FundingSource>("all");
   const [active, setActive] = useState<number>(1);
+
+  // A link from another page can name a chart (e.g. #graduation-status): open its section and scroll to it.
+  useEffect(() => {
+    const CHART_SECTION: Record<string, number> = { "enterprise-status": 1, "jobs-by-employment-type": 4, "founder-profile": 3 };
+    const id = window.location.hash.slice(1);
+    if (!CHART_SECTION[id]) return;
+    setActive(CHART_SECTION[id]);
+    const t = setTimeout(() => {
+      // Stop short of the sticky navigation bar so the chart header stays visible
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: "smooth" });
+    }, 300);
+    return () => clearTimeout(t);
+  }, []);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const show = (n: number) => active === n;
@@ -418,7 +433,7 @@ export default function EntrepreneurshipPage() {
               </ResponsiveContainer>
             </ChartWithPlaceholder>
 </Panel>
-            <Panel title="Enterprise Status" subtitle="Current operating status"
+            <Panel id="enterprise-status" title="Enterprise Status" subtitle="Current operating status"
               info="Breakdown of enterprises by current status, from pre-seed through to non-operational.">
 <ChartWithPlaceholder data={null} height={300}>
               <Donut data={v.statusData || []} colors={PALETTE} total={v.statusTotal} totalLabel="Enterprises" height={340} legendPercent />
@@ -511,7 +526,7 @@ export default function EntrepreneurshipPage() {
         <section className="space-y-4">
           <SectionHeader title="Employment Created" blurb="How much work are these enterprises creating?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-            <Panel title="Jobs by Employment Type" subtitle="Full-time · Part-time · Seasonal"
+            <Panel id="jobs-by-employment-type" title="Jobs by Employment Type" subtitle="Full-time · Part-time · Seasonal"
               info="Contract-type split of jobs created by enterprises.">
 <ChartWithPlaceholder data={null} height={300}>
               <ResponsiveContainer width="100%" height={250}>
@@ -553,7 +568,7 @@ export default function EntrepreneurshipPage() {
         <section className="space-y-4">
           <SectionHeader title="Founder Profile" blurb="Who are the entrepreneurs, and how has entrepreneurship changed their lives?" />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }} className="ep-two">
-            <Panel title="Founder Inclusion Reach" subtitle="Female · PWD · Refugee / IDP"
+            <Panel id="founder-profile" title="Founder Inclusion Reach" subtitle="Female · PWD · Refugee / IDP"
               info="Reach across inclusion demographics: female founders, persons with disabilities, and refugees/displaced persons.">
 <ChartWithPlaceholder data={null} height={300}>
               <Donut data={founders.inclusionReachData || []} colors={["#102C5E", "#479BD6", "#E0A458"]} total={total} totalLabel="Founders" height={340} legendPercent />
