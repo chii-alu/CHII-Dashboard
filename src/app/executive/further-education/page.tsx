@@ -114,12 +114,13 @@ function MiniKpi({ Icon, label, value, center }: { Icon: React.ComponentType<any
   );
 }
 
-function Panel({ title, subtitle, info, children }: {
+function Panel({ id, title, subtitle, info, children }: {
+  id?: string;
   title: string; subtitle: string; info?: string; children: React.ReactNode;
 }) {
   const [tip, setTip] = useState(false);
   return (
-    <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden" }}>
+    <div id={id} style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden" }}>
       <div style={{ backgroundColor: BAND, padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
           <div style={{ width: 3, height: 15, borderRadius: 999, backgroundColor: TICK, flexShrink: 0 }} />
@@ -180,6 +181,20 @@ export default function FurtherEducationPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [activeSection, setActiveSection] = useState<number>(1);
+
+  // A link from another page can name a chart (e.g. #graduation-status): open its section and scroll to it.
+  useEffect(() => {
+    const CHART_SECTION: Record<string, number> = { "qualification-level": 1 };
+    const id = window.location.hash.slice(1);
+    if (!CHART_SECTION[id]) return;
+    setActiveSection(CHART_SECTION[id]);
+    const t = setTimeout(() => {
+      // Stop short of the sticky navigation bar so the chart header stays visible
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: "smooth" });
+    }, 300);
+    return () => clearTimeout(t);
+  }, []);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const show = (n: number) => activeSection === n;
 
@@ -357,7 +372,7 @@ export default function FurtherEducationPage() {
         <section className="space-y-4">
           <SectionHeader title="Participants" blurb="Who is pursuing further education and what pathways are they following - profiles, qualifications, fields, and destinations." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-            <Panel title="Qualification Level" subtitle="Type of qualification pursued"
+            <Panel id="qualification-level" title="Qualification Level" subtitle="Type of qualification pursued"
               info="Qualification level graduates are pursuing.">
 <ChartWithPlaceholder data={null} height={300}>
               <Donut data={d.qualification || []} colors={PALETTE} total={TOTAL} totalLabel="Graduates" height={340} legendPercent />

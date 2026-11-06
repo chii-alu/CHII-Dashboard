@@ -104,10 +104,11 @@ function SectionHeader({ title, blurb }: { title: string; blurb: string }) {
 }
 
 
-function Panel({ title, subtitle, info, children }: { title: string; subtitle: string; info?: string; children: React.ReactNode }) {
+function Panel({ id, title, subtitle, info, children }: {
+  id?: string; title: string; subtitle: string; info?: string; children: React.ReactNode }) {
   const [tip, setTip] = useState(false);
   return (
-    <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden" }}>
+    <div id={id} style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.08)", overflow: "hidden" }}>
       <div style={{ backgroundColor: BAND, padding: "10px 18px", display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 3, height: 15, borderRadius: 999, backgroundColor: TICK, flexShrink: 0 }} />
         <div style={{ minWidth: 0 }}>
@@ -190,6 +191,20 @@ export default function OutreachPage() {
   const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [intervention, setIntervention] = useState<string>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
+
+  // A link from another page can name a chart (e.g. #graduation-status): open its section and scroll to it.
+  useEffect(() => {
+    const CHART_SECTION: Record<string, number> = { "graduation-status": 1, "inclusion-by-program": 1, "engagement-status": 2, "participants-by-program": 1 };
+    const id = window.location.hash.slice(1);
+    if (!CHART_SECTION[id]) return;
+    setActiveSection(CHART_SECTION[id]);
+    const t = setTimeout(() => {
+      // Stop short of the sticky navigation bar so the chart header stays visible
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: "smooth" });
+    }, 300);
+    return () => clearTimeout(t);
+  }, []);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [supabaseData, setSupabaseData] = useState<any>(null);
   const [breakdownData, setBreakdownData] = useState<any>(null);
@@ -492,7 +507,7 @@ export default function OutreachPage() {
         <section className="space-y-4">
           <SectionHeader title="Reach & Participation" blurb="How many people we reached, who we're reaching, and the wider student population we draw from." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Participants by Program" subtitle="HEMP · HENT · HECO, split by gender"
+            <Panel id="participants-by-program" title="Participants by Program" subtitle="HEMP · HENT · HECO, split by gender"
               info="Participant counts per program, split by gender (Female / Male).">
               <ChartWithPlaceholder data={byProgram || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
@@ -549,7 +564,7 @@ export default function OutreachPage() {
             </Panel>
           </div>
 
-          <Panel title="Inclusion by Program" subtitle="Share of each group within HEMP · HENT · HECO"
+          <Panel id="inclusion-by-program" title="Inclusion by Program" subtitle="Share of each group within HEMP · HENT · HECO"
             info="Share of each priority group within HEMP, HENT and HECO.">
             <ChartWithPlaceholder data={inclusionByProgram || []} height={280}>
               <ResponsiveContainer width="100%" height={280}>
@@ -567,7 +582,7 @@ export default function OutreachPage() {
             </ChartWithPlaceholder>
           </Panel>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Graduation Status" subtitle="Graduated vs current students per programme"
+            <Panel id="graduation-status" title="Graduation Status" subtitle="Graduated vs current students per programme"
               info="Students per academic programme, split into graduated and current.">
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <ChartWithPlaceholder data={graduationRows} height={300}>
@@ -632,7 +647,7 @@ export default function OutreachPage() {
         <section className="space-y-4">
           <SectionHeader title="Engagement Outcomes" blurb="What happened after people participated." />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-            <Panel title="Engagement Status by Intervention" subtitle="Registered → Completed"
+            <Panel id="engagement-status" title="Engagement Status by Intervention" subtitle="Registered → Completed"
               info="Participants at each stage of engagement: registered (enrolled) or completed the intervention.">
               <ChartWithPlaceholder data={byStatus || []} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
