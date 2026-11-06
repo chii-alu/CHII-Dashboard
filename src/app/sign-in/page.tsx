@@ -37,9 +37,9 @@ const CAPABILITIES = [
 
 const PORTALS = [
   { id: "HEMP",      label: "HEMP",         href: "/hemp" },
-  { id: "HM",        label: "HM",           href: "/hm/career-workshops" },
   { id: "HENT",      label: "HENT",      href: "/hent" },
   { id: "HECO",      label: "HECO",      href: "/heco" },
+  { id: "HM",        label: "HM",           href: "/hm/career-workshops" },
   { id: "EXECUTIVE", label: "EXECUTIVE", href: "/executive" },
 ] as const;
 

@@ -20,10 +20,10 @@ export const IMPACT_TABS = [
 ] as const;
 
 const PORTAL_LINKS = [
-  { label: "HENT", desc: "Entrepreneurship Pillar", href: "/hent/at-a-glance", color: "#7C3AED", bg: "#F5F3FF" },
   { label: "HEMP", desc: "Employment Pillar",       href: "/hemp",          color: "#0D9488", bg: "#F0FDFA" },
-  { label: "HM", desc: "Health Missions",          href: "/hm/career-workshops", color: "#0E7490", bg: "#ECFEFF" },
+  { label: "HENT", desc: "Entrepreneurship Pillar", href: "/hent/at-a-glance", color: "#7C3AED", bg: "#F5F3FF" },
   { label: "HECO", desc: "Ecosystems Pillar",       href: "/heco",          color: "#2563EB", bg: "#EFF6FF" },
+  { label: "HM", desc: "Health Missions",          href: "/hm/career-workshops", color: "#0E7490", bg: "#ECFEFF" },
 ] as const;
 
 export type ImpactTabLabel = typeof IMPACT_TABS[number]["label"];

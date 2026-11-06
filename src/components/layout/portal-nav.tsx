@@ -16,10 +16,10 @@ import { dashboardsFor, isRole, type DashboardCode, type Role } from "@/lib/acce
 // Every portal the Portals switcher can open. Each user sees only the ones their role allows.
 const SWITCH_TO: { portal: Portal; code: DashboardCode; label: string; desc: string }[] = [
   { portal: "executive", code: "EXEC", label: "Executive", desc: "Executive Dashboard" },
-  { portal: "hent", code: "HENT", label: "HENT", desc: "Entrepreneurship Pillar" },
   { portal: "hemp", code: "HEMP", label: "HEMP", desc: "Employment Pillar" },
-  { portal: "hm", code: "HM", label: "HM", desc: "Health Missions" },
+  { portal: "hent", code: "HENT", label: "HENT", desc: "Entrepreneurship Pillar" },
   { portal: "heco", code: "HECO", label: "HECO", desc: "Ecosystems Pillar" },
+  { portal: "hm", code: "HM", label: "HM", desc: "Health Missions" },
 ];
 
 export default function PortalNav({ portal }: { portal: Portal }) {
@@ -122,6 +122,15 @@ export default function PortalNav({ portal }: { portal: Portal }) {
             {menuOpen ? <X size={16} /> : <Menu size={16} />}
           </button>
 
+          <button
+            title="Download this dashboard as PNG"
+            onClick={() => downloadDashboard(document.title || "dashboard")}
+            className="hidden sm:flex items-center justify-center w-7 h-7 rounded-md border transition-colors flex-shrink-0"
+            style={{ borderColor: "var(--border-default)", color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}
+          >
+            <Download size={12} />
+          </button>
+
           {switchChoices.length > 0 && (
             <div className="relative flex-shrink-0" ref={switchRef}>
               <button
@@ -151,15 +160,6 @@ export default function PortalNav({ portal }: { portal: Portal }) {
               )}
             </div>
           )}
-
-          <button
-            title="Download this dashboard as PNG"
-            onClick={() => downloadDashboard(document.title || "dashboard")}
-            className="hidden sm:flex items-center justify-center w-7 h-7 rounded-md border transition-colors flex-shrink-0"
-            style={{ borderColor: "var(--border-default)", color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}
-          >
-            <Download size={12} />
-          </button>
 
           <Link
             href="/sign-in"
