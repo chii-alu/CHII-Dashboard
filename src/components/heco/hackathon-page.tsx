@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 // Public Sector Innovation Hackathon page: six stat cards, hackathon funnel, projects by problem area, participation by round split by gender.
-import { Users, FileText, Lightbulb, HandCoins, type LucideIcon } from "lucide-react";
+import { Users, FileText, Lightbulb, HandCoins, Accessibility, type LucideIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
@@ -23,9 +23,10 @@ const GENDER_COLOURS = { Female: "#D45F2C", Male: "#479BD6" };
 const CARDS: { label: string; icon: LucideIcon; format?: "percent" | "currency"; tip: string }[] = [
   { label: "Student Participants", icon: Users, tip: "Students taking part in the hackathon" },
   { label: "Projects Submitted", icon: FileText, tip: "Projects submitted by teams" },
-  { label: "Problem Statements Used", icon: Lightbulb, tip: "Problem statements taken from the PSF fellows" },
-  { label: "Total Seed Funding Awarded", icon: HandCoins, format: "currency", tip: "Total seed funding awarded to teams" },
+  { label: "Problem Statements", icon: Lightbulb, tip: "Problem statements taken from the PSF fellows" },
+  { label: "Seed Funding Awarded", icon: HandCoins, format: "currency", tip: "Total seed funding awarded to teams" },
   { label: "Female Participation (%)", icon: Users, format: "percent", tip: "Share of female participants" },
+  { label: "Inclusion Reach", icon: Accessibility, format: "percent", tip: "Share of participants reached across inclusion groups" },
 ];
 
 type Programme = {
@@ -46,7 +47,7 @@ export default function HackathonPage() {
 
   const headline = (label: string): number | null => programme?.headlines?.find(h => h.metric === label)?.value ?? null;
   const statCards: HeaderStatCard[] = CARDS.map(card => ({
-    label: card.label,
+    label: card.label.replace(" (%)", ""),
     num: headline(card.label),
     icon: card.icon,
     displayFmt: card.format === "percent" ? formatPercent : card.format === "currency" ? (n: number) => `$${Math.round(n).toLocaleString()}` : undefined,

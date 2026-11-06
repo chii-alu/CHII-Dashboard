@@ -27,7 +27,7 @@ const CARDS: { label: string; icon: LucideIcon; format?: "percent" | "score"; ti
   { label: "Completion Rate", icon: CheckCircle2, format: "percent", tip: "Share of enrolled participants who completed" },
   { label: "Female Participation (%)", icon: Users, format: "percent", tip: "Share of female participants" },
   { label: "Organisations Represented", icon: Building2, tip: "Organisations with participants on the courses" },
-  { label: "Average Satisfaction Score", icon: TrendingUp, format: "score", tip: "Average course satisfaction score" },
+  { label: "Satisfaction Score", icon: TrendingUp, format: "score", tip: "Average course satisfaction score" },
 ];
 
 type Programme = {
@@ -47,7 +47,7 @@ export default function ExecutiveCoursesPage() {
 
   const headline = (label: string): number | null => programme?.headlines?.find(h => h.metric === label)?.value ?? null;
   const statCards: HeaderStatCard[] = CARDS.map(card => ({
-    label: card.label,
+    label: card.label.replace(" (%)", "").replace(" Represented", ""),
     num: headline(card.label),
     icon: card.icon,
     displayFmt: card.format === "percent" ? formatPercent : card.format === "score" ? (n: number) => n.toFixed(1) : undefined,
