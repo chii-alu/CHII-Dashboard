@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
-import type { CityMarker } from "./StoriesMap";
 import { COUNTRY_COORDS } from "@/lib/country-coords";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { Info, ChevronDown, FileText, Video, MapPin, BookOpen } from "lucide-react";
@@ -26,8 +25,6 @@ export type StoryRow = {
   pillars: { code: string } | { code: string }[] | null;
   academic_programs: { code: string; name: string } | { code: string; name: string }[] | null;
 };
-
-export type { CityMarker };
 
 export type StorySummary = {
   total_stories: number;
@@ -139,9 +136,7 @@ function Dropdown({ label, value, options, onChange }: {
   );
 }
 
-export default function StoriesView({ stories, summary, cities }: {
-  stories: StoryRow[]; summary: StorySummary | null; cities: CityMarker[];
-}) {
+export default function StoriesView({ stories, summary }: { stories: StoryRow[]; summary: StorySummary | null }) {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -304,7 +299,6 @@ export default function StoriesView({ stories, summary, cities }: {
             <div style={{ height: "100%", minHeight: 520 }}>
               <StoriesMap
                 stories={mapStories}
-                cities={cities}
                 cluster={false}
                 onSelect={(s: { id: number; location: string; count?: number }) => {
                   // A country bubble opens the country and shows one marker per story.
