@@ -70,5 +70,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/hent/:path*", "/hemp/:path*", "/heco/:path*", "/executive/:path*", "/api/:path*"],
+  matcher: ["/hent/:path*", "/hemp/:path*", "/hm/:path*", "/heco/:path*", "/executive/:path*", "/api/:path*"],
 };

@@ -10,11 +10,11 @@
 export const ROLES = ["admin", "HEMP", "HENT", "HECO"] as const;
 export type Role = (typeof ROLES)[number];
 
-export type DashboardCode = "HEMP" | "HENT" | "HECO" | "EXEC";
+export type DashboardCode = "HEMP" | "HM" | "HENT" | "HECO" | "EXEC";
 
 // Dashboards each role may open. EXECUTIVE is admin-only.
 const ROLE_DASHBOARDS: Record<Role, DashboardCode[]> = {
-  admin: ["HEMP", "HENT", "HECO", "EXEC"],
+  admin: ["HEMP", "HM", "HENT", "HECO", "EXEC"],
   HEMP: ["HEMP"],
   HENT: ["HENT"],
   HECO: ["HECO"],
@@ -36,6 +36,7 @@ export function dashboardsFor(role: Role | null | undefined): DashboardCode[] {
 // Page paths -> dashboard
 export function dashboardForPage(pathname: string): DashboardCode | null {
   if (pathname.startsWith("/hemp")) return "HEMP";
+  if (pathname.startsWith("/hm")) return "HM";
   if (pathname.startsWith("/hent")) return "HENT";
   if (pathname.startsWith("/heco")) return "HECO";
   if (pathname.startsWith("/executive")) return "EXEC";
