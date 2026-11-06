@@ -182,10 +182,23 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
     );
   }, [rows, type, pillar, program, country, nameQuery]);
 
-  const selected = filtered.find(r => r.id === selectedId) ?? null;
+  const filtersActive = type !== "All" || pillar !== "All" || country !== "All" || program !== "All" || nameQuery.trim() !== "" || expanded !== null;
+
+  const resetFilters = () => {
+    setType("All");
+    setPillar("All");
+    setCountry("All");
+    setProgram("All");
+    setNameQuery("");
+    setExpanded(null);
+    setSelectedId(null);
+  };
+
+  // Looked up in every story, so a story picked on the map shows even if a filter hides it from the list.
+  const selected = rows.find(r => r.id === selectedId) ?? null;
 
   // One bubble per country, showing how many stories it holds. The country filter is left out
-  // so every bubble stays on the map when one is clicked.
+  // so every bubble stays on the map; choosing a country opens its stories instead.
   const mapStories = useMemo(() => {
     const q = nameQuery.trim().toLowerCase();
     const groups = new Map<string, typeof rows>();
@@ -214,8 +227,8 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
   }, [rows, type, pillar, program, nameQuery, expanded]);
 
   useEffect(() => {
-    if (selectedId !== null && !filtered.some(r => r.id === selectedId)) setSelectedId(null);
-  }, [filtered, selectedId]);
+    if (selectedId !== null && !rows.some(r => r.id === selectedId)) setSelectedId(null);
+  }, [rows, selectedId]);
 
   return (
     <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh" }}>
@@ -287,15 +300,37 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <Dropdown label="Story type" value={type} options={types} onChange={setType} />
                 <Dropdown label="Pillar" value={pillar} options={pillars} onChange={setPillar} />
-                <Dropdown label="Country" value={country} options={countries} onChange={setCountry} />
+                <Dropdown label="Country" value={country} options={countries} onChange={v => { setCountry(v); setExpanded(v === "All" ? null : v); }} />
                 <Dropdown label="Academic programme" value={program} options={programs} onChange={setProgram} />
               </div>
 
               <label style={{ display: "block", marginTop: 12 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>Search by name:</span>
-                <input value={nameQuery} onChange={e => setNameQuery(e.target.value)} placeholder="e.g., Peter"
+                <input value={nameQuery} onChange={e => setNameQuery(e.target.value)} placeholder="Type part of a story name"
                   style={{ width: "100%", marginTop: 4, fontSize: 11.5, color: NAVY, backgroundColor: "white", border: "1px solid rgba(0,33,71,0.15)", borderRadius: 6, padding: "7px 9px", outline: "none" }} />
               </label>
+
+              {nameQuery.trim() !== "" && (
+                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4, maxHeight: 220, overflowY: "auto" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    {filtered.length} {filtered.length === 1 ? "match" : "matches"}
+                  </span>
+                  {filtered.map(r => (
+                    <button key={r.id} onClick={() => setSelectedId(r.id)}
+                      style={{ textAlign: "left", fontSize: 11.5, fontWeight: r.id === selectedId ? 700 : 500, color: r.id === selectedId ? "white" : NAVY, backgroundColor: r.id === selectedId ? NAVY : "white", border: "1px solid rgba(0,33,71,0.15)", borderRadius: 6, padding: "6px 9px", cursor: "pointer" }}>
+                      {r.name}
+                      <span style={{ display: "block", fontSize: 10, opacity: 0.7 }}>{[r.country, r.type].filter(Boolean).join(" · ")}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+                <button onClick={resetFilters} disabled={!filtersActive}
+                  style={{ fontSize: 11, fontWeight: 700, color: filtersActive ? NAVY : "#9CA3AF", backgroundColor: "white", border: "1px solid rgba(0,33,71,0.15)", borderRadius: 6, padding: "5px 12px", cursor: filtersActive ? "pointer" : "default" }}>
+                  Reset filters
+                </button>
+              </div>
             </Panel>
           </div>
 
@@ -307,10 +342,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
                 cluster={false}
                 onSelect={(s: { id: number; location: string; count?: number }) => {
                   // A country bubble opens the country and shows one marker per story.
-                  if (s.count !== undefined) {
-                    setCountry(s.location);
-                    setExpanded(s.location);
-                  }
+                  if (s.count !== undefined) setExpanded(s.location);
                   setSelectedId(s.id);
                 }}
               />
