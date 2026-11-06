@@ -52,7 +52,7 @@ function formatDate(value: string | null): string | null {
 // not a recognised video address (for example the sheet's "No" placeholder).
 type MediaSource = { kind: "iframe" | "file"; src: string };
 
-function videoSource(url: string | null): MediaSource | null {
+function videoSource(url: string | null, isVideo: boolean): MediaSource | null {
   if (!url || !/^https?:\/\//i.test(url)) return null;
   try {
     const u = new URL(url);
@@ -70,6 +70,11 @@ function videoSource(url: string | null): MediaSource | null {
     // Asset-library links carry the file name in a `path` query value, e.g. ...&path=PRAISE.mp4
     const file = decodeURIComponent(u.searchParams.get("path") ?? u.pathname);
     if (/\.(mp4|webm|mov)$/i.test(file)) return { kind: "file", src: url };
+    // Asset-library viewer links: the download form of the link serves the video file itself.
+    if (isVideo && host === "dam.alu.app" && u.searchParams.has("id")) {
+      u.searchParams.set("download", "1");
+      return { kind: "file", src: u.toString() };
+    }
   } catch {
     return null;
   }
@@ -77,7 +82,7 @@ function videoSource(url: string | null): MediaSource | null {
 }
 
 function StoryMedia({ url, isVideo }: { url: string | null; isVideo: boolean }) {
-  const source = videoSource(url);
+  const source = videoSource(url, isVideo);
   if (source?.kind === "iframe") {
     return (
       <iframe src={source.src} title="Story video" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen
