@@ -176,11 +176,11 @@ const SECTIONS: { n: number; label: string }[] = [
 
 export default function EntrepreneurshipPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const progressRows = useProgress("EXEC", undefined, "Entrepreneurship", "Entrepreneurship Metrics");
+  const [year, setYear] = useState<"all" | number>("all");
+  const progressRows = useProgress("EXEC", undefined, "Entrepreneurship", "Entrepreneurship Metrics", year);
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
-  const [year, setYear] = useState<"all" | number>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
   const periodLabel = year === "all" ? "2024–2030" : String(year);
   const [entHeadlines, setEntHeadlines] = useState<any[] | null>(null);
