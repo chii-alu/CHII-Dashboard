@@ -3,21 +3,8 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { createClient } from "@/lib/supabase-client";
 // Only what the map needs: a story with a point to draw. Works for the HECO stories too.
 export type MapStory = { id: number; name: string; type: string; location: string; lat: number; lng: number; count?: number };
-
-// One city with stories, from v_story_markers. Counts only: no personal data.
-export type CityMarker = {
-  city_id: number; city: string; country: string; iso2: string | null; iso3: string | null;
-  latitude: number; longitude: number; stories: number; video_stories: number; text_stories: number;
-  hemp_stories: number; hent_stories: number; heco_stories: number; featured_stories: number;
-};
-
-type CityStory = {
-  story_id: number; story_name: string; story_type: string; story_url: string | null;
-  academic_program: string | null; pillars: { code: string } | { code: string }[] | null;
-};
 
 let mapboxTokenReady = false;
 const initMapboxToken = async () => {
@@ -64,61 +51,6 @@ function createMarkerElement(svg: string, bg: string): HTMLElement {
   return el;
 }
 
-// Popup for one city: the counts by pillar now, and its stories once they load.
-// Built with DOM nodes so the text is never read as HTML.
-function buildCityPopup(c: CityMarker): { node: HTMLElement; load: () => void } {
-  const node = document.createElement("div");
-  node.style.fontSize = "12px";
-  node.style.lineHeight = "1.4";
-
-  const title = document.createElement("strong");
-  title.textContent = `${c.city}, ${c.country}`;
-  const counts = document.createElement("div");
-  counts.style.marginTop = "4px";
-  counts.textContent = `HEMP ${c.hemp_stories} · HENT ${c.hent_stories} · HECO ${c.heco_stories}`;
-  const list = document.createElement("div");
-  node.append(title, counts, list);
-
-  const load = async () => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("impact_stories")
-      .select("story_id, story_name, story_type, story_url, academic_program, pillars(code)")
-      .eq("city_id", c.city_id);
-    if (error || !data) return;
-
-    list.replaceChildren(...(data as CityStory[]).map(s => {
-      const row = document.createElement("div");
-      row.style.marginTop = "8px";
-      const name = document.createElement("div");
-      name.style.fontWeight = "600";
-      name.textContent = s.story_name;
-      row.appendChild(name);
-
-      const pillar = Array.isArray(s.pillars) ? s.pillars[0]?.code : s.pillars?.code;
-      const detail = [s.academic_program, pillar].filter(Boolean).join(" · ");
-      if (detail) {
-        const sub = document.createElement("div");
-        sub.style.color = "#6B7280";
-        sub.textContent = detail;
-        row.appendChild(sub);
-      }
-      if (s.story_url && /^https?:\/\//i.test(s.story_url)) {
-        const link = document.createElement("a");
-        link.href = s.story_url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = "Watch story →";
-        link.style.color = "#14306B";
-        link.style.fontWeight = "700";
-        row.appendChild(link);
-      }
-      return row;
-    }));
-  };
-  return { node, load };
-}
-
 const DEFAULT_CENTER: [number, number] = [20, 0];
 const DEFAULT_ZOOM = 3.2;
 
@@ -134,13 +66,11 @@ function createCountBubble(count: number): HTMLDivElement {
   return el;
 }
 
-export default function StoriesMap({ stories, cluster, onSelect, cities = [] }: {
+export default function StoriesMap({ stories, cluster, onSelect }: {
   stories: MapStory[];
   cluster: boolean;
   // Called with the story that was clicked; the caller passes its own story type.
   onSelect: (s: any) => void;
-  // Optional: the Executive page passes the city markers.
-  cities?: CityMarker[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -153,43 +83,6 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [] }: 
   const clearMarkers = () => {
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
-  };
-
-  // City markers form their own layer, drawn on top of the country bubbles.
-  const cityMarkersRef = useRef<mapboxgl.Marker[]>([]);
-  const citiesRef = useRef(cities);
-  citiesRef.current = cities;
-
-  const clearCityMarkers = () => {
-    cityMarkersRef.current.forEach(marker => marker.remove());
-    cityMarkersRef.current = [];
-  };
-
-  const renderCities = (map: mapboxgl.Map) => {
-    clearCityMarkers();
-
-    citiesRef.current.forEach(c => {
-      const size = 22 + Math.min(c.stories, 10) * 2;
-      const el = document.createElement("div");
-      el.textContent = c.stories > 1 ? String(c.stories) : "";
-      Object.assign(el.style, {
-        width: `${size}px`, height: `${size}px`, borderRadius: "50%", backgroundColor: "#D17A86", color: "white",
-        fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center",
-        border: "2px solid white", boxShadow: "0 2px 6px rgba(0,0,0,0.35)", cursor: "pointer",
-      });
-
-      const popup = new mapboxgl.Popup({ offset: size / 2 + 4, maxWidth: "280px" });
-      el.addEventListener("click", () => {
-        const content = buildCityPopup(c);
-        popup.setDOMContent(content.node).setLngLat([c.longitude, c.latitude]).addTo(map);
-        content.load();
-      });
-
-      const marker = new mapboxgl.Marker({ element: el })
-        .setLngLat([c.longitude, c.latitude])
-        .addTo(map);
-      cityMarkersRef.current.push(marker);
-    });
   };
 
   /* init map once */
@@ -211,7 +104,6 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [] }: 
       // style.load fires once the map style is ready; the markers are drawn then.
       map.on("style.load", () => {
         renderMarkers(map, stories, cluster);
-        renderCities(map);
       });
 
       mapRef.current = map;
@@ -408,18 +300,11 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [] }: 
     }
   }, [stories, cluster]);
 
-  useEffect(() => {
-    if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      renderCities(mapRef.current);
-    }
-  }, [cities]);
-
   const resetView = async () => {
     if (!mapRef.current || !containerRef.current) return;
 
     clearMarkers();
 
-    clearCityMarkers();
     // Remove old map
     mapRef.current.remove();
 
@@ -438,7 +323,6 @@ export default function StoriesMap({ stories, cluster, onSelect, cities = [] }: 
 
     newMap.on("load", () => {
       renderMarkers(newMap, stories, cluster);
-      renderCities(newMap);
     });
 
     mapRef.current = newMap;
