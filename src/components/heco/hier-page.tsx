@@ -28,7 +28,7 @@ const CARDS: { label: string; icon: LucideIcon; format?: "percent" | "score"; ti
   { label: "Participants Reached", icon: Users, tip: "Participants reached across sessions" },
   { label: "Female Participation (%)", icon: Users, format: "percent", tip: "Share of female participants" },
   { label: "Partner Organisations", icon: Briefcase, tip: "Partner organisations" },
-  { label: "Average Satisfaction Score", icon: TrendingUp, format: "score", tip: "Average participant satisfaction score" },
+  { label: "Satisfaction Score", icon: TrendingUp, format: "score", tip: "Average participant satisfaction score" },
 ];
 
 type Programme = {
@@ -49,7 +49,7 @@ export default function HierPage() {
 
   const headline = (label: string): number | null => programme?.headlines?.find(h => h.metric === label)?.value ?? null;
   const statCards: HeaderStatCard[] = CARDS.map(card => ({
-    label: card.label,
+    label: card.label.replace(" (%)", ""),
     num: headline(card.label),
     icon: card.icon,
     displayFmt: card.format === "percent" ? formatPercent : card.format === "score" ? (n: number) => n.toFixed(1) : undefined,
