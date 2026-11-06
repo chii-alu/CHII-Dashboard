@@ -12,5 +12,6 @@ export const DATA_SOURCE: Record<Portal, string> = {
   executive: "CHII MELA Consolidated Database",
   hent:      "HENT Consolidated Database",
   hemp:      "HEMP Consolidated Database",
+  hm:        "HEMP Consolidated Database",
   heco:      "HECO Consolidated Database",
 };

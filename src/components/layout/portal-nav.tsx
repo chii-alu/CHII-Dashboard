@@ -17,7 +17,8 @@ import { dashboardsFor, isRole, type DashboardCode, type Role } from "@/lib/acce
 const SWITCH_TO: { portal: Portal; code: DashboardCode; label: string; desc: string }[] = [
   { portal: "executive", code: "EXEC", label: "Executive", desc: "Executive Dashboard" },
   { portal: "hent", code: "HENT", label: "HENT", desc: "Entrepreneurship Pillar" },
-  { portal: "hemp", code: "HEMP", label: "Health Missions & HEMP", desc: "Employment Pillar" },
+  { portal: "hemp", code: "HEMP", label: "HEMP", desc: "Employment Pillar" },
+  { portal: "hm", code: "HM", label: "HM", desc: "Health Missions" },
   { portal: "heco", code: "HECO", label: "HECO", desc: "Ecosystems Pillar" },
 ];
 
@@ -64,13 +65,6 @@ export default function PortalNav({ portal }: { portal: Portal }) {
         <Link href={config.rootHref} className="flex items-center gap-2.5 flex-shrink-0 group">
           {portal === "hemp" ? (
             <span className="flex flex-col gap-0.5" style={{ color: accent }}>
-              <span className="flex items-center gap-1">
-                <span className="text-[22px] font-semibold tracking-tight leading-none">HM</span>
-                <span className="flex flex-col" style={{ lineHeight: 1.05 }}>
-                  <span className="text-[7px] font-medium tracking-tight whitespace-nowrap">HEALTH</span>
-                  <span className="text-[7px] font-medium tracking-tight whitespace-nowrap">MISSIONS</span>
-                </span>
-              </span>
               <span className="flex items-center gap-1">
                 <span className="text-[22px] font-semibold tracking-tight leading-none">HEMP</span>
                 <span className="flex flex-col" style={{ lineHeight: 1.05 }}>

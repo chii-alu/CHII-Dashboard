@@ -4,7 +4,7 @@
 
 import { COLORS } from "./tokens";
 
-export const PORTALS = ["hent", "hemp", "heco", "executive"] as const;
+export const PORTALS = ["hent", "hemp", "hm", "heco", "executive"] as const;
 export type Portal = typeof PORTALS[number];
 
 export interface PortalTheme {
@@ -60,6 +60,7 @@ const NAVY: PortalTheme = {
 export const PORTAL_THEMES: Record<Portal, PortalTheme> = {
   hent:   GREEN,
   hemp:   NAVY,
+  hm:     NAVY,
   heco:   NAVY,
   executive: NAVY,
 };

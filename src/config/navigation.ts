@@ -35,6 +35,19 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
     ],
   },
 
+  hm: {
+    wordmark: "HM",
+    wordmarkLines: ["HEALTH", "MISSIONS"],
+    rootHref: "/hm/career-workshops",
+    items: [
+      { label: "Mission Students",               href: "/hm/career-workshops" },
+      { label: "Mentorship Program",             href: "/hm/exposure-events" },
+      { label: "Guest Faculty & Sessions",       href: "/hm/internships" },
+      { label: "Study Trips",                    href: "/hm/sie" },
+      { label: "Research",                       href: "/hm/course" },
+    ],
+  },
+
   hemp: {
     wordmark: "Health Missions & HEMP",
     wordmarkLines: ["HEALTH", "EMPLOYMENT", "PILLAR"],
