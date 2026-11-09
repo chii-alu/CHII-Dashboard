@@ -77,6 +77,22 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
     ],
   },
 
+  alu: {
+    wordmark: "ALU-CHII",
+    wordmarkLines: [],
+    rootHref: "/alu-chii/at-a-glance",
+    items: [
+      { label: "At a Glance",         href: "/alu-chii/at-a-glance" },
+      { label: "Outreach",            href: "/alu-chii/outreach" },
+      { label: "Youth in Work",       href: "/alu-chii/youth-in-work" },
+      { label: "Wage Employment",     href: "/alu-chii/wage-employment" },
+      { label: "Entrepreneurship",    href: "/alu-chii/entrepreneurship" },
+      { label: "Further Education",   href: "/alu-chii/further-education" },
+      { label: "Impact Reports",      href: "/alu-chii/reports" },
+      { label: "Impact Stories",      href: "/alu-chii/stories" },
+    ],
+  },
+
   executive: {
     wordmark: "CHII",
     wordmarkLines: ["EXECUTIVE", "IMPACT", "DASHBOARD"],

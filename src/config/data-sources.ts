@@ -13,5 +13,6 @@ export const DATA_SOURCE: Record<Portal, string> = {
   hent:      "HENT Consolidated Database",
   hemp:      "HEMP Consolidated Database",
   hm:        "Health Missions Dashboard 2026",
+  alu:       "ALU-CHII Dashboard",
   heco:      "HECO Consolidated Database",
 };

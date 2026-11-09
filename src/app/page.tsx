@@ -5,7 +5,7 @@ import { Playfair_Display } from "next/font/google";
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: "600", display: "swap" });
 
-// Where the Intervention Manager button goes. Left empty until its address is ready.
+// Where the Program Manager button goes. Left empty until its address is ready.
 const INTERVENTION_MANAGER_HREF: string | null = null;
 
 // Same palette and layout as the sign-in page.
@@ -83,7 +83,7 @@ export default function ChooserPage() {
                     border: `1px solid #D5D8E0`,
                   }}
                 >
-                  Intervention Manager
+                  Program Manager
                 </a>
               ) : (
                 <div
@@ -97,7 +97,7 @@ export default function ChooserPage() {
                     cursor: "default",
                   }}
                 >
-                  Intervention Manager
+                  Program Manager
                 </div>
               )}
             </div>
