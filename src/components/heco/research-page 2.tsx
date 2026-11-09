@@ -1,0 +1,163 @@
+"use client";
+import { useState } from "react";
+// Research Activities page: six stat cards, papers by topic, grant pipeline, masterclass attendance per session.
+import { FlaskConical, FileText, HandCoins, Building2, Users, type LucideIcon } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import HeaderDesign from "@/components/layout/header-design";
+import FeaturedImpactStory from "@/components/layout/featured-impact-story";
+import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
+import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-stats-panel";
+import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useProgress } from "@/hooks/useProgress";
+import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionTabs } from "@/components/heco/heco-shared";
+
+const PROGRAMME = "Research Activities";
+const CATEGORIES = [
+  { name: "Publications", blurb: "Research papers produced, by research topic" },
+  { name: "Funding", blurb: "Grant applications, reviews and awards" },
+  { name: "Research Implementation", blurb: "How research is carried out and delivered" },
+  { name: "Research Masterclass", blurb: "Masterclass attendance per session, kept separate from research" },
+];
+// Grant pipeline stages, in order, one segment each in the stacked bar.
+const STAGES = ["Applied", "Under Review", "Awarded", "Rejected"];
+const STAGE_COLOURS = ["#479BD6", "#EAB308", "#16A34A", "#D45F2C"];
+
+const CARDS: { label: string; icon: LucideIcon; tip: string }[] = [
+  { label: "Research Projects", icon: FlaskConical, tip: "Research projects underway or completed" },
+  { label: "Papers Published", icon: FileText, tip: "Papers published" },
+  { label: "Grants Applied For", icon: HandCoins, tip: "Grant applications submitted" },
+  { label: "Grants Secured", icon: HandCoins, tip: "Grants secured" },
+  { label: "Institutions Engaged", icon: Building2, tip: "Institutions engaged in research" },
+  { label: "Masterclass Reach", icon: Users, tip: "Participants in research masterclasses" },
+];
+
+type Programme = {
+  headlines: { metric: string; value: number }[];
+  breakdowns: Record<string, { name: string; count: number | null }[]>;
+};
+
+export default function ResearchPage() {
+  const dataSource = useDataSource("HECO");
+  const syncedAt = useSyncedAt("HECO");
+  const progressRows = useProgress("HECO", PROGRAMME);
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].name);
+  const { data: programme } = useDashboardData<Programme>(
+    () => fetch(`/api/dashboard-intervention?dashboard=HECO&intervention=${encodeURIComponent(PROGRAMME)}`).then(r => r.json()),
+    []
+  );
+
+  const headline = (label: string): number | null => programme?.headlines?.find(h => h.metric === label)?.value ?? null;
+  const statCards: HeaderStatCard[] = CARDS.map(card => ({
+    label: card.label,
+    num: headline(card.label),
+    icon: card.icon,
+    tip: card.tip,
+  }));
+
+  // Papers by research topic, largest first.
+  const topics = programme?.breakdowns?.["Papers by Research Topic"]
+    ?.map(r => ({ name: r.name, count: r.count ?? 0 }))
+    .sort((a, b) => b.count - a.count) ?? null;
+
+  // Grant pipeline: one stacked row, one segment per stage.
+  const pipelineRows = programme?.breakdowns?.["Grant Pipeline"];
+  const pipeline = pipelineRows && pipelineRows.length > 0
+    ? [Object.fromEntries([["name", "Grants"], ...STAGES.map(s => [s, pipelineRows.find(p => p.name === s)?.count ?? 0])])]
+    : null;
+
+  // Masterclass attendance, one bar per session, in the workbook's order.
+  const attendance = programme?.breakdowns?.["Masterclass Attendance per Session"]?.map(r => ({ name: r.name, count: r.count ?? 0 })) ?? null;
+
+  return (
+    <div style={{ backgroundColor: "#f8fafc" }}>
+      <ProgrammeBanner
+        title={PROGRAMME}
+        subtitle="Health ecosystem research and evidence generation"
+        dataSource={dataSource}
+        syncedAt={syncedAt}
+        headerDesign={<HeaderDesign />}
+      />
+
+      <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-7">
+        <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
+
+        <SectionTabs categories={CATEGORIES} active={activeCategory} onChange={setActiveCategory} />
+
+        {activeCategory === "Publications" && (
+          <>
+          <div>
+              <Panel title="Papers by research topic" subtitle="Number of papers in each topic" legend={[{ label: "Papers", color: "#479BD6" }]}>
+                <ChartWithPlaceholder data={topics} height={320}>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={topics ?? []} layout="vertical" margin={{ top: 6, right: 40, bottom: 0, left: 150 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={HECO_GRID} />
+                      <XAxis type="number" tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} width={140} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill={HECO_BAR} radius={[0, 4, 4, 0]}>
+                        <LabelList dataKey="count" position="right" fontSize={10} fill={HECO_NAVY} fontWeight={700} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </Panel>
+          </div>
+          </>
+        )}
+        {activeCategory === "Funding" && (
+          <>
+          <div>
+              <Panel title="Grant pipeline" subtitle="Applied, under review, awarded and rejected" legend={[{ label: "Applied", color: "#479BD6" }, { label: "Under Review", color: "#EAB308" }, { label: "Awarded", color: "#16A34A" }, { label: "Rejected", color: "#D45F2C" }]}>
+                <ChartWithPlaceholder data={pipeline} height={320}>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={pipeline ?? []} layout="vertical" margin={{ top: 6, right: 20, bottom: 0, left: 20 }}>
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" hide />
+                      <Tooltip />
+                        {STAGES.map((stage, i) => (
+                        <Bar key={stage} dataKey={stage} stackId="pipeline" fill={STAGE_COLOURS[i]} />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartWithPlaceholder>
+              </Panel>
+          </div>
+          </>
+        )}
+        {activeCategory === "Research Implementation" && (
+          <>
+          <div style={{ backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(16, 44, 94, 0.12)", minHeight: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <p style={{ fontSize: 14, color: "#9CA3AF" }}>In coming data</p>
+          </div>
+          </>
+        )}
+        {activeCategory === "Research Masterclass" && (
+          <>
+          <div>
+            <Panel title="Masterclass attendance per session" subtitle="Training attendance, kept separate from research output" legend={[{ label: "Attendees", color: "#479BD6" }]}>
+              <ChartWithPlaceholder data={attendance} height={300}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={attendance ?? []} margin={{ top: 18, right: 10, bottom: 0, left: -10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={HECO_GRID} vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#374151" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Attendees" fill={HECO_BAR} radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="count" position="top" fontSize={10} fill={HECO_NAVY} fontWeight={700} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartWithPlaceholder>
+            </Panel>
+          </div>
+          </>
+        )}
+      </div>
+
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+      </div>
+    </div>
+  );
+}
