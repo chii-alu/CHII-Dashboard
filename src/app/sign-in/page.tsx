@@ -35,13 +35,6 @@ const CAPABILITIES = [
   { icon: FileText,   title: "Transform Stories",   body: "Reports that inspire action." },
 ] as const;
 
-const PORTALS = [
-  { id: "HEMP",      label: "HEMP",         href: "/hemp" },
-  { id: "HENT",      label: "HENT",      href: "/hent" },
-  { id: "HECO",      label: "HECO",      href: "/heco" },
-  { id: "HM",        label: "HM",           href: "/hm/career-workshops" },
-  { id: "EXECUTIVE", label: "EXECUTIVE", href: "/executive" },
-] as const;
 
 /** What the platform does — four capabilities, not a description of the org. */
 const PARTNERS = [
@@ -63,7 +56,6 @@ const LABEL: React.CSSProperties = {
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading]           = useState(false);
-  const [portal, setPortal]             = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused]           = useState<string | null>(null);
   const [hovered, setHovered]           = useState(false);
@@ -73,24 +65,14 @@ export default function LoginPage() {
   const [notice, setNotice]             = useState<string | null>(null);
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("error") === "no-access") {
-      setError("Your account does not have access to that dashboard.");
-    }
-  }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (focused === "portal") {
-        const target = e.target as HTMLElement;
-        if (!target.closest("div[data-dropdown]")) {
-          setFocused(null);
-        }
-      }
+    const messages: Record<string, string> = {
+      "no-access": "Your account does not have access to a dashboard. Ask an administrator.",
+      "link-expired": "That link has expired or was already used. Request a new one.",
+      "session": "Please sign in to continue.",
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [focused]);
+    const code = new URLSearchParams(window.location.search).get("error");
+    if (code && messages[code]) setError(messages[code]);
+  }, []);
 
   // Emails a reset link to the address typed above. The link opens /reset-password.
   async function sendResetLink() {
@@ -101,7 +83,7 @@ export default function LoginPage() {
       return;
     }
     const { error: resetError } = await createClient().auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
     });
     if (resetError) {
       setError("The reset link could not be sent. Try again shortly.");
@@ -110,41 +92,32 @@ export default function LoginPage() {
     setNotice("If this email has an account, a reset link has been sent to it.");
   }
 
+  // Email and password checks before anything is sent.
+  function validate(): string | null {
+    if (!email.trim()) return "Enter your email address.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) return "Enter a valid email address, such as name@example.com.";
+    if (!password) return "Enter your password.";
+    return null;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setNotice(null);
+    const problem = validate();
+    if (problem) {
+      setError(problem);
+      return;
+    }
     setError(null);
     setLoading(true);
-    const supabase = createClient();
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError || !data.user) {
+    const { error: signInError } = await createClient().auth.signInWithPassword({ email: email.trim(), password });
+    if (signInError) {
       setError("Email or password is not correct.");
       setLoading(false);
       return;
     }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .maybeSingle();
-    const role = profile?.role;
-    if (!isRole(role)) {
-      await supabase.auth.signOut();
-      setError("This account has no dashboard access. Ask an administrator.");
-      setLoading(false);
-      return;
-    }
-    if (!portal) {
-      setError("Choose a programme.");
-      setLoading(false);
-      return;
-    }
-    const dashboard = (portal === "EXECUTIVE" ? "EXEC" : portal) as DashboardCode;
-    if (!canOpen(role, dashboard)) {
-      setError(`Your account can open: ${dashboardsFor(role).join(", ")}.`);
-      setLoading(false);
-      return;
-    }
-    router.push(PORTALS.find(p => p.id === portal)?.href ?? "/executive");
+    // The callback checks the role and sends the user to their dashboard.
+    router.push("/auth/callback");
   }
 
   const field = (name: string): React.CSSProperties => ({
@@ -170,10 +143,9 @@ export default function LoginPage() {
       style={{ background: "white" }}
     >
       <div
-        className="w-full flex flex-col lg:flex-row overflow-hidden"
+        className="w-full flex flex-col lg:flex-row overflow-hidden lg:max-h-[620px]"
         style={{
           maxWidth: "55rem",
-          maxHeight: "620px",
           borderRadius: 14,
           border: `1px solid ${BORDER}`,
           boxShadow: "0 8px 32px rgba(20,48,107,0.10), 0 1px 2px rgba(0,0,0,0.02)",
@@ -193,74 +165,6 @@ export default function LoginPage() {
             </p>
 
             <form onSubmit={handleSubmit} style={{ marginTop: 24 }}>
-
-              <div style={{ marginBottom: 14 }}>
-                <label style={{...LABEL, marginBottom: 6}}>Programme</label>
-                <div style={{ position: "relative" }} data-dropdown="portal">
-                  <button
-                    type="button"
-                    onClick={() => setFocused(focused === "portal" ? null : "portal")}
-                    style={{
-                      ...field("portal"),
-                      paddingRight: 44,
-                      cursor: "pointer",
-                      background: "white",
-                      textAlign: "left",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span style={{ color: portal ? TEXT : "#9CA3AF" }}>{PORTALS.find(p => p.id === portal)?.label || "Select a programme"}</span>
-                  </button>
-                  <ChevronDown size={18} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", color: SECONDARY, pointerEvents: "none" }} />
-
-                  {focused === "portal" && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "100%",
-                        left: 0,
-                        right: 0,
-                        marginTop: 4,
-                        background: "white",
-                        border: `1px solid #D5D8E0`,
-                        borderRadius: 6,
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                        zIndex: 10,
-                        overflow: "hidden",
-                      }}
-                    >
-                      {PORTALS.map(p => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => {
-                            setPortal(p.id);
-                            setFocused(null);
-                          }}
-                          style={{
-                            width: "100%",
-                            padding: "10px 14px",
-                            textAlign: "left",
-                            background: portal === p.id ? "#F3F7FF" : "white",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: 13,
-                            color: TEXT,
-                            fontWeight: 500,
-                            transition: "background .15s",
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = "#F3F7FF"}
-                          onMouseLeave={e => e.currentTarget.style.background = portal === p.id ? "#F3F7FF" : "white"}
-                        >
-                          {p.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
 
               <div style={{ marginBottom: 14 }}>
                 <label style={{...LABEL, marginBottom: 6}}>Email address</label>

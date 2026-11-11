@@ -35,10 +35,9 @@ export default function ChooserPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "white" }}>
       <div
-        className="w-full flex flex-col lg:flex-row overflow-hidden"
+        className="w-full flex flex-col lg:flex-row overflow-hidden lg:max-h-[620px]"
         style={{
           maxWidth: "55rem",
-          maxHeight: "620px",
           borderRadius: 14,
           border: `1px solid ${BORDER}`,
           boxShadow: "0 8px 32px rgba(20,48,107,0.10), 0 1px 2px rgba(0,0,0,0.02)",
