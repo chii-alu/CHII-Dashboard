@@ -57,6 +57,14 @@ html {
   background-color: var(--bg-surface-raised);
 }
 
+/* Sign-in page full-height wrapper. Uses the small viewport height so the
+   height does not change when Android Chrome hides its address bar or the
+   keyboard opens; with 100vh the centred card jumped as those changed. */
+.chii-screen {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
 /* Sign-in page — partner logos show in full colour */
 .chii-partner-logo {
   filter: none;
