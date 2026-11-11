@@ -67,10 +67,20 @@ html {
    Phones (up to 640px): one column, no sideways scrolling.
    Tablets and desktops keep their multi-column layouts. */
 @media (max-width: 640px) {
+  /* clip (not hidden) stops sideways overflow without making the page a
+     scroll container, so iOS Safari does not stutter or snap while scrolling */
   html,
   body {
     max-width: 100vw;
-    overflow-x: hidden;
+    overflow-x: clip;
+  }
+
+  /* iOS Safari zooms the page when a field under 16px is tapped, which
+     looks like a jump. 16px keeps the page still on focus. */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 
   /* Every multi-column grid (stats cards, chart panels, filters) stacks into one column */
