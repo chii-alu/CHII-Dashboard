@@ -205,7 +205,7 @@ export default function FurtherEducationPage() {
   const [funding, setFunding] = useState<string>("all");
   const [destination, setDestination] = useState<string>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2024–2030" : String(year);
+  const periodLabel = year === "all" ? "2026–2030" : String(year);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {

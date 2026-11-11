@@ -239,7 +239,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
         subtitle="Graduate journeys and enterprise spotlights across Africa"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2024–2030"
+        period="2026–2030"
       />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7">
@@ -351,7 +351,7 @@ export default function StoriesView({ stories, summary }: { stories: StoryRow[];
         </div>
 
         <div style={{ marginTop: 16 }}>
-          <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+          <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period="2026–2030" />
         </div>
       </div>
 

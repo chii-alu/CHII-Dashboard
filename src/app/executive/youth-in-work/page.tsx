@@ -303,7 +303,7 @@ export default function YouthInWorkPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2024–2030" : String(year);
+  const periodLabel = year === "all" ? "2026–2030" : String(year);
   const [program, setProgram] = useState<"all" | Program>("all");
   const [ptype, setPtype] = useState<"all" | ParticipantType>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");
@@ -500,6 +500,37 @@ export default function YouthInWorkPage() {
 
         {/* ════ EXECUTIVE SNAPSHOT ════ */}
         <section className="space-y-4">
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <button onClick={() => setFiltersOpen(o => !o)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
+                  border: `1px solid ${activeCount || filtersOpen ? NAVY : "rgba(0,33,71,0.15)"}`,
+                  backgroundColor: filtersOpen ? NAVY : "white", color: filtersOpen ? "white" : "#374151" }}>
+                <SlidersHorizontal size={13} />
+                Filters
+                {activeCount > 0 && (
+                  <span style={{ fontSize: 9.5, fontWeight: 800, color: "white", backgroundColor: filtersOpen ? "rgba(255,255,255,0.25)" : C_BLUE, borderRadius: 999, minWidth: 16, height: 16, padding: "0 4px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{activeCount}</span>
+                )}
+              </button>
+              {filtersOpen && (
+                <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 50, width: 320, backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.12)", boxShadow: "0 10px 30px rgba(0,0,0,0.14)", overflow: "hidden" }}>
+                  <div style={{ backgroundColor: BAND, padding: "8px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "white", textTransform: "uppercase", letterSpacing: "0.04em" }}>Filters</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      {activeCount > 0 && (
+                        <button onClick={reset} style={{ fontSize: 10, fontWeight: 600, color: "white", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, padding: "3px 8px", backgroundColor: "rgba(255,255,255,0.08)", cursor: "pointer" }}>Reset</button>
+                      )}
+                      <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
+                    </div>
+                  </div>
+                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+                    <FilterSelect label="Year" value={year} onChange={setYear}
+                      options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 12 }}>
             <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Participants" progress={progressInsight(progressFor(progressRows, "Participants"))} num={kpis.total} sub="students + alumni" Icon={Users}
               tooltip="Total youth tracked across the CHII ecosystem." />
@@ -533,35 +564,7 @@ export default function YouthInWorkPage() {
               })}
             </div>
 
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <button onClick={() => setFiltersOpen(o => !o)}
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
-                  border: `1px solid ${activeCount || filtersOpen ? NAVY : "rgba(0,33,71,0.15)"}`,
-                  backgroundColor: filtersOpen ? NAVY : "white", color: filtersOpen ? "white" : "#374151" }}>
-                <SlidersHorizontal size={13} />
-                Filters
-                {activeCount > 0 && (
-                  <span style={{ fontSize: 9.5, fontWeight: 800, color: "white", backgroundColor: filtersOpen ? "rgba(255,255,255,0.25)" : C_BLUE, borderRadius: 999, minWidth: 16, height: 16, padding: "0 4px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{activeCount}</span>
-                )}
-              </button>
-              {filtersOpen && (
-                <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 50, width: 320, backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.12)", boxShadow: "0 10px 30px rgba(0,0,0,0.14)", overflow: "hidden" }}>
-                  <div style={{ backgroundColor: BAND, padding: "8px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "white", textTransform: "uppercase", letterSpacing: "0.04em" }}>Filters</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {activeCount > 0 && (
-                        <button onClick={reset} style={{ fontSize: 10, fontWeight: 600, color: "white", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, padding: "3px 8px", backgroundColor: "rgba(255,255,255,0.08)", cursor: "pointer" }}>Reset</button>
-                      )}
-                      <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
-                    </div>
-                  </div>
-                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
-                    <FilterSelect label="Year" value={year} onChange={setYear}
-                      options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
-                  </div>
-                </div>
-              )}
-            </div>
+
           </div>
         </section>
 

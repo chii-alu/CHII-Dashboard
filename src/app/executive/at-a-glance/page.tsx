@@ -652,7 +652,7 @@ export default function AtAGlancePage() {
         subtitle="Where CHII is reaching, across HEMP, HENT &amp; HECO programs"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2024–2030"
+        period="2026–2030"
       />
 
       {/* ── Stats Cards Section ─────────────────────────── */}
@@ -771,7 +771,7 @@ export default function AtAGlancePage() {
 
       {/* ── Footer Section ─────────────────────────────── */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period="2026–2030" />
       </div>
     </div>
     </KpiLoadingContext.Provider>

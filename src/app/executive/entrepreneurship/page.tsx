@@ -183,7 +183,7 @@ export default function EntrepreneurshipPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2024–2030" : String(year);
+  const periodLabel = year === "all" ? "2026–2030" : String(year);
   const [entHeadlines, setEntHeadlines] = useState<any[] | null>(null);
   useEffect(() => {
     fetch(`/api/exec-section/Entrepreneurship?metricGroup=Entrepreneurship%20Metrics${year === "all" ? "" : `&year=${year}`}`)

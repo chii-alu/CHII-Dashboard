@@ -188,7 +188,7 @@ export default function OutreachPage() {
   const [institution, setInstitution] = useState<string>("all");
   const [population, setPopulation] = useState<PopulationFilter>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2024–2030" : String(year);
+  const periodLabel = year === "all" ? "2026–2030" : String(year);
   const [intervention, setIntervention] = useState<string>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
 

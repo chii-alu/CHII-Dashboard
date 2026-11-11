@@ -170,7 +170,7 @@ export default function WageEmploymentPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2024–2030" : String(year);
+  const periodLabel = year === "all" ? "2026–2030" : String(year);
   const [activeSection, setActiveSection] = useState<number>(1);
 
   // A link from another page can name a chart (e.g. #graduation-status): open its section and scroll to it.
