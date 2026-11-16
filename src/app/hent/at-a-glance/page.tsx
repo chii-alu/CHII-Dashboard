@@ -213,7 +213,7 @@ function HentMap({ countries }: { countries: HentCountry[] }) {
         onClick={() => map.current?.flyTo({ center: [20, 0], zoom: 3.2 })}
         title="Reset map view"
         style={{
-          position: "absolute", top: 10, right: 10, zIndex: 500,
+          position: "absolute", top: 10, left: 10, zIndex: 500,
           display: "inline-flex", alignItems: "center", gap: 5,
           fontSize: 11.5, fontWeight: 700, color: HEADER_NAVY,
           backgroundColor: "white", border: "1px solid rgba(0,33,71,0.12)",

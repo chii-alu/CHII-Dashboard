@@ -28,6 +28,7 @@ export async function middleware(request: NextRequest) {
   const isApi = pathname.startsWith("/api/");
 
   const { data: { user } } = await supabase.auth.getUser();
+
   if (!user) {
     if (isApi) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     const url = request.nextUrl.clone();

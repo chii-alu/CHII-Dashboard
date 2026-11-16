@@ -314,7 +314,7 @@ function MapContainer({
         style={{
           position: "absolute",
           top: 10,
-          right: 10,
+          left: 10,
           zIndex: 500,
           display: "inline-flex",
           alignItems: "center",

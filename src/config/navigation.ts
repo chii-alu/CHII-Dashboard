@@ -32,6 +32,7 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
       { label: "Hackathon",             href: "/hent/hackathons" },
       { label: "Mentorship",            href: "/hent/mentorship" },
       { label: "Exposure & Networking", href: "/hent/exposure-networking" },
+      { label: "Gallery", href: "/hent/gallery" },
     ],
   },
 
@@ -45,6 +46,7 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
       { label: "Guest Faculty & Sessions",       href: "/hm/internships" },
       { label: "Study Trips",                    href: "/hm/sie" },
       { label: "Research",                       href: "/hm/course" },
+      { label: "Gallery", href: "/hm/gallery" },
     ],
   },
 
@@ -59,6 +61,7 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
       { label: "Internships",                    href: "/hemp/internships" },
       { label: "SIE",                             href: "/hemp/sie" },
       { label: "Courses",                        href: "/hemp/course" },
+      { label: "Gallery", href: "/hemp/gallery" },
     ],
   },
 
@@ -74,6 +77,7 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
       { label: "Public Sector Innovation Hackathon",     href: "/heco/innovation-hackathon" },
       { label: "Executive Courses",                      href: "/heco/executive-courses" },
       { label: "Impact Stories",                         href: "/heco/impact-stories" },
+      { label: "Gallery", href: "/heco/gallery" },
     ],
   },
 
@@ -82,14 +86,14 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
     wordmarkLines: [],
     rootHref: "/alu-chii/at-a-glance",
     items: [
-      { label: "At a Glance",         href: "/alu-chii/at-a-glance" },
-      { label: "Outreach",            href: "/alu-chii/outreach" },
-      { label: "Youth in Work",       href: "/alu-chii/youth-in-work" },
-      { label: "Wage Employment",     href: "/alu-chii/wage-employment" },
-      { label: "Entrepreneurship",    href: "/alu-chii/entrepreneurship" },
-      { label: "Further Education",   href: "/alu-chii/further-education" },
-      { label: "Impact Reports",      href: "/alu-chii/reports" },
-      { label: "Impact Stories",      href: "/alu-chii/stories" },
+      { label: "CHII Overview",          href: "/alu-chii/at-a-glance" },
+      { label: "Talent",                 href: "/alu-chii/talent" },
+      { label: "Partnerships",           href: "/alu-chii/partnerships" },
+      { label: "Institutional Excellence", href: "/alu-chii/operations" },
+      { label: "Health Systems Impact", href: "/alu-chii/health-systems" },
+      { label: "Research & Knowledge", href: "/alu-chii/research" },
+      { label: "External Recognition",   href: "/alu-chii/recognition" },
+      { label: "Gallery",                href: "/alu-chii/gallery" },
     ],
   },
 

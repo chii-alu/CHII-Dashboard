@@ -20,11 +20,12 @@ export const IMPACT_TABS = [
 ] as const;
 
 const PORTAL_LINKS = [
+  { label: "Executive", desc: "Executive Dashboard",    href: "/executive",     color: "#0891B2", bg: "#ECFEFF" },
   { label: "HEMP", desc: "Employment Pillar",       href: "/hemp",          color: "#0D9488", bg: "#F0FDFA" },
   { label: "HENT", desc: "Entrepreneurship Pillar", href: "/hent/at-a-glance", color: "#7C3AED", bg: "#F5F3FF" },
   { label: "HECO", desc: "Ecosystems Pillar",       href: "/heco",          color: "#2563EB", bg: "#EFF6FF" },
   { label: "HM", desc: "Health Missions",          href: "/hm/career-workshops", color: "#0E7490", bg: "#ECFEFF" },
-  { label: "ALU-CHII", desc: "Public dashboard",    href: "/alu-chii/at-a-glance", color: "#1E3A8A", bg: "#EEF2FF" },
+  { label: "ALU-CHII", desc: "Leadership Overview", href: "/alu-chii/at-a-glance", color: "#1E3A8A", bg: "#EEF2FF" },
 ] as const;
 
 export type ImpactTabLabel = typeof IMPACT_TABS[number]["label"];
@@ -41,9 +42,16 @@ function getActiveTab(pathname: string): ImpactTabLabel {
   return "At a Glance";
 }
 
-export default function ImpactNav() {
+type NavTab = { label: string; href: string };
+
+/** Executive navigation. Pass `tabs` and `logoHref` to use the same bar for another dashboard (ALU-CHII). `showPortals` hides the Portals switcher. */
+export default function ImpactNav({ tabs = IMPACT_TABS, logoHref = "/executive", showPortals = true }: { tabs?: readonly NavTab[]; logoHref?: string; showPortals?: boolean } = {}) {
   const pathname    = usePathname();
-  const activeLabel = getActiveTab(pathname);
+  // The Portals list leaves out the portal you are already in.
+  const otherPortals = PORTAL_LINKS.filter(p => !pathname.startsWith("/" + p.href.split("/")[1]));
+  const activeLabel = tabs === IMPACT_TABS
+    ? getActiveTab(pathname)
+    : (tabs.find(t => pathname.startsWith(t.href))?.label ?? tabs[0].label);
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dark, setDark] = useState(false);
@@ -75,7 +83,7 @@ export default function ImpactNav() {
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 flex items-center h-16 gap-2 sm:gap-3">
 
         {/* Logo */}
-        <Link href="/executive" className="flex items-center gap-2.5 flex-shrink-0 group">
+        <Link href={logoHref} className="flex items-center gap-2.5 flex-shrink-0 group">
           <img src="/logos/CHII Logo (CLR).png" alt="CHII" width={24} height={24}
             style={{ height: 24, width: "auto", objectFit: "contain" }} />
         </Link>
@@ -85,7 +93,7 @@ export default function ImpactNav() {
 
         {/* Tab navigation — full row once there's room for all tabs, collapses to a hamburger menu below */}
         <nav className="hidden xl:flex items-stretch justify-center flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-          {IMPACT_TABS.map((tab) => {
+          {tabs.map((tab) => {
             const isActive = tab.label === activeLabel;
             return (
               <Link
@@ -133,6 +141,7 @@ export default function ImpactNav() {
         </button>
 
         {/* Portals dropdown */}
+        {showPortals ? (
         <div className="relative flex-shrink-0" ref={ref}>
           <button
             onClick={() => setOpen((v) => !v)}
@@ -153,7 +162,7 @@ export default function ImpactNav() {
               <div className="px-3 py-2 border-b border-gray-50">
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-gray-400">Switch Portal</p>
               </div>
-              {PORTAL_LINKS.map((p) => (
+              {otherPortals.map((p) => (
                 <Link
                   key={p.label}
                   href={p.href}
@@ -179,6 +188,16 @@ export default function ImpactNav() {
             </div>
           )}
         </div>
+        ) : (
+          <button
+            onClick={() => signOutToSignIn()}
+            className="hidden sm:flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border font-medium transition-colors"
+            style={{ borderColor: "#E5E7EB", color: "#6B7280", backgroundColor: "white" }}
+          >
+            <LogOut size={10} />
+            Logout
+          </button>
+        )}
 
         </div>
       </div>
@@ -186,7 +205,7 @@ export default function ImpactNav() {
       {/* Mobile/tablet menu — mirrors the desktop tabs plus the portal switcher and sign out */}
       {menuOpen && (
         <nav className="xl:hidden border-t border-gray-200 bg-white px-3 py-2 flex flex-col max-h-[calc(100vh-4rem)] overflow-y-auto">
-          {IMPACT_TABS.map((tab) => {
+          {tabs.map((tab) => {
             const isActive = tab.label === activeLabel;
             return (
               <Link
@@ -203,9 +222,10 @@ export default function ImpactNav() {
             );
           })}
 
+          {showPortals && (
           <div className="mt-2 pt-2 border-t border-gray-100">
             <p className="px-3 pb-1 text-[9px] font-bold uppercase tracking-[0.12em] text-gray-400">Switch Portal</p>
-            {PORTAL_LINKS.map((p) => (
+            {otherPortals.map((p) => (
               <Link
                 key={p.label}
                 href={p.href}
@@ -218,6 +238,7 @@ export default function ImpactNav() {
               </Link>
             ))}
           </div>
+          )}
 
           <div className="mt-1 pt-1 border-t border-gray-100 flex items-center justify-between px-3">
             <button

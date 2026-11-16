@@ -20,6 +20,8 @@ const SWITCH_TO: { portal: Portal; code: DashboardCode; label: string; desc: str
   { portal: "hent", code: "HENT", label: "HENT", desc: "Entrepreneurship Pillar" },
   { portal: "heco", code: "HECO", label: "HECO", desc: "Ecosystems Pillar" },
   { portal: "hm", code: "HM", label: "HM", desc: "Health Missions" },
+  // ALU-CHII opens for any ALU email, but the switcher shows it to executive users only (same code as Executive).
+  { portal: "alu", code: "EXEC", label: "ALU-CHII", desc: "Leadership Overview" },
 ];
 
 export default function PortalNav({ portal }: { portal: Portal }) {
@@ -148,7 +150,7 @@ export default function PortalNav({ portal }: { portal: Portal }) {
                     <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-gray-400">Switch Portal</p>
                   </div>
                   {switchChoices.map(c => (
-                    <Link key={c.code} href={PORTAL_NAVS[c.portal].rootHref} onClick={() => setSwitchOpen(false)}
+                    <Link key={c.label} href={PORTAL_NAVS[c.portal].rootHref} onClick={() => setSwitchOpen(false)}
                       className="flex items-center px-3 py-2.5 hover:bg-gray-50 transition-colors">
                       <div>
                         <p className="text-[12px] font-bold text-gray-900 leading-none">{c.label}</p>

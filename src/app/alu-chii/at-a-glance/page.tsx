@@ -1,5 +1,5 @@
-import ALUIncoming from "@/components/alu/alu-incoming";
+import { AluOverviewPage } from "@/components/alu/alu-chii-page";
 
 export default function Page() {
-  return <ALUIncoming title="At a Glance" />;
+  return <AluOverviewPage />;
 }
