@@ -3,7 +3,7 @@
 // header, navigation, KPI cards, section pills with the Filters button, section headers,
 // chart panels in pairs, drill-down tables and the footer.
 // Values are dummy data (src/config/alu-chii-dummy.ts) until the logs are connected.
-import { Children, useCallback, useEffect, useState } from "react";
+import { Children, Fragment, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { SlidersHorizontal, X, Info, ZoomIn, ZoomOut, Download, RotateCcw } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -20,7 +20,7 @@ import { createClient } from "@/lib/supabase-client";
 import { dashboardsFor, isRole, type Role } from "@/lib/access";
 import { PORTAL_NAVS } from "@/config/navigation";
 import {
-  dummyArea, dummyAttentionCount, dummyCell, dummyChartRows, dummyKpi, DUMMY_HIGHLIGHTS, GALLERY_EVENTS, isTimeChart,
+  dummyArea, dummyAttentionCount, dummyCell, dummyChartRows, dummyCount, dummyKpi, DUMMY_HIGHLIGHTS, GALLERY_EVENTS, isTimeChart,
 } from "@/config/alu-chii-dummy";
 import {
   ALU_TITLE, OVERVIEW_KPIS, OVERVIEW_AREAS, SECTIONS,
@@ -209,8 +209,52 @@ function KpiRow({ kpis, year }: { kpis: { label: string; definition: string; sub
   );
 }
 
+const RISK_LEVELS = ["Low", "Medium", "High"];
+// Colour of a cell by its risk score (likelihood + impact, 0 to 4): green for low, through amber, to red for high.
+const RISK_COLOURS = ["#D1FAE5", "#FEF3C7", "#FDE68A", "#FCA5A5", "#F87171"];
+
+/** A 3 × 3 heat map of risks by likelihood (down) and impact (across). Each cell shows how many risks it holds. */
+function RiskHeatMap({ year }: { year: string }) {
+  const rows = [2, 1, 0]; // High likelihood at the top
+  return (
+    <div style={{ height: 250, display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "64px repeat(3, 1fr)", gridTemplateRows: "repeat(3, 1fr)", gap: 6, height: 200 }}>
+        {rows.map(li => (
+          <Fragment key={li}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 6, fontSize: 11, fontWeight: 600, color: "#374151" }}>
+              {RISK_LEVELS[li]}
+            </div>
+            {[0, 1, 2].map(ii => {
+              const count = dummyCount(`Risk Heat Map|${year}|${li}|${ii}`, 9);
+              return (
+                <div key={`${li}-${ii}`} title={`${RISK_LEVELS[li]} likelihood, ${RISK_LEVELS[ii].toLowerCase()} impact: ${count} risks`}
+                  style={{ borderRadius: 6, backgroundColor: RISK_COLOURS[li + ii], display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#102C5E" }}>
+                  {count}
+                </div>
+              );
+            })}
+          </Fragment>
+        ))}
+        <div />
+        {[0, 1, 2].map(ii => (
+          <div key={`impact-${ii}`} style={{ textAlign: "center", fontSize: 11, fontWeight: 600, color: "#374151" }}>{RISK_LEVELS[ii]}</div>
+        ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "0 4px" }}>
+        <span style={{ fontSize: 10, color: "#6B7280" }}>Likelihood (down) · Impact (across)</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 10, color: "#6B7280" }}>Low risk</span>
+          {RISK_COLOURS.map(c => <span key={c} style={{ width: 14, height: 10, borderRadius: 2, backgroundColor: c, display: "inline-block" }} />)}
+          <span style={{ fontSize: 10, color: "#6B7280" }}>High risk</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** A chart drawn in the Outreach style: columns for quarters, bars for groups, with the Outreach legend underneath. */
 function DummyChart({ title, sub, year }: { title: string; sub: string; year: string }) {
+  if (title === "Risk Heat Map") return <RiskHeatMap year={year} />;
   const data = dummyChartRows(title, sub, year).map(r => ({ ...r, Total: r.value }));
   if (isTimeChart(title, sub)) {
     return (

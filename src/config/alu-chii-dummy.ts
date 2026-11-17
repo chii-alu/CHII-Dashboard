@@ -48,6 +48,11 @@ export function isTimeChart(title: string, sub: string): boolean {
   return QUARTER_WORDS.test(`${title} ${sub}`);
 }
 
+/** A dummy whole number from 0 to max for a key, the same every time for the same key. */
+export function dummyCount(key: string, max: number): number {
+  return seed(key) % (max + 1);
+}
+
 /** Realistic category names for each chart. Time charts use quarters (or years). */
 const CHART_CATEGORIES: Record<string, string[]> = {
   "Research Staff Capacity": ["Health economics", "Epidemiology", "Data science", "Implementation research", "Health policy"],
