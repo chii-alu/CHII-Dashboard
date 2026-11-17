@@ -5,7 +5,10 @@
 // Values are dummy data (src/config/alu-chii-dummy.ts) until the logs are connected.
 import { Children, Fragment, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { SlidersHorizontal, X, Info, ZoomIn, ZoomOut, Download, RotateCcw } from "lucide-react";
+import {
+  SlidersHorizontal, X, Info, ZoomIn, ZoomOut, Download, RotateCcw,
+  CalendarClock, FileWarning, ShieldAlert, Handshake, ClipboardList, Sparkles, ArrowUpRight,
+} from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { downloadChart } from "@/lib/download-chart";
 import { progressInsight } from "@/lib/progressInsight";
@@ -441,6 +444,129 @@ const OVERVIEW_PANELS = [
   { key: "highlights", label: "Highlights this quarter" },
 ] as const;
 
+/* ── Overview panels ─────────────────────────────────── */
+
+// Status thresholds for the scorecard: 80% of target or more is on track, 60–79% is at risk, below 60% is off track.
+const ON_TRACK_FROM = 80;
+const AT_RISK_FROM = 60;
+// Status colours from the existing chart palette: navy, the chart blue, and the pink accent.
+const STATUS_TINT: Record<string, { bg: string; fg: string; bar: string }> = {
+  "On track": { bg: "rgba(16,44,94,0.08)", fg: "#102C5E", bar: "#102C5E" },
+  "At risk": { bg: "rgba(71,155,214,0.14)", fg: "#0C447C", bar: "#479BD6" },
+  "Off track": { bg: "rgba(209,122,134,0.16)", fg: "#9B3F4E", bar: "#D17A86" },
+};
+
+/** Each strategic area as a progress bar against its target, with its status badge and the thresholds marked. */
+function Scorecard({ year }: { year: string }) {
+  const areas = OVERVIEW_AREAS.map(area => ({ area, ...dummyArea(area, year) }));
+  const counts = (["On track", "At risk", "Off track"] as const).map(s => ({ s, n: areas.filter(a => a.status === s).length }));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Summary: how many areas are in each status */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {counts.map(({ s, n }) => (
+          <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999, backgroundColor: STATUS_TINT[s].bg, color: STATUS_TINT[s].fg }}>
+            <span style={{ fontSize: 13 }}>{n}</span> {s}
+          </span>
+        ))}
+      </div>
+
+      {areas.map(a => (
+        <div key={a.area}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", minWidth: 0 }}>{a.area}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, backgroundColor: STATUS_TINT[a.status].bg, color: STATUS_TINT[a.status].fg }}>{a.status}</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: NAVY, minWidth: 40, textAlign: "right" }}>{a.pct}%</span>
+            </span>
+          </div>
+          {/* Track with the 60% and 80% thresholds marked */}
+          <div style={{ position: "relative", height: 8, borderRadius: 999, backgroundColor: "rgba(16,44,94,0.06)" }}>
+            <div style={{ width: `${Math.min(100, a.pct)}%`, height: "100%", borderRadius: 999, backgroundColor: STATUS_TINT[a.status].bar, transition: "width .4s" }} />
+            {[AT_RISK_FROM, ON_TRACK_FROM].map(t => (
+              <span key={t} style={{ position: "absolute", left: `${t}%`, top: -3, bottom: -3, width: 1.5, borderRadius: 1, backgroundColor: "rgba(16,44,94,0.25)" }} />
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#6B7280", paddingTop: 2 }}>
+        <span>% of annual target</span>
+        <span>Marks at {AT_RISK_FROM}% (at risk) and {ON_TRACK_FROM}% (on track)</span>
+      </div>
+    </div>
+  );
+}
+
+const ATTENTION_ITEMS = [
+  { label: "Projects behind schedule", icon: CalendarClock },
+  { label: "Overdue donor reports", icon: FileWarning },
+  { label: "High risks without a mitigation", icon: ShieldAlert },
+  { label: "Partnerships awaiting executive engagement", icon: Handshake },
+  { label: "SOP compliance under 80%", icon: ClipboardList },
+];
+const ATTENTION_MAX = 12; // the largest count the dummy data can give, so the bars share one scale
+
+/** The items needing executive action: a total, then each item with its icon, count and a bar coloured by how many there are. */
+function NeedsAttention({ year }: { year: string }) {
+  const items = ATTENTION_ITEMS.map(i => ({ ...i, n: dummyAttentionCount(i.label, year) }));
+  const total = items.reduce((sum, i) => sum + i.n, 0);
+  const largest = Math.max(...items.map(i => i.n));
+  // Chart palette: blue bars and navy numbers, with the pink accent marking the largest item.
+  const tone = (n: number) => n === largest
+    ? { fg: "#9B3F4E", bg: "rgba(209,122,134,0.14)", bar: "#D17A86" }
+    : { fg: "#0C447C", bg: "rgba(71,155,214,0.12)", bar: "#479BD6" };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <span style={{ fontSize: 30, fontWeight: 800, color: NAVY, lineHeight: 1 }}>{total}</span>
+        <span style={{ fontSize: 12, color: "#6B7280" }}>items need executive action</span>
+      </div>
+      {items.map(({ label, icon: Icon, n }) => {
+        const t = tone(n);
+        return (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: t.bg, color: t.fg, display: "grid", placeItems: "center", flexShrink: 0 }}>
+              <Icon size={16} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 5 }}>
+                <span style={{ fontSize: 12.5, color: "var(--text-primary)", fontWeight: 600, minWidth: 0 }}>{label}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: t.fg, flexShrink: 0 }}>{n}</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(16,44,94,0.06)" }}>
+                <div style={{ width: `${(n / ATTENTION_MAX) * 100}%`, height: "100%", borderRadius: 999, backgroundColor: t.bar }} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** This quarter's achievements as cards, each with a link to its evidence. */
+function Highlights() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 12 }}>
+      {DUMMY_HIGHLIGHTS.map((h, i) => (
+        <div key={h} style={{ display: "flex", flexDirection: "column", gap: 10, padding: 14, borderRadius: 10, border: "1px solid rgba(0,33,71,0.10)", backgroundColor: "var(--bg-surface)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: "rgba(71,155,214,0.12)", color: "#0C447C", display: "grid", placeItems: "center" }}>
+              <Sparkles size={15} />
+            </span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#6B7280" }}>#{i + 1}</span>
+          </div>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.4 }}>{h}</p>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: "#0C447C", marginTop: "auto" }}>
+            View evidence <ArrowUpRight size={12} />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** CHII Overview: one headline number per area, then one section at a time, chosen with the pills. */
 export function AluOverviewPage() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -460,36 +586,10 @@ export function AluOverviewPage() {
           <SectionHeader title="Scorecard and funding" blurb="Each strategic area against its target, and where funding stands." />
           <PanelGrid>
             <Panel title="Scorecard by Strategic Priority" subtitle="On track, at risk or off track, and % of target">
-              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                {OVERVIEW_AREAS.map(area => {
-                  const a = dummyArea(area, filters.year);
-                  return (
-                    <li key={area} className="flex items-center justify-between gap-3" style={{ padding: "10px 0", borderBottom: "1px solid var(--border-subtle)" }}>
-                      <span style={{ fontSize: 13, color: "var(--text-primary)" }}>{area}</span>
-                      <span style={{ fontSize: 11, color: "var(--text-secondary)", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ width: 7, height: 7, borderRadius: 999, backgroundColor: a.color, display: "inline-block" }} />
-                        {a.status} · {a.pct}%
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+              <Scorecard year={filters.year} />
             </Panel>
             <Panel title="Needs Attention" subtitle="Items that need executive action" info="Filled automatically from the logs.">
-              <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                {[
-                  "Projects behind schedule",
-                  "Overdue donor reports",
-                  "High risks without a mitigation",
-                  "Partnerships awaiting executive engagement",
-                  "SOP compliance under 80%",
-                ].map(item => (
-                  <li key={item} className="flex items-center justify-between gap-3">
-                    <span>{item}</span>
-                    <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{dummyAttentionCount(item, filters.year)}</span>
-                  </li>
-                ))}
-              </ul>
+              <NeedsAttention year={filters.year} />
             </Panel>
           </PanelGrid>
         </section>
@@ -514,9 +614,7 @@ export function AluOverviewPage() {
           <SectionHeader title="Highlights this quarter" blurb="Three to five achievements this quarter, each linked to its evidence." />
           <PanelGrid>
             <Panel title="Highlights" subtitle="Three to five achievements, each linked to its evidence">
-              <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                {DUMMY_HIGHLIGHTS.map(h => <li key={h}>{h}</li>)}
-              </ul>
+              <Highlights />
             </Panel>
           </PanelGrid>
         </section>
