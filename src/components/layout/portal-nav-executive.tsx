@@ -24,7 +24,7 @@ const PORTAL_LINKS = [
   { label: "HEMP", desc: "Employment Pillar",       href: "/hemp",          color: "#0D9488", bg: "#F0FDFA" },
   { label: "HENT", desc: "Entrepreneurship Pillar", href: "/hent/at-a-glance", color: "#7C3AED", bg: "#F5F3FF" },
   { label: "HECO", desc: "Ecosystems Pillar",       href: "/heco",          color: "#2563EB", bg: "#EFF6FF" },
-  { label: "HM", desc: "Health Missions",          href: "/hm/career-workshops", color: "#0E7490", bg: "#ECFEFF" },
+  { label: "HM", desc: "Health Missions",          href: "/hm", color: "#0E7490", bg: "#ECFEFF" },
   { label: "ALU-CHII", desc: "Leadership Overview", href: "/alu-chii/at-a-glance", color: "#1E3A8A", bg: "#EEF2FF" },
 ] as const;
 

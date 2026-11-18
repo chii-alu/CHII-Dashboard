@@ -1,5 +1,5 @@
-import HMIncoming from "@/components/hm/hm-incoming";
+import HMPage from "@/components/hm/hm-page";
 
 export default function Page() {
-  return <HMIncoming title="Mentorship Program" />;
+  return <HMPage page="mentorship" />;
 }

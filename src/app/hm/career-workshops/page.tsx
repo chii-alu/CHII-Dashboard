@@ -1,5 +1,5 @@
-import HMIncoming from "@/components/hm/hm-incoming";
+import HMPage from "@/components/hm/hm-page";
 
 export default function Page() {
-  return <HMIncoming title="Mission Students" />;
+  return <HMPage page="mission-students" />;
 }
