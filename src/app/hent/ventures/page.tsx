@@ -21,6 +21,7 @@ import {
   XAxis, YAxis, CartesianGrid, Legend, Tooltip, ResponsiveContainer, LabelList,
 } from "recharts";
 import { Briefcase, Target, TrendingUp, Users, Info, type LucideIcon, ChevronDown, DollarSign } from "lucide-react";
+import { FILTER_YEARS } from "@/lib/filter-years";
 
 // Female icon - matches Executive dashboard
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
@@ -284,7 +285,7 @@ export default function HENTVentures() {
               <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(190,228,214,0.5)" }}>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> 2024–2030</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
@@ -348,7 +349,7 @@ export default function HENTVentures() {
               }}
             >
               {[
-                { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", ...years.map(String)] },
+                { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", ...FILTER_YEARS.map(String)] },
                 { label: "Stage", value: filterStage, setValue: setFilterStage, options: ["All", "Expose", "Build", "Scale"] },
                 { label: "Gender", value: filterGender, setValue: setFilterGender, options: ["All", "Male", "Female"] },
                 { label: "Status", value: filterStatus, setValue: setFilterStatus, options: ["All", "Active", "Stalled"] },
@@ -399,7 +400,7 @@ export default function HENTVentures() {
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Ventures by Country" subtitle="Number of active ventures based in each country" info="Number of active ventures based in each country" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGeoYear} onFilterChange={setFilterGeoYear}>
+              <Panel title="Ventures by Country" subtitle="Number of active ventures based in each country" info="Number of active ventures based in each country" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterGeoYear} onFilterChange={setFilterGeoYear}>
                 <ChartWithPlaceholder data={hasHentData ? Array.from(new Set(filteredVentures.map(v => v.country))).map(c => ({
                     name: c,
                     value: filteredVentures.filter(v => v.country === c).length
@@ -421,7 +422,7 @@ export default function HENTVentures() {
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
               </Panel>
-              <Panel title="Ventures by Stage" subtitle="How the portfolio splits across Expose, Build and Scale" info="How the portfolio splits across Expose, Build and Scale" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
+              <Panel title="Ventures by Stage" subtitle="How the portfolio splits across Expose, Build and Scale" info="How the portfolio splits across Expose, Build and Scale" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
                 <ChartWithPlaceholder data={hasHentData ? [
                     { name: "Expose", value: filteredVentures.filter(v => sg(v.stage) === "Expose").length },
                     { name: "Build", value: filteredVentures.filter(v => sg(v.stage) === "Build").length },
@@ -469,7 +470,7 @@ export default function HENTVentures() {
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
               </Panel>
-              <Panel title="Jobs Created Over Time" subtitle="Total jobs created by ventures each year" info="Total jobs created by ventures each year" filterOptions={["All Years", ...years.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
+              <Panel title="Jobs Created Over Time" subtitle="Total jobs created by ventures each year" info="Total jobs created by ventures each year" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterGrowthYear} onFilterChange={setFilterGrowthYear}>
                 <ChartWithPlaceholder data={hasHentData ? years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={years.map(y => ({ year: String(y), jobs: filteredVentures.filter(v => v.cohort === y).reduce((s, v) => s + v.jobsTotal, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
@@ -558,7 +559,7 @@ export default function HENTVentures() {
               <Panel title="Revenue Trend"
                 subtitle="Median venture revenue per year (USD)"
                 info="Median venture revenue per year (USD). The median keeps one large venture from hiding how most ventures are doing."
-                filterOptions={["All Years", ...years.map(String)]} filterValue={filterHealthYear} onFilterChange={setFilterHealthYear}>
+                filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterHealthYear} onFilterChange={setFilterHealthYear}>
                 <ChartWithPlaceholder data={hasHentData ? revenueMedianByYear : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={revenueMedianByYear} margin={ { top: 6, right: 14, bottom: 0, left: -12 } }>

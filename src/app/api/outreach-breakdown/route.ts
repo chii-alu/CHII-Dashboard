@@ -155,6 +155,15 @@ export async function GET(request: Request) {
     });
     const genderSplit = Object.values(genderMap);
 
+    // Participant geographic distribution: one row per area type (Rural, Urban, Peri-urban, not reported), in workbook order.
+    const geoMap = new Map<string, number>();
+    data?.forEach((row: any) => {
+      if (row.metric !== "Participant Geographic Distribution" || row.segment !== "all") return;
+      const name = row.label || row.breakdown || row.item;
+      if (name && row.value != null) geoMap.set(name, row.value);
+    });
+    const geographicDistribution = Array.from(geoMap, ([name, value]) => ({ name, value }));
+
     return NextResponse.json({
       byIntervention: interventionChart,
       byProgram: programChart,
@@ -164,6 +173,7 @@ export async function GET(request: Request) {
       byInstitution: institutionChart && institutionChart.length > 0 ? institutionChart : null,
       graduationStatus: graduationStatus.length > 0 ? graduationStatus : null,
       genderSplit: genderSplit.length > 0 ? genderSplit : null,
+      geographicDistribution: geographicDistribution.length > 0 ? geographicDistribution : null,
       demographics,
       rawData: data || [],
     });

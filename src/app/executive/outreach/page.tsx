@@ -188,7 +188,7 @@ export default function OutreachPage() {
   const [institution, setInstitution] = useState<string>("all");
   const [population, setPopulation] = useState<PopulationFilter>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2026–2030" : String(year);
+  const periodLabel = year === "all" ? "2025–2030" : String(year);
   const [intervention, setIntervention] = useState<string>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
 
@@ -374,6 +374,9 @@ export default function OutreachPage() {
     // No fallback - return null for ChartWithPlaceholder to show "In coming data"
     return null;
   }, [breakdownData]);
+
+  // Rural / urban split of participants; null until the workbook has the rows ("In coming data").
+  const geographic = useMemo(() => breakdownData?.geographicDistribution ?? null, [breakdownData]);
 
   const byInstitution = useMemo(() => {
     // Use Supabase data if available
@@ -687,6 +690,27 @@ export default function OutreachPage() {
             </Panel>
           </div>
 
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
+          <Panel title="Participant Geographic Distribution" subtitle="Rural · Urban · Peri-urban · Not reported"
+            info="Where participants live: rural, urban or peri-urban areas, and those who did not report it.">
+            <ChartWithPlaceholder data={geographic} height={260}>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart layout="vertical" data={geographic || []} margin={{ top: 4, right: 40, bottom: 0, left: 8 }}>
+                  <CartesianGrid horizontal={false} stroke="rgba(0,33,71,0.08)" />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "#374151" }} width={150} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(0,33,71,0.04)" }} />
+                  <Bar dataKey="value" name="Participants" barSize={18} radius={[0, 4, 4, 0]}
+                    label={{ position: "right", fontSize: 10, fill: NAVY, fontWeight: 700 }}>
+                    {(geographic || []).map((r: any) => (
+                      <Cell key={r.name} fill={/not reported/i.test(r.name) ? "#B8C2D3" : "#479BD6"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartWithPlaceholder>
+          </Panel>
+
           <Panel title="Intervention Participation by Institution" subtitle="ALU · ALX · ALCHE · Other"
             info="Interventions split across partner institutions.">
             <ChartWithPlaceholder data={byInstitution || []} height={260}>
@@ -706,6 +730,7 @@ export default function OutreachPage() {
               </ResponsiveContainer>
             </ChartWithPlaceholder>
           </Panel>
+          </div>
         </section>
         )}
 

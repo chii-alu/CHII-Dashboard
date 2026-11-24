@@ -150,7 +150,7 @@ function FiltersMenu({ filters, onChange }: { filters: Filters; onChange: (f: Fi
 
 /** The header period follows the Year filter, as on the Executive dashboard. */
 function periodOf(f: Filters): string {
-  return f.year === "all" ? "2026–2030" : f.year;
+  return f.year === "all" ? "2025–2030" : f.year;
 }
 
 /** Page frame: navigation, header, then the content and footer in the Outreach wrapper. */

@@ -30,7 +30,7 @@ export default function PillarGallery({ portal, title, subtitle, events, withNav
   return (
     <div style={{ backgroundColor: "var(--bg-page)", minHeight: "100vh" }}>
       {withNav && <PortalNav portal={portal} />}
-      <MetadataHeader title={title} subtitle={subtitle} dataSource={DATA_SOURCE[portal]} lastUpdated="Not yet updated" period="2026–2030" />
+      <MetadataHeader title={title} subtitle={subtitle} dataSource={DATA_SOURCE[portal]} lastUpdated="Not yet updated" period="2025–2030" />
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-7 space-y-10">
         <section className="space-y-4">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -67,7 +67,7 @@ export default function PillarGallery({ portal, title, subtitle, events, withNav
           )}
         </section>
 
-        <FeaturedImpactStory footer dataSynced="Not yet updated" dataSource={DATA_SOURCE[portal]} period="2026–2030" />
+        <FeaturedImpactStory footer dataSynced="Not yet updated" dataSource={DATA_SOURCE[portal]} period="2025–2030" />
       </div>
 
       {viewed && viewing !== null && createPortal(

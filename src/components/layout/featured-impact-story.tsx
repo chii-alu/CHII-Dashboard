@@ -14,7 +14,7 @@ export default function FeaturedImpactStory({
   mission = "Nurturing the next generation of health leaders committed to transforming healthcare in Africa.",
   dataSynced = "18 June 2026, 16:30 CAT",
   dataSource = "CHII MELA Consolidated Database",
-  period = "2024–2030",
+  period = "2025–2030",
   analystEmail = "patadja@si.alueducation.com",
 }: {
   eyebrow?: string;

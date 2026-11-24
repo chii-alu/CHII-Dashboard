@@ -17,7 +17,7 @@ export function MetadataHeader({
   dataSource = "CHII MELA Consolidated Database",
   lastUpdated = "",
   participantsCount,
-  period = "2022–2026",
+  period = "2025–2030",
   customContent,
 }: MetadataHeaderProps) {
   return (

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, type ComponentType, createContext, useContext } from "react";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { Info, ChevronRight } from "lucide-react";
+import { Info, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import mapboxgl from "mapbox-gl";
@@ -14,6 +14,10 @@ import { useCountUp } from "@/components/ui/stat-kpi-card";
 import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createClient } from "@/lib/supabase-client";
+import { FilterSelect } from "@/components/ui/executive";
+import { FILTER_YEARS } from "@/lib/filter-years";
+import { useProgress } from "@/hooks/useProgress";
+import { progressInsight, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
 import { Users, BookOpen, Briefcase, TrendingUp, Zap, Target, Award, MessageCircle } from "lucide-react";
 
 let mapboxTokenReady = false;
@@ -342,6 +346,9 @@ function MapContainer({
 
 /* ─ KPI Card Component (Navy fill, like Outreach StatsKpiCard) ─ */
 const KpiLoadingContext = createContext(false);
+// The chosen year's progress for each card, keyed by At a Glance metric. Null when All Years is selected (no bars).
+const YearProgressContext = createContext<Record<string, ProgressInsight> | null>(null);
+const PROGRESS_COLOR: Record<ProgressStatus, string> = { met: "#16A34A", close: "#479BD6", behind: "#F59E0B", "no-data": "#D1D5DB", "no-target": "#D1D5DB" };
 
 function KPICard({
   label,
@@ -354,6 +361,7 @@ function KPICard({
   Icon,
   href,
   secondaryText,
+  metric,
 }: {
   label: string;
   value: number | string | null;
@@ -365,7 +373,11 @@ function KPICard({
   Icon?: ComponentType<any>;
   href?: string;
   secondaryText?: string;
+  /** The At a Glance metric this card shows; used to find its target for the chosen year. */
+  metric?: string;
 }) {
+  const yearProgress = useContext(YearProgressContext);
+  const progress = yearProgress && metric ? yearProgress[metric] ?? progressInsight(null) : null;
   const animated = useCountUp(typeof value === "number" ? value : 0);
   const kpiLoading = useContext(KpiLoadingContext);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -434,6 +446,18 @@ function KPICard({
         </p>
       </div>
 
+      {/* Year progress: the chosen year's total against that year's target */}
+      {progress && (
+        <div style={{ marginBottom: 6 }}>
+          {progress.barPct != null && (
+            <div style={{ height: 4, borderRadius: 2, backgroundColor: "var(--border-subtle)", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 2, width: `${progress.barPct}%`, backgroundColor: PROGRESS_COLOR[progress.status], transition: "width 300ms ease" }} />
+            </div>
+          )}
+          <p style={{ fontSize: 9.5, color: "var(--text-muted)", marginTop: 4, textAlign: "center", lineHeight: 1.3 }}>{progress.caption}</p>
+        </div>
+      )}
+
       {/* Row 3: YoY trend (color-coded: green up, red down) */}
       {yoy !== undefined && yoy !== null && (
         <p style={{ fontSize: 10, fontWeight: 600, color: yoy >= 0 ? GREEN_UP : RED_DOWN, lineHeight: 1, marginBottom: 8 }}>
@@ -488,6 +512,11 @@ export default function AtAGlancePage() {
   const map = useRef<any>(null);
 
   const [refreshKey, setRefreshKey] = useState(0);
+  // All Years: cumulative totals, no progress bars. A year: that year's totals, each against that year's target.
+  const [year, setYear] = useState<"all" | number>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const yearQuery = year === "all" ? "" : `?year=${year}`;
+  const yearProgressRows = useProgress("EXEC", undefined, "At a Glance", undefined, year);
   useEffect(() => {
     const id = setInterval(() => setRefreshKey(k => k + 1), 30000);
     return () => clearInterval(id);
@@ -495,13 +524,13 @@ export default function AtAGlancePage() {
 
   // Fetch all KPI data from "At a Glance" section (contains all program outcome metrics)
   const { data: atAGlanceHeadlines } = useDashboardData(
-    () => fetch('/api/exec-section/At%20a%20Glance').then(r => r.json()).then(result => result.headlines || []),
-    [refreshKey]
+    () => fetch(`/api/exec-section/At%20a%20Glance${yearQuery}`).then(r => r.json()).then(result => result.headlines || []),
+    [refreshKey, yearQuery]
   );
 
   const { data: atAGlanceSegments } = useDashboardData(
-    () => fetch('/api/exec-section/At%20a%20Glance').then(r => r.json()).then(result => result.segments || []),
-    [refreshKey]
+    () => fetch(`/api/exec-section/At%20a%20Glance${yearQuery}`).then(r => r.json()).then(result => result.segments || []),
+    [refreshKey, yearQuery]
   );
 
   // Fetch Outreach data via API endpoint (which can use service role key to bypass RLS)
@@ -566,10 +595,15 @@ export default function AtAGlancePage() {
   const countries = outreachMapData ? new Set(outreachMapData.map(d => d.country)).size : 0;
 
   // Calculate metrics from outreach headlines data
-  const totalBeneficiaries = outreachHeadlines?.find((h: any) => h.metric === 'Total Participants (All Programmes)')?.value ?? null;
+  const glance = (metric: string): number | null => atAGlanceHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
+  const totalBeneficiaries = year === "all"
+    ? outreachHeadlines?.find((h: any) => h.metric === 'Total Participants (All Programmes)')?.value ?? null
+    : glance('Total Outreach');
 
   // Calculate Youth in Work metrics
-  const youthInWorkTotal = youthHeadlines?.find((h: any) => h.metric === 'Participants')?.value ?? null;
+  const youthInWorkTotal = year === "all"
+    ? youthHeadlines?.find((h: any) => h.metric === 'Participants')?.value ?? null
+    : glance('Youth in Work (Total)');
 
   // Extract all KPI values from At a Glance section
   const wageEmploymentTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Wage Employment')?.value ?? null;
@@ -641,9 +675,14 @@ export default function AtAGlancePage() {
   }
 
   const kpiLoading = !atAGlanceHeadlines || !outreachHeadlines || !youthHeadlines;
+  const yearProgress: Record<string, ProgressInsight> | null = year === "all"
+    ? null
+    : Object.fromEntries(Object.entries(yearProgressRows).map(([m, row]) => [m, progressInsight(row)]));
+  const periodLabel = year === "all" ? "2025–2030" : String(year);
 
   return (
     <KpiLoadingContext.Provider value={kpiLoading}>
+    <YearProgressContext.Provider value={yearProgress}>
     <div style={{ backgroundColor: `var(--bg-tint)`, minHeight: "100vh" }}>
 
       {/* ── Header ─────────────────────────────────────── */}
@@ -652,11 +691,44 @@ export default function AtAGlancePage() {
         subtitle="Where CHII is reaching, across HEMP, HENT &amp; HECO programs"
         dataSource={dataSource}
         lastUpdated={syncedAt}
-        period="2026–2030"
+        period={periodLabel}
       />
 
       {/* ── Stats Cards Section ─────────────────────────── */}
       <div className="max-w-[1600px] mx-auto px-10 py-7">
+        {/* Year filter: All Years shows cumulative totals; a year shows that year's totals against its targets */}
+        {/* Same Filters button and popover as the Outreach page */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <button onClick={() => setFiltersOpen(o => !o)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer",
+                border: `1px solid ${year !== "all" || filtersOpen ? "var(--brand-secondary)" : "rgba(0,33,71,0.15)"}`,
+                backgroundColor: filtersOpen ? "var(--brand-secondary)" : "white", color: filtersOpen ? "white" : "#374151" }}>
+              <SlidersHorizontal size={13} />
+              Filters
+              {year !== "all" && (
+                <span style={{ fontSize: 9.5, fontWeight: 800, color: "white", backgroundColor: filtersOpen ? "rgba(255,255,255,0.25)" : "#102C5E", borderRadius: 999, minWidth: 16, height: 16, padding: "0 4px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>1</span>
+              )}
+            </button>
+            {filtersOpen && (
+              <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 50, width: 320, backgroundColor: "white", borderRadius: 10, border: "1px solid rgba(0,33,71,0.12)", boxShadow: "0 10px 30px rgba(0,0,0,0.14)", overflow: "hidden" }}>
+                <div style={{ backgroundColor: "var(--brand-secondary)", padding: "8px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "white", textTransform: "uppercase", letterSpacing: "0.04em" }}>Filters</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {year !== "all" && (
+                      <button onClick={() => setYear("all")} style={{ fontSize: 10, fontWeight: 600, color: "white", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, padding: "3px 8px", backgroundColor: "rgba(255,255,255,0.08)", cursor: "pointer" }}>Reset</button>
+                    )}
+                    <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
+                  </div>
+                </div>
+                <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+                  <FilterSelect label="Year" value={year} onChange={setYear}
+                    options={[{ value: "all", label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         {/* Three-Column Grid: Left (210px) | Center (1fr) | Right (210px) */}
         <div style={{ display: "grid", gridTemplateColumns: "210px minmax(0, 1fr) 210px", gap: 24, alignItems: "end", overflowX: "hidden" }}>
 
@@ -664,13 +736,13 @@ export default function AtAGlancePage() {
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, flexShrink: 0, textAlign: "center" }}>Outreach & Access</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-            <KPICard label="Total Outreach" value={totalBeneficiaries} femalePct={femaleShare} malePct={maleShare} info="Total individuals reached across all CHII outreach programs." Icon={Users} href="/executive/outreach" />
-            <KPICard label="Youth w/ Disability" value={youthDisability} femalePct={disabilityFemalePct} malePct={disabilityMalePct} info="Youth with disability reached through outreach." Icon={Users} href="/executive/outreach#inclusion-by-program" />
-            <KPICard label="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={refugeeMalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach#inclusion-by-program" />
-            <KPICard label="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={enrolledMalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach#graduation-status" />
-            <KPICard label="Graduates" value={graduates} femalePct={graduatesFemalePct} malePct={graduatesMalePct} info="Participants who completed outreach programs." Icon={Award} href="/executive/outreach#graduation-status" />
-            <KPICard label="CSAT Score" value={null} info="Customer satisfaction rating for programs." Icon={MessageCircle} href="/executive/outreach" />
-            <KPICard label="Employer Rating" value={null} info="Employer satisfaction with graduate preparedness." Icon={Award} href="/executive/outreach" />
+            <KPICard label="Total Outreach" metric="Total Outreach" value={totalBeneficiaries} femalePct={femaleShare} malePct={maleShare} info="Total individuals reached across all CHII outreach programs." Icon={Users} href="/executive/outreach" />
+            <KPICard label="Youth w/ Disability" metric="Youth with Disability" value={youthDisability} femalePct={disabilityFemalePct} malePct={disabilityMalePct} info="Youth with disability reached through outreach." Icon={Users} href="/executive/outreach#inclusion-by-program" />
+            <KPICard label="Refugee / IDP" metric="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={refugeeMalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach#inclusion-by-program" />
+            <KPICard label="Currently Enrolled" metric="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={enrolledMalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach#graduation-status" />
+            <KPICard label="Graduates" metric="Graduates" value={graduates} femalePct={graduatesFemalePct} malePct={graduatesMalePct} info="Participants who completed outreach programs." Icon={Award} href="/executive/outreach#graduation-status" />
+            <KPICard label="CSAT Score" metric="CSAT Score" value={null} info="Customer satisfaction rating for programs." Icon={MessageCircle} href="/executive/outreach" />
+            <KPICard label="Employer Rating" metric="Employer Rating" value={null} info="Employer satisfaction with graduate preparedness." Icon={Award} href="/executive/outreach" />
           </div>
         </div>
 
@@ -692,13 +764,13 @@ export default function AtAGlancePage() {
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, flexShrink: 0, textAlign: "center" }}>Program Outcomes</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-            <KPICard label="Youth in Work" value={youthInWorkTotal} info="Participants employed or running enterprises." Icon={Briefcase} href="/executive/youth-in-work#work-pathway-distribution" secondaryText="Active workforce" />
-            <KPICard label="Wage Employment" value={wageEmploymentTotal} info="Participants in paid employment." Icon={Briefcase} href="/executive/wage-employment#employment-rate-by-program" secondaryText="Employed" />
-            <KPICard label="Entrepreneurs" value={entrepreneursTotal} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship#founder-profile" secondaryText="Business owners" />
-            <KPICard label="Jobs Created" value={jobsCreatedTotal} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship#jobs-by-employment-type" secondaryText="Direct employment" />
-            <KPICard label="Enterprises" value={enterprisesTotal} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship#enterprise-status" secondaryText="Active ventures" />
-            <KPICard label="Job Seeking" value={jobSeekingTotal} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work#work-pathway-distribution" secondaryText="In transition" />
-            <KPICard label="Further Education" value={furtherEducationTotal} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education#qualification-level" secondaryText="Continuing studies" />
+            <KPICard label="Youth in Work" metric="Youth in Work (Total)" value={youthInWorkTotal} info="Participants employed or running enterprises." Icon={Briefcase} href="/executive/youth-in-work#work-pathway-distribution" secondaryText="Active workforce" />
+            <KPICard label="Wage Employment" metric="Wage Employment" value={wageEmploymentTotal} info="Participants in paid employment." Icon={Briefcase} href="/executive/wage-employment#employment-rate-by-program" secondaryText="Employed" />
+            <KPICard label="Entrepreneurs" metric="Entrepreneurs" value={entrepreneursTotal} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship#founder-profile" secondaryText="Business owners" />
+            <KPICard label="Jobs Created" metric="Jobs Created (Total)" value={jobsCreatedTotal} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship#jobs-by-employment-type" secondaryText="Direct employment" />
+            <KPICard label="Enterprises" metric="Enterprises" value={enterprisesTotal} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship#enterprise-status" secondaryText="Active ventures" />
+            <KPICard label="Job Seeking" metric="Job Seeking" value={jobSeekingTotal} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work#work-pathway-distribution" secondaryText="In transition" />
+            <KPICard label="Further Education" metric="Further Education" value={furtherEducationTotal} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education#qualification-level" secondaryText="Continuing studies" />
           </div>
         </div>
         </div>
@@ -771,9 +843,10 @@ export default function AtAGlancePage() {
 
       {/* ── Footer Section ─────────────────────────────── */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period="2026–2030" />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodLabel} />
       </div>
     </div>
+    </YearProgressContext.Provider>
     </KpiLoadingContext.Provider>
   );
 }

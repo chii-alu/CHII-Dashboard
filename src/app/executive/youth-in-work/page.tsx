@@ -303,7 +303,7 @@ export default function YouthInWorkPage() {
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2026–2030" : String(year);
+  const periodLabel = year === "all" ? "2025–2030" : String(year);
   const [program, setProgram] = useState<"all" | Program>("all");
   const [ptype, setPtype] = useState<"all" | ParticipantType>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");

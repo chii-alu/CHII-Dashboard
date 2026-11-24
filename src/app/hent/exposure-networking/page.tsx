@@ -25,6 +25,7 @@ import {
   Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, LineChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
 } from "recharts";
+import { FILTER_YEARS } from "@/lib/filter-years";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
@@ -218,7 +219,7 @@ export default function ExposureNetworkingPage() {
               <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(190,228,214,0.5)" }}>
                 <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> 2024–2030</span>
+                <span><span style={{ color: "rgba(190,228,214,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
                 <span aria-hidden="true">·</span>
                 <span>{hasHentData ? `${D.events} events · ${D.founders} founder placements` : "In coming data"}</span>
               </div>
@@ -268,7 +269,7 @@ export default function ExposureNetworkingPage() {
               onResetFilters={() => { setFYear("All Years"); setFType("All Platform Types"); setFCountry("All Countries"); setFStakeholder("All Stakeholder Types"); setFPilot("All Statuses"); }}
             >
               {[
-                { label: "Year", value: fYear, setValue: setFYear, options: ["All Years", ...YEARS.map(String)] },
+                { label: "Year", value: fYear, setValue: setFYear, options: ["All Years", ...FILTER_YEARS.map(String)] },
                 { label: "Platform type", value: fType, setValue: setFType, options: PLATFORM_TYPES },
                 { label: "Country", value: fCountry, setValue: setFCountry, options: ["All Countries", ...COUNTRIES] },
                 { label: "Stakeholder type", value: fStakeholder, setValue: setFStakeholder, options: STAKEHOLDER_TYPES },

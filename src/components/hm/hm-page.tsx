@@ -181,7 +181,7 @@ export default function HMPage({ page }: { page: keyof typeof HM_PAGES }) {
   const [year, setYear] = useState("All Years");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const yearKey = year === "All Years" ? "all" : year;
-  const period = year === "All Years" ? "2024–2030" : year;
+  const period = year === "All Years" ? "2025–2030" : year;
 
   const cards: HeaderStatCard[] = config.kpis.map(k => {
     const key = `${config.slug}|${k.label}|${yearKey}`;

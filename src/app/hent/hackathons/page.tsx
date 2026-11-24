@@ -18,6 +18,7 @@ import { CHART } from "@/theme/tokens";
 import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import { DonutRing } from "@/components/charts/donut-chart";
+import { FILTER_YEARS } from "@/lib/filter-years";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
@@ -290,7 +291,7 @@ export default function HackathonsPage() {
             <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px]" style={{ color: "rgba(181,212,244,0.5)" }}>
               <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
               <span aria-hidden="true">·</span>
-              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2024–2030</span>
+              <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
               <span aria-hidden="true">·</span>
               <span>{hasHentData ? `${total.events} hackathons tracked` : "In coming data"}</span>
               <span aria-hidden="true">·</span>
@@ -349,7 +350,7 @@ export default function HackathonsPage() {
                   Year
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {["All Years", ...YEARS.map(String)].map(opt => (
+                  {["All Years", ...FILTER_YEARS.map(String)].map(opt => (
                     <button
                       key={opt}
                       onClick={() => setFilterYear(opt)}
