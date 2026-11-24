@@ -29,7 +29,7 @@ export const ALU_TITLE = "ALU-CHII Executive Dashboard";
 
 // ─── Overview: one headline number per section ─────────────────────────────────
 export const OVERVIEW_KPIS: AluKpi[] = [
-  { label: "Funding Secured", definition: "Funding secured this year as % of the annual target (USD)", sub: "Institutional and Operational Excellence", icon: Wallet },
+  { label: "Funding Secured", definition: "Funding secured this year against the annual target (USD)", sub: "Institutional and Operational Excellence", icon: Wallet },
   { label: "Partnerships Activated", definition: "Formal partnerships with active joint work this year", sub: "Partnerships", icon: Handshake },
   { label: "Research Outputs", definition: "Papers, policy briefs, reports and stakeholder presentations produced this year", sub: "Health Systems Contribution and Impact", icon: FlaskConical },
   { label: "People Reached", definition: "Unique beneficiaries reached by CHII programmes this year", sub: "Health Systems Contribution and Impact", icon: Users },

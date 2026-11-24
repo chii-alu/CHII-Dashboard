@@ -27,7 +27,10 @@ export function dummyKpi(label: string, definition: string, year: string): {
 } {
   // Each year (or "all") gets its own numbers, so the cards change when the Year filter changes.
   const h = seed(`${label}|${year}`);
-  const ratio = (0.7 + ((seed(`${label}|target|${year}`) % 60) / 100));
+  // Funding always sits below its annual target, so the funding bar has a pipeline and a gap to show.
+  const ratio = label === "Funding Secured"
+    ? 0.45 + (seed(`${label}|target|${year}`) % 35) / 100
+    : 0.7 + (seed(`${label}|target|${year}`) % 60) / 100;
   const unit: DummyUnit = /%/.test(definition) ? "percent" : /\(USD\)/.test(definition) ? "currency_usd" : "count";
   if (unit === "percent") {
     const num = 40 + (h % 56);
@@ -210,11 +213,13 @@ export const PILLAR_GALLERY_EVENTS: Record<"hemp" | "hent" | "heco" | "hm", { ti
     { title: "Partner Meeting with the Ministry of Health", date: "30 Jan 2026", year: 2026, location: "Kigali", type: "Partner Meetings" },
   ],
   hm: [
-    { title: "Mission Students Orientation", date: "10 Sep 2025", year: 2025, location: "Kigali", type: "Mission Students" },
-    { title: "Mentorship Programme Kick-off", date: "17 Apr 2026", year: 2026, location: "Kigali", type: "Mentorship Program" },
-    { title: "Guest Faculty Session: Health Systems", date: "6 Sep 2025", year: 2025, location: "Kigali", type: "Guest Faculty & Sessions" },
-    { title: "Health Missions Study Trip", date: "15 Feb 2026", year: 2026, location: "Kampala", type: "Study Trips" },
-    { title: "Research Course Launch", date: "13 Jan 2025", year: 2025, location: "Online", type: "Research" },
+    { title: "New Health Mission Students Orientation", date: "10 Sep 2025", year: 2025, location: "Kigali", type: "Student Onboarding & Orientation" },
+    { title: "Mission Development Office Hours", date: "4 Mar 2026", year: 2026, location: "Kigali", type: "Mission Development & Implementation Support" },
+    { title: "Planetary Health Elective Masterclass", date: "22 Jan 2026", year: 2026, location: "Kigali", type: "Training & Capacity Building" },
+    { title: "Group Mentorship Session", date: "17 Apr 2026", year: 2026, location: "Kigali", type: "Mentorship & Professional Guidance" },
+    { title: "Field Visit to a Referral Hospital", date: "15 Feb 2026", year: 2026, location: "Kampala", type: "Experiential Learning & Professional Exposure" },
+    { title: "Capstone Research Showcase", date: "28 Nov 2025", year: 2025, location: "Kigali", type: "Research & Innovation Support" },
+    { title: "Termly Progress Check-ins", date: "6 Dec 2025", year: 2025, location: "Online", type: "Student Progress Monitoring & Follow-up" },
     { title: "Partner Meeting with a Health Institution", date: "21 Oct 2025", year: 2025, location: "Kigali", type: "Partner Meetings" },
   ],
 };

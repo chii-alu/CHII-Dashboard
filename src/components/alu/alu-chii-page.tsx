@@ -3,17 +3,18 @@
 // header, navigation, KPI cards, section pills with the Filters button, section headers,
 // chart panels in pairs, drill-down tables and the footer.
 // Values are dummy data (src/config/alu-chii-dummy.ts) until the logs are connected.
-import { Children, Fragment, useCallback, useEffect, useState } from "react";
+import { Children, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   SlidersHorizontal, X, Info, ZoomIn, ZoomOut, Download, RotateCcw,
-  CalendarClock, FileWarning, ShieldAlert, Handshake, ClipboardList, Sparkles, ArrowUpRight,
+  Sparkles, ArrowUpRight,
 } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import Link from "next/link";
+import { AluChartView, BacklogChart, PaceChart, PriorityDumbbell, PriorityPace, RateChart, monthsDone, rateTarget } from "@/components/alu/alu-charts";
 import { downloadChart } from "@/lib/download-chart";
-import { progressInsight } from "@/lib/progressInsight";
+import type { ProgressInsight } from "@/lib/progressInsight";
 import { FILTER_YEARS } from "@/lib/filter-years";
-import { ChartTip, FilterSelect } from "@/components/ui/executive";
+import { FilterSelect } from "@/components/ui/executive";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import ImpactNav from "@/components/layout/portal-nav-executive";
 import { MetadataHeader } from "@/components/MetadataHeader";
@@ -23,10 +24,10 @@ import { createClient } from "@/lib/supabase-client";
 import { dashboardsFor, isRole, type Role } from "@/lib/access";
 import { PORTAL_NAVS } from "@/config/navigation";
 import {
-  dummyArea, dummyAttentionCount, dummyCell, dummyChartRows, dummyCount, dummyKpi, DUMMY_HIGHLIGHTS, GALLERY_EVENTS, isTimeChart,
+  dummyCell, dummyKpi, DUMMY_HIGHLIGHTS, GALLERY_EVENTS,
 } from "@/config/alu-chii-dummy";
 import {
-  ALU_TITLE, OVERVIEW_KPIS, OVERVIEW_AREAS, SECTIONS,
+  ALU_TITLE, OVERVIEW_KPIS, SECTIONS,
   type AluSection, type AluTab, type AluChart, type AluTable,
 } from "@/config/alu-chii";
 
@@ -34,8 +35,6 @@ import {
 const NAVY = "var(--brand-secondary)";
 const BAND = "var(--brand-secondary)";
 const TICK = "#D17A86";
-const BAR_BLUE = "#479BD6";
-const BAR_LABEL = "#0C447C";
 
 type Filters = { year: string };
 
@@ -189,6 +188,22 @@ function Frame({ title, subtitle, period, children }: { title: string; subtitle:
   );
 }
 
+/** A rate is read against its target line; a running total against where it should be by now. */
+function kpiProgress(label: string, d: ReturnType<typeof dummyKpi>, year: string): ProgressInsight {
+  if (d.unit === "percent") {
+    const target = rateTarget(label);
+    const gap = target - d.num;
+    return { barPct: d.num, caption: gap > 0 ? `Target ${target}% · ${gap} pts below` : `Target ${target}% · met`, status: gap <= 0 ? "met" : gap <= 10 ? "close" : "behind" };
+  }
+  const expected = Math.round((d.target * monthsDone(year)) / 12);
+  const ratio = d.num / expected;
+  return {
+    barPct: Math.min(100, (d.num / d.target) * 100),
+    caption: `${ratio >= 1 ? "Ahead of pace" : "Behind pace"} · ${d.display(expected)} expected by now`,
+    status: ratio >= 1 ? "met" : ratio >= 0.9 ? "close" : "behind",
+  };
+}
+
 /** The KPI cards, in the same grid as Outreach. */
 function KpiRow({ kpis, year }: { kpis: { label: string; definition: string; sub: string; icon: any }[]; year: string }) {
   return (
@@ -201,7 +216,7 @@ function KpiRow({ kpis, year }: { kpis: { label: string; definition: string; sub
             label={k.label}
             num={d.num}
             displayFmt={d.display}
-            progress={progressInsight({ metric: k.label, unit: d.unit, actual: d.num, target: d.target, progress_pct: null })}
+            progress={kpiProgress(k.label, d, year)}
             sub={k.sub}
             Icon={k.icon}
             tooltip={k.definition}
@@ -212,107 +227,12 @@ function KpiRow({ kpis, year }: { kpis: { label: string; definition: string; sub
   );
 }
 
-const RISK_LEVELS = ["Low", "Medium", "High"];
-// Colour of a cell by its risk score (likelihood + impact, 0 to 4): green for low, through amber, to red for high.
-const RISK_COLOURS = ["#D1FAE5", "#FEF3C7", "#FDE68A", "#FCA5A5", "#F87171"];
-
-/** A 3 × 3 heat map of risks by likelihood (down) and impact (across). Each cell shows how many risks it holds. */
-function RiskHeatMap({ year }: { year: string }) {
-  const rows = [2, 1, 0]; // High likelihood at the top
-  return (
-    <div style={{ height: 250, display: "flex", flexDirection: "column", justifyContent: "center", gap: 10 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "64px repeat(3, 1fr)", gridTemplateRows: "repeat(3, 1fr)", gap: 6, height: 200 }}>
-        {rows.map(li => (
-          <Fragment key={li}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 6, fontSize: 11, fontWeight: 600, color: "#374151" }}>
-              {RISK_LEVELS[li]}
-            </div>
-            {[0, 1, 2].map(ii => {
-              const count = dummyCount(`Risk Heat Map|${year}|${li}|${ii}`, 9);
-              return (
-                <div key={`${li}-${ii}`} title={`${RISK_LEVELS[li]} likelihood, ${RISK_LEVELS[ii].toLowerCase()} impact: ${count} risks`}
-                  style={{ borderRadius: 6, backgroundColor: RISK_COLOURS[li + ii], display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#102C5E" }}>
-                  {count}
-                </div>
-              );
-            })}
-          </Fragment>
-        ))}
-        <div />
-        {[0, 1, 2].map(ii => (
-          <div key={`impact-${ii}`} style={{ textAlign: "center", fontSize: 11, fontWeight: 600, color: "#374151" }}>{RISK_LEVELS[ii]}</div>
-        ))}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "0 4px" }}>
-        <span style={{ fontSize: 10, color: "#6B7280" }}>Likelihood (down) · Impact (across)</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 10, color: "#6B7280" }}>Low risk</span>
-          {RISK_COLOURS.map(c => <span key={c} style={{ width: 14, height: 10, borderRadius: 2, backgroundColor: c, display: "inline-block" }} />)}
-          <span style={{ fontSize: 10, color: "#6B7280" }}>High risk</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** A chart drawn in the Outreach style: columns for quarters, bars for groups, with the Outreach legend underneath. */
-function DummyChart({ title, sub, year }: { title: string; sub: string; year: string }) {
-  if (title === "Risk Heat Map") return <RiskHeatMap year={year} />;
-  const data = dummyChartRows(title, sub, year).map(r => ({ ...r, Total: r.value }));
-  if (isTimeChart(title, sub)) {
-    return (
-      <>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={data} margin={{ top: 28, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
-            <CartesianGrid vertical={false} stroke="rgba(16, 44, 94, 0.12)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#374151", fontWeight: 600 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} allowDecimals={false} axisLine={false} tickLine={false} />
-            <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(16, 44, 94, 0.04)" }} />
-            <Bar dataKey="value" name="Count" fill={BAR_BLUE} barSize={46} radius={[4, 4, 0, 0]}>
-              <LabelList dataKey="Total" position="top" fontSize={11} fill={NAVY} fontWeight={700} />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-        <Legend />
-      </>
-    );
-  }
-  return (
-    <>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(16, 44, 94, 0.12)" />
-          <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-          <YAxis dataKey="name" type="category" width={200} tick={{ fontSize: 10, fill: "#374151", fontWeight: 500 }} axisLine={false} tickLine={false} />
-          <Tooltip content={<ChartTip />} />
-          <Bar dataKey="value" name="Count" fill={BAR_BLUE} radius={[0, 4, 4, 0]}>
-            <LabelList dataKey="value" position="right" fontSize={10} fill={BAR_LABEL} fontWeight={700} />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-      <Legend />
-    </>
-  );
-}
-
-/** The one-series legend under each chart, as on Outreach. */
-function Legend() {
-  return (
-    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", paddingTop: 4 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <div style={{ width: 12, height: 12, backgroundColor: BAR_BLUE, borderRadius: 2 }} />
-        <span style={{ fontSize: 10, color: "#6B7280" }}>Count</span>
-      </div>
-    </div>
-  );
-}
-
 function ChartGrid({ charts, year }: { charts: AluChart[]; year: string }) {
   return (
     <PanelGrid>
       {charts.map(c => (
         <Panel key={c.title} title={c.title} subtitle={c.sub} info={c.info}>
-          <DummyChart title={c.title} sub={c.sub} year={year} />
+          <AluChartView title={c.title} sub={c.sub} year={year} />
         </Panel>
       ))}
     </PanelGrid>
@@ -386,8 +306,8 @@ function Pills<K extends string>({ items, active, onChange }: { items: { key: K;
 /** The row of section pills on the left and the Filters button on the right, as on Outreach. */
 function PillRow({ children, filters, onFilters }: { children: React.ReactNode; filters: Filters; onFilters: (f: Filters) => void }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-      {children}
+    <div className="flex flex-wrap lg:flex-nowrap items-center justify-between" style={{ gap: 10 }}>
+      <div className="min-w-0">{children}</div>
       <FiltersMenu filters={filters} onChange={onFilters} />
     </div>
   );
@@ -428,7 +348,7 @@ export function AluSectionPage({ slug }: { slug: string }) {
       </section>
 
       <section className="space-y-4">
-        <SectionHeader title={group?.label ?? "Charts"} blurb={group?.blurb ?? "How the numbers are moving, and where they sit against the target."} />
+        <SectionHeader title={group?.label ?? tab.label} blurb={group?.blurb ?? "How the numbers are moving, and where they sit against the target."} />
         <ChartGrid charts={charts} year={filters.year} />
       </section>
 
@@ -437,113 +357,6 @@ export function AluSectionPage({ slug }: { slug: string }) {
   );
 }
 
-/** CHII Overview: the scorecard, funding, trend and highlights panels, chosen with the pills. */
-const OVERVIEW_PANELS = [
-  { key: "scorecard", label: "Scorecard and funding" },
-  { key: "progress", label: "Progress and trend" },
-  { key: "highlights", label: "Highlights this quarter" },
-] as const;
-
-/* ── Overview panels ─────────────────────────────────── */
-
-// Status thresholds for the scorecard: 80% of target or more is on track, 60–79% is at risk, below 60% is off track.
-const ON_TRACK_FROM = 80;
-const AT_RISK_FROM = 60;
-// Status colours from the existing chart palette: navy, the chart blue, and the pink accent.
-const STATUS_TINT: Record<string, { bg: string; fg: string; bar: string }> = {
-  "On track": { bg: "rgba(16,44,94,0.08)", fg: "#102C5E", bar: "#102C5E" },
-  "At risk": { bg: "rgba(71,155,214,0.14)", fg: "#0C447C", bar: "#479BD6" },
-  "Off track": { bg: "rgba(209,122,134,0.16)", fg: "#9B3F4E", bar: "#D17A86" },
-};
-
-/** Each strategic area as a progress bar against its target, with its status badge and the thresholds marked. */
-function Scorecard({ year }: { year: string }) {
-  const areas = OVERVIEW_AREAS.map(area => ({ area, ...dummyArea(area, year) }));
-  const counts = (["On track", "At risk", "Off track"] as const).map(s => ({ s, n: areas.filter(a => a.status === s).length }));
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {/* Summary: how many areas are in each status */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {counts.map(({ s, n }) => (
-          <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999, backgroundColor: STATUS_TINT[s].bg, color: STATUS_TINT[s].fg }}>
-            <span style={{ fontSize: 13 }}>{n}</span> {s}
-          </span>
-        ))}
-      </div>
-
-      {areas.map(a => (
-        <div key={a.area}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)", minWidth: 0 }}>{a.area}</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, backgroundColor: STATUS_TINT[a.status].bg, color: STATUS_TINT[a.status].fg }}>{a.status}</span>
-              <span style={{ fontSize: 15, fontWeight: 800, color: NAVY, minWidth: 40, textAlign: "right" }}>{a.pct}%</span>
-            </span>
-          </div>
-          {/* Track with the 60% and 80% thresholds marked */}
-          <div style={{ position: "relative", height: 8, borderRadius: 999, backgroundColor: "rgba(16,44,94,0.06)" }}>
-            <div style={{ width: `${Math.min(100, a.pct)}%`, height: "100%", borderRadius: 999, backgroundColor: STATUS_TINT[a.status].bar, transition: "width .4s" }} />
-            {[AT_RISK_FROM, ON_TRACK_FROM].map(t => (
-              <span key={t} style={{ position: "absolute", left: `${t}%`, top: -3, bottom: -3, width: 1.5, borderRadius: 1, backgroundColor: "rgba(16,44,94,0.25)" }} />
-            ))}
-          </div>
-        </div>
-      ))}
-
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#6B7280", paddingTop: 2 }}>
-        <span>% of annual target</span>
-        <span>Marks at {AT_RISK_FROM}% (at risk) and {ON_TRACK_FROM}% (on track)</span>
-      </div>
-    </div>
-  );
-}
-
-const ATTENTION_ITEMS = [
-  { label: "Projects behind schedule", icon: CalendarClock },
-  { label: "Overdue donor reports", icon: FileWarning },
-  { label: "High risks without a mitigation", icon: ShieldAlert },
-  { label: "Partnerships awaiting executive engagement", icon: Handshake },
-  { label: "SOP compliance under 80%", icon: ClipboardList },
-];
-const ATTENTION_MAX = 12; // the largest count the dummy data can give, so the bars share one scale
-
-/** The items needing executive action: a total, then each item with its icon, count and a bar coloured by how many there are. */
-function NeedsAttention({ year }: { year: string }) {
-  const items = ATTENTION_ITEMS.map(i => ({ ...i, n: dummyAttentionCount(i.label, year) }));
-  const total = items.reduce((sum, i) => sum + i.n, 0);
-  const largest = Math.max(...items.map(i => i.n));
-  // Chart palette: blue bars and navy numbers, with the pink accent marking the largest item.
-  const tone = (n: number) => n === largest
-    ? { fg: "#9B3F4E", bg: "rgba(209,122,134,0.14)", bar: "#D17A86" }
-    : { fg: "#0C447C", bg: "rgba(71,155,214,0.12)", bar: "#479BD6" };
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-        <span style={{ fontSize: 30, fontWeight: 800, color: NAVY, lineHeight: 1 }}>{total}</span>
-        <span style={{ fontSize: 12, color: "#6B7280" }}>items need executive action</span>
-      </div>
-      {items.map(({ label, icon: Icon, n }) => {
-        const t = tone(n);
-        return (
-          <div key={label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: t.bg, color: t.fg, display: "grid", placeItems: "center", flexShrink: 0 }}>
-              <Icon size={16} />
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 5 }}>
-                <span style={{ fontSize: 12.5, color: "var(--text-primary)", fontWeight: 600, minWidth: 0 }}>{label}</span>
-                <span style={{ fontSize: 14, fontWeight: 800, color: t.fg, flexShrink: 0 }}>{n}</span>
-              </div>
-              <div style={{ height: 6, borderRadius: 999, backgroundColor: "rgba(16,44,94,0.06)" }}>
-                <div style={{ width: `${(n / ATTENTION_MAX) * 100}%`, height: "100%", borderRadius: 999, backgroundColor: t.bar }} />
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 /** This quarter's achievements as cards, each with a link to its evidence. */
 function Highlights() {
@@ -567,56 +380,115 @@ function Highlights() {
   );
 }
 
-/** CHII Overview: one headline number per area, then one section at a time, chosen with the pills. */
+// The overview's charts, by navigation page. Each metric uses the chart that suits its kind:
+// pace (running total), rate (level against a target line), backlog (by age), or a named chart from that page.
+type GlanceItem = string | { kind: "pace" | "rate" | "backlog"; label: string };
+const GLANCE_AREAS: { title: string; href: string; blurb: string; items: GlanceItem[] }[] = [
+  { title: "Talent", href: "/alu-chii/talent", blurb: "What capability we have built, and the people behind it.", items: ["Capability Timeline", "Professional Development by Type", "Research Staff Capacity"] },
+  { title: "Partnerships", href: "/alu-chii/partnerships", blurb: "Whether partners are moving from identified to activated.", items: [{ kind: "pace", label: "Partnerships Activated" }, { kind: "backlog", label: "Partnerships awaiting executive engagement" }, "Partnership Funnel"] },
+  { title: "Institutional Excellence", href: "/alu-chii/operations", blurb: "How well we deliver, and the risks we are carrying.", items: [{ kind: "rate", label: "Projects on Track" }, { kind: "rate", label: "SOP Compliance" }, "Risk Heat Map", { kind: "backlog", label: "Overdue donor reports" }, { kind: "backlog", label: "High risks without a mitigation" }, "Project Delivery Status"] },
+  { title: "Resource Mobilisation", href: "/alu-chii/operations", blurb: "How much is secured, how much is promised, and the size of the gap.", items: ["Funding vs Target", "Funding Secured over Time", "Funding Pipeline by Stage"] },
+  { title: "Health Systems Impact", href: "/alu-chii/health-systems", blurb: "What is changing in health systems, and for whom.", items: [{ kind: "pace", label: "People Reached" }, "Beneficiaries by Pillar and Year", "Reach by Country"] },
+  { title: "Research & Knowledge", href: "/alu-chii/research", blurb: "What research we are producing, and how it is funded.", items: [{ kind: "pace", label: "Research Outputs" }, "Grant Pipeline", "Research Pipeline"] },
+  { title: "External Recognition", href: "/alu-chii/recognition", blurb: "How visible CHII is, and who it reaches.", items: [{ kind: "pace", label: "Strategic Visibility" }, "Audience Reached over Time", "Delegate"] },
+];
+
+const ATTENTION_ITEMS = ["Projects behind schedule", "Overdue donor reports", "High risks without a mitigation", "Partnerships awaiting executive engagement", "SOP compliance under 80%"];
+const ALL_CHARTS = Object.values(SECTIONS).flatMap(section => section.tabs.flatMap(tab => tab.charts));
+const ALL_KPIS = [...OVERVIEW_KPIS, ...Object.values(SECTIONS).flatMap(section => section.tabs.flatMap(tab => tab.kpis))];
+
+function GlancePanel({ item, year }: { item: GlanceItem; year: string }) {
+  if (typeof item === "string") {
+    const chart = ALL_CHARTS.find(c => c.title === item);
+    if (!chart) return null;
+    return <Panel title={chart.title} subtitle={chart.sub} info={chart.info}><AluChartView title={chart.title} sub={chart.sub} year={year} /></Panel>;
+  }
+  if (item.kind === "backlog") {
+    return <Panel title={item.label} subtitle="Open items, by how long they have waited"><BacklogChart item={item.label} year={year} /></Panel>;
+  }
+  const kpi = ALL_KPIS.find(k => k.label === item.label);
+  if (!kpi) return null;
+  const d = dummyKpi(kpi.label, kpi.definition, year);
+  return item.kind === "rate"
+    ? <Panel title={kpi.label} subtitle="Month by month, against the target line" info={kpi.definition}><RateChart label={kpi.label} value={d.num} year={year} /></Panel>
+    : <Panel title={kpi.label} subtitle="Running total against the path to the annual target" info={kpi.definition}><PaceChart label={kpi.label} value={d.num} target={d.target} year={year} format={d.display} /></Panel>;
+}
+
+// One pill per section, as on Outreach: priorities first, then each navigation page, then highlights.
+const OVERVIEW_SECTIONS = [
+  { key: "priorities", label: "Priorities" },
+  ...GLANCE_AREAS.map(a => ({ key: a.title, label: a.title === "Resource Mobilisation" ? "Resources" : a.title })),
+  { key: "highlights", label: "Highlights" },
+];
+
+/** Panels in the Outreach rhythm: two side by side, then one across the full width. */
+function SectionRows({ items, year }: { items: GlanceItem[]; year: string }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 16 }}>
+      {items.map((item, i) => (
+        <div key={typeof item === "string" ? item : item.label} className={i % 3 === 2 ? "md:col-span-2" : undefined}>
+          <GlancePanel item={item} year={year} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** CHII Overview: the headline cards, then one section at a time, chosen with the pills as on Outreach. */
 export function AluOverviewPage() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [panel, setPanel] = useState<(typeof OVERVIEW_PANELS)[number]["key"]>("scorecard");
+  const [active, setActive] = useState("priorities");
+  const area = GLANCE_AREAS.find(a => a.title === active);
 
   return (
     <Frame title={ALU_TITLE} subtitle="Are we on track this year, and where do we need to step in?" period={periodOf(filters)}>
       <section className="space-y-4">
         <KpiRow kpis={OVERVIEW_KPIS} year={filters.year} />
         <PillRow filters={filters} onFilters={setFilters}>
-          <Pills items={[...OVERVIEW_PANELS]} active={panel} onChange={setPanel} />
+          <Pills items={OVERVIEW_SECTIONS} active={active} onChange={setActive} />
         </PillRow>
       </section>
 
-      {panel === "scorecard" && (
-        <section className="space-y-4">
-          <SectionHeader title="Scorecard and funding" blurb="Each strategic area against its target, and where funding stands." />
-          <PanelGrid>
-            <Panel title="Scorecard by Strategic Priority" subtitle="On track, at risk or off track, and % of target">
-              <Scorecard year={filters.year} />
+      {active === "priorities" && (
+        <>
+          <section className="space-y-4">
+            <SectionHeader title="Strategic Priorities" blurb="Where each priority is today, where it will finish, and the status that earns." />
+            <Panel title="Today to Year-End" subtitle="Each priority's % of annual target, now and projected to 31 December">
+              <PriorityDumbbell year={filters.year} />
             </Panel>
-            <Panel title="Needs Attention" subtitle="Items that need executive action" info="Filled automatically from the logs.">
-              <NeedsAttention year={filters.year} />
-            </Panel>
-          </PanelGrid>
-        </section>
-      )}
-
-      {panel === "progress" && (
-        <section className="space-y-4">
-          <SectionHeader title="Progress and trend" blurb="How the headline numbers are moving, quarter by quarter." />
-          <PanelGrid>
-            <Panel title="Funding Progress" subtitle="Secured, pipeline and gap against the annual target">
-              <DummyChart title="Funding Progress" sub="Secured, pipeline and gap" year={filters.year} />
-            </Panel>
+            <PriorityPace year={filters.year} />
+          </section>
+          <section className="space-y-4">
+            <SectionHeader title="Needs Attention" blurb="Items that need executive action. Each backlog has its own scale, and a growing dark band means old items are piling up." />
+            <SectionRows items={ATTENTION_ITEMS.map(label => ({ kind: "backlog" as const, label }))} year={filters.year} />
+          </section>
+          <section className="space-y-4">
+            <SectionHeader title="Quarterly Trend" blurb="How the headline numbers are moving, quarter by quarter." />
             <Panel title="Quarterly Trend" subtitle="Headline KPIs by quarter, this year vs last">
-              <DummyChart title="Quarterly Trend" sub="Headline KPIs by quarter" year={filters.year} />
+              <AluChartView title="Quarterly Trend" sub="Headline KPIs by quarter" year={filters.year} />
             </Panel>
-          </PanelGrid>
+          </section>
+        </>
+      )}
+
+      {area && (
+        <section className="space-y-4">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <SectionHeader title={area.title} blurb={area.blurb} />
+            <Link href={area.href} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#0C447C", textDecoration: "none", flexShrink: 0 }}>
+              View page <ArrowUpRight size={13} />
+            </Link>
+          </div>
+          <SectionRows items={area.items} year={filters.year} />
         </section>
       )}
 
-      {panel === "highlights" && (
+      {active === "highlights" && (
         <section className="space-y-4">
-          <SectionHeader title="Highlights this quarter" blurb="Three to five achievements this quarter, each linked to its evidence." />
-          <PanelGrid>
-            <Panel title="Highlights" subtitle="Three to five achievements, each linked to its evidence">
-              <Highlights />
-            </Panel>
-          </PanelGrid>
+          <SectionHeader title="Highlights" blurb="Three to five achievements this quarter, each linked to its evidence." />
+          <Panel title="Highlights" subtitle="Three to five achievements, each linked to its evidence">
+            <Highlights />
+          </Panel>
         </section>
       )}
     </Frame>

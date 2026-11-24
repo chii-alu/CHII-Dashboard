@@ -6,7 +6,7 @@ export default function Page() {
     <PillarGallery
       portal="hm"
       title="HM Event Gallery"
-      subtitle="Moments from Health Missions study trips, sessions and courses"
+      subtitle="Moments from across the Health Missions interventions and partner meetings"
       events={PILLAR_GALLERY_EVENTS.hm}
       withNav={true}
     />

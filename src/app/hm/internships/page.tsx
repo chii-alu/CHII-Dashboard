@@ -1,5 +1,6 @@
-import HMPage from "@/components/hm/hm-page";
+// Old Health Missions URL, kept so saved links still work.
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <HMPage page="guest-faculty" />;
+  redirect("/hm/training");
 }
