@@ -77,7 +77,6 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
       { label: "Public Sector Fellowship",               href: "/heco/public-sector-fellowship" },
       { label: "Health Expert in Residence Programme",   href: "/heco/health-expert-in-residence" },
       { label: "Research Activities",                    href: "/heco/research-activities" },
-      { label: "Public Sector Innovation Hackathon",     href: "/heco/innovation-hackathon" },
       { label: "Executive Courses",                      href: "/heco/executive-courses" },
       { label: "Impact Stories",                         href: "/heco/impact-stories" },
       { label: "Gallery", href: "/heco/gallery" },

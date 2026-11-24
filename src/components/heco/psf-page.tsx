@@ -1,6 +1,7 @@
 "use client";
-// Public Sector Fellowship page: six stat cards, applicant funnel, fellows by country, capstone projects.
-import { useState } from "react";
+// Public Sector Fellowship page: six stat cards, applicant funnel, fellows by country, capstone projects,
+// and the Public Sector Innovation Hackathon as its own section (the hackathon uses problem statements from PSF fellows).
+import { useEffect, useState } from "react";
 import { Users, GraduationCap, TrendingUp, Globe, type LucideIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -10,6 +11,7 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import HeaderDesign from "@/components/layout/header-design";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
+import { HackathonSection } from "@/components/heco/hackathon-page";
 import { HECO_NAVY, HECO_HERO, HECO_BRAND, HECO_BRAND_DK, HECO_LIGHT_BORDER, formatPercent, Panel } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Public Sector Fellowship";
@@ -17,7 +19,9 @@ const PROGRAMME = "Public Sector Fellowship";
 const CATEGORIES = [
   { name: "Reach & Engagement", blurb: "Applicants, fellows and where they come from" },
   { name: "Capstone Projects", blurb: "Capstone projects by problem area" },
+  { name: "Public Sector Innovation Hackathon", blurb: "Innovation challenges that tackle problems brought by PSF fellows" },
 ];
+const HACKATHON = "Public Sector Innovation Hackathon";
 const BAR = "#479BD6";
 const LIGHT_BORDER = "rgba(20, 48, 107, 0.12)";
 
@@ -35,6 +39,10 @@ export default function PsfPage() {
   const syncedAt = useSyncedAt("HECO");
   const progressRows = useProgress("HECO", PROGRAMME);
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].name);
+  // ?section=hackathon opens the hackathon section (used by the old hackathon URL).
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("section") === "hackathon") setActiveCategory(HACKATHON);
+  }, []);
   const active = CATEGORIES.find(c => c.name === activeCategory) ?? CATEGORIES[0];
 
   const { data: programme } = useDashboardData<{ headlines: { metric: string; value: number }[]; breakdowns: Record<string, { name: string; count: number | null }[]> }>(
@@ -86,7 +94,9 @@ export default function PsfPage() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-7">
-        <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
+        {activeCategory !== HACKATHON && (
+          <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
           {CATEGORIES.map(category => {
@@ -108,6 +118,7 @@ export default function PsfPage() {
           })}
         </div>
 
+        {activeCategory !== HACKATHON && (
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
             <span style={{ width: 3, height: 16, borderRadius: 999, backgroundColor: HECO_BRAND, flexShrink: 0 }} />
@@ -117,6 +128,7 @@ export default function PsfPage() {
             </div>
           </div>
         </div>
+        )}
 
         {activeCategory === "Reach & Engagement" && (
           <>
@@ -151,6 +163,8 @@ export default function PsfPage() {
         </section>
           </>
         )}
+
+        {activeCategory === HACKATHON && <HackathonSection />}
 
         {activeCategory === "Capstone Projects" && (
           <>

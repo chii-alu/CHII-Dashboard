@@ -1,6 +1,6 @@
-"use client";
-import HackathonPage from "@/components/heco/hackathon-page";
+// The hackathon is now a section of the Public Sector Fellowship page; this keeps old links working.
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <HackathonPage />;
+  redirect("/heco/public-sector-fellowship?section=hackathon");
 }

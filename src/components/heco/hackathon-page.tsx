@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-// Public Sector Innovation Hackathon page: six stat cards, hackathon funnel, projects by problem area, participation by round split by gender.
+// Public Sector Innovation Hackathon: six stat cards, hackathon funnel, projects by problem area, participation by round split by gender.
+// Shown as a section of the Public Sector Fellowship page (HackathonSection); the old /heco/innovation-hackathon URL redirects there.
 import { Users, FileText, Lightbulb, HandCoins, Accessibility, type LucideIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import HeaderDesign from "@/components/layout/header-design";
@@ -10,13 +10,9 @@ import { HeaderStatsPanel, type HeaderStatCard } from "@/components/hemp/header-
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useProgress } from "@/hooks/useProgress";
-import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, SectionTabs, formatPercent } from "@/components/heco/heco-shared";
+import { HECO_BAR, HECO_GRID, HECO_NAVY, Panel, ProgrammeBanner, formatPercent } from "@/components/heco/heco-shared";
 
 const PROGRAMME = "Public Sector Innovation Hackathon";
-const CATEGORIES = [
-  { name: "Funnel and Projects", blurb: "Teams entered, winners and projects by problem area" },
-  { name: "Participation by Round", blurb: "Female and male participants in each hackathon round" },
-];
 const FUNNEL = ["Teams Entered", "Round 1 Winners", "Final Winners"];
 const GENDER_COLOURS = { Female: "#D45F2C", Male: "#479BD6" };
 
@@ -35,11 +31,8 @@ type Programme = {
   segments: { metric: string; segment: string; year: number | null; label: string | null; value: number }[];
 };
 
-export default function HackathonPage() {
-  const dataSource = useDataSource("HECO");
-  const syncedAt = useSyncedAt("HECO");
+export function HackathonSection() {
   const progressRows = useProgress("HECO", PROGRAMME);
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].name);
   const { data: programme } = useDashboardData<Programme>(
     () => fetch(`/api/dashboard-intervention?dashboard=HECO&intervention=${encodeURIComponent(PROGRAMME)}`).then(r => r.json()),
     []
@@ -77,22 +70,9 @@ export default function HackathonPage() {
     : null;
 
   return (
-    <div style={{ backgroundColor: "#f8fafc" }}>
-      <ProgrammeBanner
-        title={PROGRAMME}
-        subtitle="Innovation challenges that tackle public health problems"
-        dataSource={dataSource}
-        syncedAt={syncedAt}
-        headerDesign={<HeaderDesign />}
-      />
+      <div className="space-y-7">
+        <HeaderStatsPanel title="Hackathon Overview" progressRows={progressRows} columns={6} cards={statCards} />
 
-      <div className="max-w-[1440px] mx-auto px-6 py-7 space-y-7">
-        <HeaderStatsPanel title="Programme Overview" progressRows={progressRows} columns={6} cards={statCards} />
-
-        <SectionTabs categories={CATEGORIES} active={activeCategory} onChange={setActiveCategory} />
-
-        {activeCategory === "Funnel and Projects" && (
-          <>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 }}>
             <Panel title="Hackathon funnel" subtitle="Teams entered, round 1 winners and final winners" legend={[{ label: "Teams", color: "#479BD6" }]}>
               <ChartWithPlaceholder data={funnel} height={320}>
@@ -125,11 +105,7 @@ export default function HackathonPage() {
               </ChartWithPlaceholder>
             </Panel>
           </div>
-          </>
-        )}
 
-        {activeCategory === "Participation by Round" && (
-          <>
           <Panel title="Participation by hackathon round, split by gender" subtitle="Female and male participants in each round" legend={[{ label: "Female", color: "#D45F2C" }, { label: "Male", color: "#479BD6" }]}>
             <ChartWithPlaceholder data={byRound} height={300}>
               <ResponsiveContainer width="100%" height={300}>
@@ -144,10 +120,26 @@ export default function HackathonPage() {
               </ResponsiveContainer>
             </ChartWithPlaceholder>
           </Panel>
-          </>
-        )}
       </div>
+  );
+}
 
+/** Standalone hackathon page (no longer in the nav). */
+export default function HackathonPage() {
+  const dataSource = useDataSource("HECO");
+  const syncedAt = useSyncedAt("HECO");
+  return (
+    <div style={{ backgroundColor: "#f8fafc" }}>
+      <ProgrammeBanner
+        title={PROGRAMME}
+        subtitle="Innovation challenges that tackle public health problems"
+        dataSource={dataSource}
+        syncedAt={syncedAt}
+        headerDesign={<HeaderDesign />}
+      />
+      <div className="max-w-[1440px] mx-auto px-6 py-7">
+        <HackathonSection />
+      </div>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
         <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
       </div>

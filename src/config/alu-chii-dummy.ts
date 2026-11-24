@@ -208,7 +208,7 @@ export const PILLAR_GALLERY_EVENTS: Record<"hemp" | "hent" | "heco" | "hm", { ti
     { title: "Public Sector Fellowship Cohort Launch", date: "8 Sep 2025", year: 2025, location: "Kigali", type: "Public Sector Fellowship" },
     { title: "Health Expert in Residence Kick-off", date: "12 May 2026", year: 2026, location: "Kigali", type: "Health Expert in Residence Programme" },
     { title: "Health Ecosystem Research Forum", date: "25 Mar 2026", year: 2026, location: "Kigali", type: "Research Activities" },
-    { title: "Public Sector Innovation Hackathon", date: "5 Dec 2025", year: 2025, location: "Kigali", type: "Public Sector Innovation Hackathon" },
+    { title: "Public Sector Innovation Hackathon", date: "5 Dec 2025", year: 2025, location: "Kigali", type: "Public Sector Fellowship" },
     { title: "Executive Course Graduation", date: "24 Jan 2025", year: 2025, location: "Kigali", type: "Executive Courses" },
     { title: "Partner Meeting with the Ministry of Health", date: "30 Jan 2026", year: 2026, location: "Kigali", type: "Partner Meetings" },
   ],
