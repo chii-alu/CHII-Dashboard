@@ -1,6 +1,6 @@
 "use client";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -31,6 +31,7 @@ import {
   XAxis, YAxis, CartesianGrid, Legend, Tooltip, ResponsiveContainer, LabelList,
 } from "recharts";
 import { Briefcase, Target, TrendingUp, Users, Info, type LucideIcon, ChevronDown } from "lucide-react";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
   return (
@@ -142,7 +143,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
                     filterContent
                   ) : (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {filterOptions?.map(opt => {
+                      {isPeriodOptions(filterOptions) && <PeriodPicker value={String(filterValue)} onChange={v => onFilterChange?.(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filterOptions) && filterOptions?.map(opt => {
                         const isSelected = filterValue === opt;
                         return (
                           <button
@@ -196,7 +197,7 @@ export default function HEMPSie() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState("All Years");
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const [filterCountry, setFilterCountry] = useState("All Countries");
   const [filterRegion, setFilterRegion] = useState("All Regions");
 
@@ -205,7 +206,7 @@ export default function HEMPSie() {
   const hasData = (sieCohorts?.length ?? 0) > 0;
 
   const show = (category: string) => activeCategory === category;
-  const activeFilterCount = [filterYear !== "All Years", filterCountry !== "All Countries", filterRegion !== "All Regions"].filter(Boolean).length;
+  const activeFilterCount = [filterYear !== ALL_PERIODS, filterCountry !== "All Countries", filterRegion !== "All Regions"].filter(Boolean).length;
 
   const years = FILTER_YEARS;
   const countries = useMemo(() =>
@@ -220,7 +221,7 @@ export default function HEMPSie() {
   const filteredCohorts = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterYear !== "All Years" && c.year !== parseInt(filterYear)) return false;
+      if (!inPeriod(filterYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -236,26 +237,26 @@ export default function HEMPSie() {
   const totalProjectsAdopted = filteredCohorts.reduce((s, c) => s + c.projectsAdopted, 0);
   const avgExposure = hasData && filteredCohorts.length ? parseFloat((filteredCohorts.reduce((s, c) => s + (c.exposure["Health System Function"] + c.exposure["Innovation in Practice"] + c.exposure["Employment Pathways"]) / 3, 0) / filteredCohorts.length).toFixed(1)) : null;
 
-  const [filterOutcomeYear, setFilterOutcomeYear] = useState("All Years");
-  const [filterExposureYear, setFilterExposureYear] = useState("All Years");
-  const [filterGeoYear, setFilterGeoYear] = useState("All Years");
-  const [filterFunnelYear, setFilterFunnelYear] = useState("All Years");
+  const [filterOutcomeYear, setFilterOutcomeYear] = useState(ALL_PERIODS);
+  const [filterExposureYear, setFilterExposureYear] = useState(ALL_PERIODS);
+  const [filterGeoYear, setFilterGeoYear] = useState(ALL_PERIODS);
+  const [filterFunnelYear, setFilterFunnelYear] = useState(ALL_PERIODS);
   const [filterFunnelCohort, setFilterFunnelCohort] = useState("All Cohorts");
-  const [filterPlacementYear, setFilterPlacementYear] = useState("All Years");
-  const [filterPartnerYear, setFilterPartnerYear] = useState("All Years");
-  const [filterQualityYear, setFilterQualityYear] = useState("All Years");
-  const [filterConfidenceYear, setFilterConfidenceYear] = useState("All Years");
-  const [filterCompletionYear, setFilterCompletionYear] = useState("All Years");
-  const [filterClarityYear, setFilterClarityYear] = useState("All Years");
-  const [filterNPSDistYear, setFilterNPSDistYear] = useState("All Years");
-  const [filterPerfScoreYear, setFilterPerfScoreYear] = useState("All Years");
-  const [filterPerfTrendYear, setFilterPerfTrendYear] = useState("All Years");
-  const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
+  const [filterPlacementYear, setFilterPlacementYear] = useState(ALL_PERIODS);
+  const [filterPartnerYear, setFilterPartnerYear] = useState(ALL_PERIODS);
+  const [filterQualityYear, setFilterQualityYear] = useState(ALL_PERIODS);
+  const [filterConfidenceYear, setFilterConfidenceYear] = useState(ALL_PERIODS);
+  const [filterCompletionYear, setFilterCompletionYear] = useState(ALL_PERIODS);
+  const [filterClarityYear, setFilterClarityYear] = useState(ALL_PERIODS);
+  const [filterNPSDistYear, setFilterNPSDistYear] = useState(ALL_PERIODS);
+  const [filterPerfScoreYear, setFilterPerfScoreYear] = useState(ALL_PERIODS);
+  const [filterPerfTrendYear, setFilterPerfTrendYear] = useState(ALL_PERIODS);
+  const [filterHealthInterestYear, setFilterHealthInterestYear] = useState(ALL_PERIODS);
 
   const filteredCohortsForPlacement = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterPlacementYear !== "All Years" && c.year !== parseInt(filterPlacementYear)) return false;
+      if (!inPeriod(filterPlacementYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -265,7 +266,7 @@ export default function HEMPSie() {
   const filteredCohortsForPartner = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterPartnerYear !== "All Years" && c.year !== parseInt(filterPartnerYear)) return false;
+      if (!inPeriod(filterPartnerYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -275,7 +276,7 @@ export default function HEMPSie() {
   const filteredCohortsForQuality = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterQualityYear !== "All Years" && c.year !== parseInt(filterQualityYear)) return false;
+      if (!inPeriod(filterQualityYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -285,7 +286,7 @@ export default function HEMPSie() {
   const filteredCohortsForConfidence = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterConfidenceYear !== "All Years" && c.year !== parseInt(filterConfidenceYear)) return false;
+      if (!inPeriod(filterConfidenceYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -295,7 +296,7 @@ export default function HEMPSie() {
   const filteredCohortsForCompletion = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterCompletionYear !== "All Years" && c.year !== parseInt(filterCompletionYear)) return false;
+      if (!inPeriod(filterCompletionYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -305,7 +306,7 @@ export default function HEMPSie() {
   const filteredCohortsForClarity = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterClarityYear !== "All Years" && c.year !== parseInt(filterClarityYear)) return false;
+      if (!inPeriod(filterClarityYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -315,7 +316,7 @@ export default function HEMPSie() {
   const filteredCohortsForNPSDist = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterNPSDistYear !== "All Years" && c.year !== parseInt(filterNPSDistYear)) return false;
+      if (!inPeriod(filterNPSDistYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -325,7 +326,7 @@ export default function HEMPSie() {
   const filteredCohortsForPerfScore = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterPerfScoreYear !== "All Years" && c.year !== parseInt(filterPerfScoreYear)) return false;
+      if (!inPeriod(filterPerfScoreYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -335,7 +336,7 @@ export default function HEMPSie() {
   const filteredCohortsForPerfTrend = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterPerfTrendYear !== "All Years" && c.year !== parseInt(filterPerfTrendYear)) return false;
+      if (!inPeriod(filterPerfTrendYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -345,7 +346,7 @@ export default function HEMPSie() {
   const filteredCohortsForHealthInterest = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterHealthInterestYear !== "All Years" && c.year !== parseInt(filterHealthInterestYear)) return false;
+      if (!inPeriod(filterHealthInterestYear, c.year)) return false;
       if (filterCountry !== "All Countries" && c.country !== filterCountry) return false;
       if (filterRegion !== "All Regions" && c.region !== filterRegion) return false;
       return true;
@@ -375,7 +376,7 @@ export default function HEMPSie() {
   const funnelFilteredCohorts = useMemo(() => {
     if (!sieCohorts) return [];
     return sieCohorts.filter(c => {
-      if (filterFunnelYear !== "All Years" && c.year !== parseInt(filterFunnelYear)) return false;
+      if (!inPeriod(filterFunnelYear, c.year)) return false;
       if (filterFunnelCohort !== "All Cohorts" && c.name !== filterFunnelCohort) return false;
       return true;
     });
@@ -520,13 +521,13 @@ export default function HEMPSie() {
             <FilterDropdown
               isOpen={filtersOpen}
               onResetFilters={() => {
-                setFilterYear("All Years");
+                setFilterYear(ALL_PERIODS);
                 setFilterCountry("All Countries");
                 setFilterRegion("All Regions");
               }}
             >
               {[
-                { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", ...years.map(String)] },
+                { label: "Year", value: filterYear, setValue: setFilterYear, options: PERIOD_FILTER_OPTIONS },
                 { label: "Region", value: filterRegion, setValue: setFilterRegion, options: ["All Regions", ...regions] },
                 { label: "Country", value: filterCountry, setValue: setFilterCountry, options: ["All Countries", ...countries] },
               ].map(filter => (
@@ -535,7 +536,7 @@ export default function HEMPSie() {
                     {filter.label}
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {filter.options.map(opt => (
+                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
                       <button
                         key={opt}
                         onClick={() => filter.setValue(opt)}
@@ -576,7 +577,7 @@ export default function HEMPSie() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Areas of health interest reported by SIE participants" filterOptions={["All Years", ...years.map(String)]} filterValue={filterHealthInterestYear} onFilterChange={setFilterHealthInterestYear}>
+              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Areas of health interest reported by SIE participants" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterHealthInterestYear} onFilterChange={setFilterHealthInterestYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={hasData ? true : null} height={300}><ResponsiveContainer width="100%" height={300}>
                     <BarChart data={hasData && filteredCohortsForHealthInterest.length ? Object.entries(filteredCohortsForHealthInterest.reduce((acc: Record<string, number>, c: any) => {
@@ -602,7 +603,7 @@ export default function HEMPSie() {
                   </div>
                 </div>
               </Panel>
-              <Panel title="Participants by Academic Programmes" subtitle="Academic background distribution" info="Number of participants from each academic programme" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Participants by Academic Programmes" subtitle="Academic background distribution" info="Number of participants from each academic programme" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 300 }}>
                   <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                     <BarChart data={SIE_DISCIPLINES.map(disc => ({
@@ -621,7 +622,7 @@ export default function HEMPSie() {
                   </ResponsiveContainer></ChartWithPlaceholder>
                 </div>
               </Panel>
-              <Panel title="Recruitment Funnel" subtitle="Application to completion journey" info="The progression from applications through to programme completion" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Recruitment Funnel" subtitle="Application to completion journey" info="The progression from applications through to programme completion" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={filteredCohorts.map((c, i) => ({
                     name: c.name.substring(0, 12),
@@ -682,7 +683,7 @@ export default function HEMPSie() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Exposure Area Scores" subtitle="Self-reported learning outcomes (1-5)" info="Average exposure gain across three key learning areas" filterOptions={["All Years", ...years.map(String)]} filterValue={filterExposureYear} onFilterChange={setFilterExposureYear}>
+              <Panel title="Exposure Area Scores" subtitle="Self-reported learning outcomes (1-5)" info="Average exposure gain across three key learning areas" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterExposureYear} onFilterChange={setFilterExposureYear}>
                 <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={SIE_EXPOSURE_AREAS.map(area => ({
                     name: area,
@@ -701,7 +702,7 @@ export default function HEMPSie() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Exposure Score</span>
                 </div>
               </Panel>
-              <Panel title="Employment & Internship Placements" subtitle="Post-SIE employment and internship outcomes" info="Number of participants securing employment or internship positions after SIE completion" filterOptions={["All Years", ...years.map(String)]} filterValue={filterPlacementYear} onFilterChange={setFilterPlacementYear}>
+              <Panel title="Employment & Internship Placements" subtitle="Post-SIE employment and internship outcomes" info="Number of participants securing employment or internship positions after SIE completion" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterPlacementYear} onFilterChange={setFilterPlacementYear}>
                 <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={filteredCohortsForPlacement.map(c => ({
                     name: c.name.substring(0, 18),
@@ -740,7 +741,7 @@ export default function HEMPSie() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Quality Ratings & Career Clarity" subtitle="Programme assessment and career outcome (1-5 scale)" info="Average ratings for relevance, quality, usefulness, and career direction clarity" filterOptions={["All Years", ...years.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
+              <Panel title="Quality Ratings & Career Clarity" subtitle="Programme assessment and career outcome (1-5 scale)" info="Average ratings for relevance, quality, usefulness, and career direction clarity" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
                 <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -756,7 +757,7 @@ export default function HEMPSie() {
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#7FA5D6" }} /> Rating (0-5 scale)</span>
                 </div>
               </Panel>
-              <Panel title="Skill Confidence & NPS" subtitle="Learning confidence and recommendation likelihood" info="5-point confidence scale and 0-10 Net Promoter Score" filterOptions={["All Years", ...years.map(String)]} filterValue={filterConfidenceYear} onFilterChange={setFilterConfidenceYear}>
+              <Panel title="Skill Confidence & NPS" subtitle="Learning confidence and recommendation likelihood" info="5-point confidence scale and 0-10 Net Promoter Score" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterConfidenceYear} onFilterChange={setFilterConfidenceYear}>
                 <ChartWithPlaceholder data={hasData ? true : null} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />

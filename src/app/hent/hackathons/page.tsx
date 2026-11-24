@@ -18,7 +18,8 @@ import { CHART } from "@/theme/tokens";
 import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import { DonutRing } from "@/components/charts/donut-chart";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
@@ -190,9 +191,9 @@ export default function HackathonsPage() {
   const syncedAt = useSyncedAt("HENT");
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState("All Years");
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const show = (n: number) => activeSection === n;
-  const activeFilterCount = [filterYear !== "All Years"].filter(Boolean).length;
+  const activeFilterCount = [filterYear !== ALL_PERIODS].filter(Boolean).length;
 
   // â”€â”€ per-year trend data â”€â”€
   const participantsTrend = YEARS.map(yr => {
@@ -343,14 +344,14 @@ export default function HackathonsPage() {
             />
             <FilterDropdown
               isOpen={filtersOpen}
-              onResetFilters={() => setFilterYear("All Years")}
+              onResetFilters={() => setFilterYear(ALL_PERIODS)}
             >
               <div style={{ marginBottom: 12 }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#0E4633", margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
                   Year
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {["All Years", ...FILTER_YEARS.map(String)].map(opt => (
+                  <PeriodPicker value={filterYear} onChange={setFilterYear} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} hideYearHeading />{false && PERIOD_FILTER_OPTIONS.map(opt => (
                     <button
                       key={opt}
                       onClick={() => setFilterYear(opt)}
@@ -550,7 +551,7 @@ export default function HackathonsPage() {
               sub="Participant satisfaction scores"
               accent={SKY}
               headerRight={
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">Cumulative Total</span>
               }>
               <ChartWithPlaceholder data={hasHentData ? satisfactionData : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
@@ -570,7 +571,7 @@ export default function HackathonsPage() {
               sub="Rating by quality dimension and likelihood to recommend"
               accent={VIOLET}
               headerRight={
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">Cumulative Total</span>
               }>
               <ChartWithPlaceholder data={hasHentData ? qualityDimensions : null} height={176}>
               <ResponsiveContainer width="100%" height={176}>

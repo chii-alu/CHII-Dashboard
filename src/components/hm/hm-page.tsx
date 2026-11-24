@@ -11,10 +11,11 @@ import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import { MetadataHeader } from "@/components/MetadataHeader";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown, type HeaderStatCard } from "@/components/ui/hemp";
 import { DATA_SOURCE } from "@/config/data-sources";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { downloadChart } from "@/lib/download-chart";
 import { progressInsight } from "@/lib/progressInsight";
 import { HM_PAGES, sampleTarget, sampleValue, type HMChart, type HMUnit } from "@/config/hm";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 /* ── HEMP palette ────────────────────────────────────── */
 const BRAND = "#14306B";
@@ -178,10 +179,10 @@ function HMChartView({ slug, chart, year }: { slug: string; chart: HMChart; year
 export default function HMPage({ page }: { page: keyof typeof HM_PAGES }) {
   const config = HM_PAGES[page];
   const [section, setSection] = useState(config.sections[0].name);
-  const [year, setYear] = useState("All Years");
+  const [year, setYear] = useState(ALL_PERIODS);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const yearKey = year === "All Years" ? "all" : year;
-  const period = year === "All Years" ? "2025–2030" : year;
+  const yearKey = year === ALL_PERIODS ? "all" : year;
+  const period = periodText(year);
 
   const cards: HeaderStatCard[] = config.kpis.map(k => {
     const key = `${config.slug}|${k.label}|${yearKey}`;
@@ -227,12 +228,12 @@ export default function HMPage({ page }: { page: keyof typeof HM_PAGES }) {
             })}
           </div>
           <div style={{ position: "relative" }}>
-            <FilterButton activeFilterCount={year === "All Years" ? 0 : 1} isOpen={filtersOpen} onClick={() => setFiltersOpen(o => !o)} />
-            <FilterDropdown isOpen={filtersOpen} onResetFilters={() => setYear("All Years")}>
+            <FilterButton activeFilterCount={year === ALL_PERIODS ? 0 : 1} isOpen={filtersOpen} onClick={() => setFiltersOpen(o => !o)} />
+            <FilterDropdown isOpen={filtersOpen} onResetFilters={() => setYear(ALL_PERIODS)}>
               <div style={{ marginBottom: 12 }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: BRAND_DK, margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>Year</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {["All Years", ...FILTER_YEARS.map(String)].map(opt => (
+                  <PeriodPicker value={year} onChange={setYear} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />{false && PERIOD_FILTER_OPTIONS.map(opt => (
                     <button key={opt} type="button" onClick={() => setYear(opt)}
                       style={{ fontSize: 10, fontWeight: year === opt ? 700 : 500, padding: "5px 10px", borderRadius: 6, border: `1px solid ${year === opt ? BRAND : LIGHT_BORDER}`, backgroundColor: year === opt ? BRAND : "white", color: year === opt ? "white" : BRAND_DK, cursor: "pointer" }}>
                       {opt}

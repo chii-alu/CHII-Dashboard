@@ -33,6 +33,8 @@ import PortalFooter from "@/components/layout/portal-footer";
 import SectionPills from "@/components/filters/section-pills";
 import OutreachFilters, { FilterSelect as OFilterSelect } from "@/components/filters/filter-popover";
 import { DonutRing } from "@/components/charts/donut-chart";
+import { ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, halfOfMonth } from "@/lib/filter-years";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
@@ -240,16 +242,16 @@ export default function MasterclassesPage() {
     headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
-  const [yearFilter,  setYearFilter]  = useState<"All"|"2022"|"2023"|"2024"|"2025"|"2026">("All");
+  const [yearFilter,  setYearFilter]  = useState<string>(ALL_PERIODS);
   const [topicFilter, setTopicFilter] = useState<"All"|MCTopic>("All");
   const [genderView,  setGenderView]  = useState<"All"|"Female"|"Male">("All");
   const [activeSection, setActiveSection] = useState<number>(1);
   const show = (n: number) => activeSection === n;
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const filtersActive = (yearFilter !== "All" ? 1 : 0) + (topicFilter !== "All" ? 1 : 0) + (genderView !== "All" ? 1 : 0);
+  const filtersActive = (yearFilter !== ALL_PERIODS ? 1 : 0) + (topicFilter !== "All" ? 1 : 0) + (genderView !== "All" ? 1 : 0);
 
   const filtered = useMemo(() => masterclasses.filter(m => {
-    if (yearFilter  !== "All" && m.year  !== Number(yearFilter))          return false;
+    if (!inPeriod(yearFilter, m.year, halfOfMonth(m.month))) return false;
     if (topicFilter !== "All" && m.topic !== topicFilter)                 return false;
     if (genderView  === "Female" && m.femaleAttendees <= m.attendees / 2) return false;
     if (genderView  === "Male"   && m.femaleAttendees >  m.attendees / 2) return false;
@@ -410,17 +412,17 @@ export default function MasterclassesPage() {
             />
             <FilterDropdown
               isOpen={filtersOpen}
-              onResetFilters={() => { setYearFilter("All"); setTopicFilter("All"); setGenderView("All"); }}
+              onResetFilters={() => { setYearFilter(ALL_PERIODS); setTopicFilter("All"); setGenderView("All"); }}
             >
               <div style={{ marginBottom: 12 }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#0E4633", margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
                   Year
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {(["All", "2022", "2023", "2024", "2025", "2026"] as const).map(opt => (
+                  <PeriodPicker value={yearFilter} onChange={setYearFilter} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} hideYearHeading />{false && PERIOD_FILTER_OPTIONS.map(opt => (
                     <button
                       key={opt}
-                      onClick={() => setYearFilter(opt as typeof yearFilter)}
+                      onClick={() => setYearFilter(opt)}
                       style={{
                         fontSize: 10,
                         fontWeight: yearFilter === opt ? 700 : 500,
@@ -620,7 +622,7 @@ export default function MasterclassesPage() {
               sub="Participant satisfaction scores"
               accent={ORANGE_MC}
               headerRight={
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">Cumulative Total</span>
               }>
               <ChartWithPlaceholder data={hasHentData ? satisfactionData : null} height={208}>
               <ResponsiveContainer width="100%" height={208}>
@@ -641,7 +643,7 @@ export default function MasterclassesPage() {
               sub="Rating by quality dimension and likelihood to recommend"
               accent={VIOLET_MC}
               headerRight={
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">All Years</span>
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/20 text-white flex-shrink-0">Cumulative Total</span>
               }>
               <ChartWithPlaceholder data={hasHentData ? qualityDimensions : null} height={176}>
               <ResponsiveContainer width="100%" height={176}>

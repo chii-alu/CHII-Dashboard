@@ -2,7 +2,7 @@
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight } from "@/lib/progressInsight";
 import { progressFor } from "@/lib/progressLabels";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -179,7 +179,7 @@ const OA_SECTIONS: { n: number; label: string }[] = [
 ═══════════════════════════════════════════════════════ */
 export default function OutreachPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const [year, setYear] = useState<"all" | number>("all");
+  const [year, setYear] = useState<string>("all");
   const progressRows = useProgress("EXEC", undefined, "Outreach", undefined, year);
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
@@ -188,7 +188,7 @@ export default function OutreachPage() {
   const [institution, setInstitution] = useState<string>("all");
   const [population, setPopulation] = useState<PopulationFilter>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2025–2030" : String(year);
+  const periodLabel = periodText(year);
   const [intervention, setIntervention] = useState<string>("all");
   const [activeSection, setActiveSection] = useState<number>(1);
 
@@ -214,7 +214,7 @@ export default function OutreachPage() {
 
   // Fetch Outreach data from Supabase
   useEffect(() => {
-    const query = year === "all" ? "" : `?year=${year}`;
+    const query = periodQuery(year);
     Promise.all([
       fetch(`/api/outreach-data${query}`).then(r => r.json()),
       fetch(`/api/outreach-breakdown${query}`).then(r => r.json()),
@@ -264,7 +264,7 @@ export default function OutreachPage() {
       if (institution !== "all" && p.institution !== institution) return false;
       if (population === "mission" && !p.missionStudent) return false;
       if (population === "non" && p.missionStudent) return false;
-      if (year !== "all" && p.yearEngaged !== year) return false;
+      if (!inPeriod(year, p.yearEngaged)) return false;
       if (intervention !== "all" && p.intervention !== intervention) return false;
       return true;
     }),
@@ -445,9 +445,9 @@ export default function OutreachPage() {
               <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
             </div>
           </div>
-          <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+          <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
             <FilterSelect label="Year" value={year} onChange={setYear}
-              options={[{ value: "all", label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+              options={PERIOD_SELECT_OPTIONS} />
           </div>
         </div>
       )}

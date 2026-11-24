@@ -15,7 +15,7 @@ import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createClient } from "@/lib/supabase-client";
 import { FilterSelect } from "@/components/ui/executive";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
 import { Users, BookOpen, Briefcase, TrendingUp, Zap, Target, Award, MessageCircle } from "lucide-react";
@@ -346,7 +346,7 @@ function MapContainer({
 
 /* ─ KPI Card Component (Navy fill, like Outreach StatsKpiCard) ─ */
 const KpiLoadingContext = createContext(false);
-// The chosen year's progress for each card, keyed by At a Glance metric. Null when All Years is selected (no bars).
+// The chosen year's progress for each card, keyed by At a Glance metric. Null when Cumulative Total is selected (no bars).
 const YearProgressContext = createContext<Record<string, ProgressInsight> | null>(null);
 const PROGRESS_COLOR: Record<ProgressStatus, string> = { met: "#16A34A", close: "#479BD6", behind: "#F59E0B", "no-data": "#D1D5DB", "no-target": "#D1D5DB" };
 
@@ -512,10 +512,10 @@ export default function AtAGlancePage() {
   const map = useRef<any>(null);
 
   const [refreshKey, setRefreshKey] = useState(0);
-  // All Years: cumulative totals, no progress bars. A year: that year's totals, each against that year's target.
-  const [year, setYear] = useState<"all" | number>("all");
+  // Cumulative Total: no progress bars. A year or half: no progress bars. A year: that year's totals, each against that year's target.
+  const [year, setYear] = useState<string>("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const yearQuery = year === "all" ? "" : `?year=${year}`;
+  const yearQuery = periodQuery(year);
   const yearProgressRows = useProgress("EXEC", undefined, "At a Glance", undefined, year);
   useEffect(() => {
     const id = setInterval(() => setRefreshKey(k => k + 1), 30000);
@@ -678,7 +678,7 @@ export default function AtAGlancePage() {
   const yearProgress: Record<string, ProgressInsight> | null = year === "all"
     ? null
     : Object.fromEntries(Object.entries(yearProgressRows).map(([m, row]) => [m, progressInsight(row)]));
-  const periodLabel = year === "all" ? "2025–2030" : String(year);
+  const periodLabel = periodText(year);
 
   return (
     <KpiLoadingContext.Provider value={kpiLoading}>
@@ -696,7 +696,7 @@ export default function AtAGlancePage() {
 
       {/* ── Stats Cards Section ─────────────────────────── */}
       <div className="max-w-[1600px] mx-auto px-10 py-7">
-        {/* Year filter: All Years shows cumulative totals; a year shows that year's totals against its targets */}
+        {/* Period filter: Cumulative Total shows cumulative totals; a year or half shows that year's totals against its targets */}
         {/* Same Filters button and popover as the Outreach page */}
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
           <div style={{ position: "relative", flexShrink: 0 }}>
@@ -721,9 +721,9 @@ export default function AtAGlancePage() {
                     <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
                   </div>
                 </div>
-                <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+                <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
                   <FilterSelect label="Year" value={year} onChange={setYear}
-                    options={[{ value: "all", label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                    options={PERIOD_SELECT_OPTIONS} />
                 </div>
               </div>
             )}

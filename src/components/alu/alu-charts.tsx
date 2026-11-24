@@ -10,6 +10,7 @@ import {
 import { ChartTip } from "@/components/ui/executive";
 import { dummyArea, dummyAttentionCount, dummyChartRows, dummyCount, dummyKpi } from "@/config/alu-chii-dummy";
 import { OVERVIEW_AREAS } from "@/config/alu-chii";
+import { parsePeriod } from "@/lib/filter-years";
 
 /* ── Palette: the colours the Executive charts already use ── */
 const NAVY = "#102C5E";
@@ -65,7 +66,7 @@ const KINDS: Record<string, Kind> = {
 
 const QUARTERS = ["Q1", "Q2", "Q3", "Q4"];
 const yearsFor = (year: string) => {
-  const last = year === "all" ? 2026 : Number(year);
+  const last = parsePeriod(year).year ?? 2026;
   return [last - 3, last - 2, last - 1, last].map(String);
 };
 
@@ -161,7 +162,8 @@ const OVER_TARGET = "rgba(22,163,74,0.10)";
 /** Months of the chosen year that have happened: all 12 for a past year, otherwise up to this month. */
 export function monthsDone(year: string): number {
   const now = new Date();
-  return year !== "all" && Number(year) < now.getFullYear() ? 12 : now.getMonth() + 1;
+  const y = parsePeriod(year).year;
+  return y !== null && y < now.getFullYear() ? 12 : now.getMonth() + 1;
 }
 
 const RATE_TARGETS: Record<string, number> = { "SOP Compliance": 80, "Projects on Track": 90, "Reports on Time": 90 };

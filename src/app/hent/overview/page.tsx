@@ -25,7 +25,8 @@ import {
   Bar, BarChart, CartesianGrid, Legend, Line, LineChart, LabelList, PieChart, Pie, Cell,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 // Female icon - matches Executive dashboard
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
@@ -142,7 +143,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
                 minWidth: 140,
                 overflow: "hidden",
               }}>
-                {filterOptions.map(opt => (
+                {isPeriodOptions(filterOptions) && <PeriodPicker value={String(filterValue)} onChange={v => onFilterChange(v)} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} padding={12} />}{!isPeriodOptions(filterOptions) && filterOptions.map(opt => (
                   <button
                     key={opt}
                     onClick={() => {
@@ -209,26 +210,26 @@ export default function HENTOverview() {
 
   // Filter panel state
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState("All");
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const [filterStage, setFilterStage] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  const activeFilters = (filterYear !== "All" ? 1 : 0) + (filterStage !== "All" ? 1 : 0) + (filterGender !== "All" ? 1 : 0) + (filterStatus !== "All" ? 1 : 0);
+  const activeFilters = (filterYear !== ALL_PERIODS ? 1 : 0) + (filterStage !== "All" ? 1 : 0) + (filterGender !== "All" ? 1 : 0) + (filterStatus !== "All" ? 1 : 0);
 
   // Chart filter states (independent per chart)
-  const [filterReachYear, setFilterReachYear] = useState("All Years");
-  const [filterReachGenderYear, setFilterReachGenderYear] = useState("All Years");
-  const [filterInnovationYear, setFilterInnovationYear] = useState("All Years");
-  const [filterInnovationFunnelYear, setFilterInnovationFunnelYear] = useState("All Years");
-  const [filterVenturesYear, setFilterVenturesYear] = useState("All Years");
-  const [filterVenturesFemaleYear, setFilterVenturesFemaleYear] = useState("All Years");
-  const [filterFundingYear, setFilterFundingYear] = useState("All Years");
-  const [filterFundingTrendYear, setFilterFundingTrendYear] = useState("All Years");
-  const [filterEmploymentYear, setFilterEmploymentYear] = useState("All Years");
-  const [filterEmploymentTrendYear, setFilterEmploymentTrendYear] = useState("All Years");
-  const [filterQualityYear, setFilterQualityYear] = useState("All Years");
-  const [filterQualityInclusionYear, setFilterQualityInclusionYear] = useState("All Years");
+  const [filterReachYear, setFilterReachYear] = useState(ALL_PERIODS);
+  const [filterReachGenderYear, setFilterReachGenderYear] = useState(ALL_PERIODS);
+  const [filterInnovationYear, setFilterInnovationYear] = useState(ALL_PERIODS);
+  const [filterInnovationFunnelYear, setFilterInnovationFunnelYear] = useState(ALL_PERIODS);
+  const [filterVenturesYear, setFilterVenturesYear] = useState(ALL_PERIODS);
+  const [filterVenturesFemaleYear, setFilterVenturesFemaleYear] = useState(ALL_PERIODS);
+  const [filterFundingYear, setFilterFundingYear] = useState(ALL_PERIODS);
+  const [filterFundingTrendYear, setFilterFundingTrendYear] = useState(ALL_PERIODS);
+  const [filterEmploymentYear, setFilterEmploymentYear] = useState(ALL_PERIODS);
+  const [filterEmploymentTrendYear, setFilterEmploymentTrendYear] = useState(ALL_PERIODS);
+  const [filterQualityYear, setFilterQualityYear] = useState(ALL_PERIODS);
+  const [filterQualityInclusionYear, setFilterQualityInclusionYear] = useState(ALL_PERIODS);
 
   // Aggregations
   const hackPart = hackathons.reduce((s, h) => s + h.participants, 0);
@@ -503,7 +504,7 @@ export default function HENTOverview() {
                   <div>
                     <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: BRAND_DK, margin: "0 0 6px 0" }}>Year</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {["All", ...FILTER_YEARS.map(String)].map(y => (
+                      <PeriodPicker value={filterYear} onChange={setFilterYear} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />{false && PERIOD_FILTER_OPTIONS.map(y => (
                         <button
                           key={y}
                           onClick={() => setFilterYear(y)}
@@ -603,7 +604,7 @@ export default function HENTOverview() {
                   {activeFilters > 0 && (
                     <button
                       onClick={() => {
-                        setFilterYear("All");
+                        setFilterYear(ALL_PERIODS);
                         setFilterStage("All");
                         setFilterGender("All");
                         setFilterStatus("All");
@@ -646,7 +647,7 @@ export default function HENTOverview() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Participants by Programme" subtitle="Distribution across programme types" info="Distribution of participants across masterclasses, hackathons, mentorship, and study trips" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterReachYear} onFilterChange={setFilterReachYear}>
+              <Panel title="Participants by Programme" subtitle="Distribution across programme types" info="Distribution of participants across masterclasses, hackathons, mentorship, and study trips" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterReachYear} onFilterChange={setFilterReachYear}>
                 <ChartWithPlaceholder data={hasHentData ? programData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={programData} margin={{ top: 25, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
@@ -712,7 +713,7 @@ export default function HENTOverview() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Innovation Funnel" subtitle="Hackathon participants through to ventures" info="Conversion of participants through hackathons to startups to portfolio ventures" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterInnovationFunnelYear} onFilterChange={setFilterInnovationFunnelYear}>
+              <Panel title="Innovation Funnel" subtitle="Hackathon participants through to ventures" info="Conversion of participants through hackathons to startups to portfolio ventures" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterInnovationFunnelYear} onFilterChange={setFilterInnovationFunnelYear}>
                 <ChartWithPlaceholder data={hasHentData ? [
                     { name: "Participants", value: hackPart },
                     { name: "Projects", value: hackProjects },
@@ -738,7 +739,7 @@ export default function HENTOverview() {
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
               </Panel>
-              <Panel title="Female-Led Ventures Trend" subtitle="Year-over-year progress" info="Annual trend of ventures with female founders or co-founders" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterVenturesFemaleYear} onFilterChange={setFilterVenturesFemaleYear}>
+              <Panel title="Female-Led Ventures Trend" subtitle="Year-over-year progress" info="Annual trend of ventures with female founders or co-founders" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterVenturesFemaleYear} onFilterChange={setFilterVenturesFemaleYear}>
                 <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), count: ALL_VENTURES.filter(v => v.cohort === c && v.teamGender === "Female").length })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={cohorts.map(c => ({ year: String(c), count: ALL_VENTURES.filter(v => v.cohort === c && v.teamGender === "Female").length }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
@@ -773,7 +774,7 @@ export default function HENTOverview() {
             <div style={{ marginBottom: 24 }} />
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Capital by Fund Type" subtitle="Charitable, Venture, and Catalytic distribution" info="Funding distribution across Charitable, Venture Fund, and Catalytic sources" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterFundingYear} onFilterChange={setFilterFundingYear}>
+              <Panel title="Capital by Fund Type" subtitle="Charitable, Venture, and Catalytic distribution" info="Funding distribution across Charitable, Venture Fund, and Catalytic sources" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterFundingYear} onFilterChange={setFilterFundingYear}>
                 <ChartWithPlaceholder data={hasHentData ? fundTypeData : null} height={280}>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart layout="vertical" data={fundTypeData} margin={{ top: 4, right: 36, bottom: 0, left: 8 }} barSize={16} barCategoryGap="20%">
@@ -789,7 +790,7 @@ export default function HENTOverview() {
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
               </Panel>
-              <Panel title="Funding Trend" subtitle="Capital deployed annually" info="Annual funding disbursement to ventures showing acceleration or sustainability" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterFundingTrendYear} onFilterChange={setFilterFundingTrendYear}>
+              <Panel title="Funding Trend" subtitle="Capital deployed annually" info="Annual funding disbursement to ventures showing acceleration or sustainability" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterFundingTrendYear} onFilterChange={setFilterFundingTrendYear}>
                 <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), funding: ALL_VENTURES.filter(v => v.cohort === c && v.funding > 0).reduce((s, v) => s + v.funding, 0) })) : null} height={280}>
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={cohorts.map(c => ({ year: String(c), funding: ALL_VENTURES.filter(v => v.cohort === c && v.funding > 0).reduce((s, v) => s + v.funding, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
@@ -862,7 +863,7 @@ export default function HENTOverview() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Total Jobs Created" subtitle="Employment by female-led and other ventures" info="Annual employment opportunities created, broken down by female-led and other ventures" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterEmploymentYear} onFilterChange={setFilterEmploymentYear}>
+              <Panel title="Total Jobs Created" subtitle="Employment by female-led and other ventures" info="Annual employment opportunities created, broken down by female-led and other ventures" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterEmploymentYear} onFilterChange={setFilterEmploymentYear}>
                 <ChartWithPlaceholder data={hasHentData ? femaleAndYouthJobsByYear : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={femaleAndYouthJobsByYear} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
@@ -877,7 +878,7 @@ export default function HENTOverview() {
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
               </Panel>
-              <Panel title="Job Creation Trend" subtitle="Growth over time" info="Annual trend of employment opportunities created" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterEmploymentTrendYear} onFilterChange={setFilterEmploymentTrendYear}>
+              <Panel title="Job Creation Trend" subtitle="Growth over time" info="Annual trend of employment opportunities created" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterEmploymentTrendYear} onFilterChange={setFilterEmploymentTrendYear}>
                 <ChartWithPlaceholder data={hasHentData ? cohorts.map(c => ({ year: String(c), jobs: ALL_VENTURES.filter(v => v.cohort === c).reduce((s, v) => s + v.jobsTotal, 0) })) : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={cohorts.map(c => ({ year: String(c), jobs: ALL_VENTURES.filter(v => v.cohort === c).reduce((s, v) => s + v.jobsTotal, 0) }))} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
@@ -911,7 +912,7 @@ export default function HENTOverview() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="NPS Distribution" subtitle="Founder satisfaction breakdown" info="Breakdown of founder satisfaction scores (Promoters, Passives, Detractors)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
+              <Panel title="NPS Distribution" subtitle="Founder satisfaction breakdown" info="Breakdown of founder satisfaction scores (Promoters, Passives, Detractors)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
                 <ChartWithPlaceholder data={hasHentData ? npsData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={npsData} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
@@ -928,7 +929,7 @@ export default function HENTOverview() {
                 </ResponsiveContainer>
                 </ChartWithPlaceholder>
               </Panel>
-              <Panel title="Founder Satisfaction Breakdown" subtitle="NPS distribution" info="Breakdown of founder satisfaction scores (Promoters, Passives, Detractors)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
+              <Panel title="Founder Satisfaction Breakdown" subtitle="NPS distribution" info="Breakdown of founder satisfaction scores (Promoters, Passives, Detractors)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterQualityYear} onFilterChange={setFilterQualityYear}>
                 <ChartWithPlaceholder data={hasHentData ? npsData : null} height={250}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={npsData} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">

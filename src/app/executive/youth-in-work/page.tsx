@@ -3,7 +3,7 @@ import { downloadChart } from "@/lib/download-chart";
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight } from "@/lib/progressInsight";
 import { progressFor } from "@/lib/progressLabels";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -297,13 +297,13 @@ const YIW_SECTIONS: { n: number; label: string }[] = [
 ═══════════════════════════════════════════════════════ */
 export default function YouthInWorkPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const [year, setYear] = useState<"all" | number>("all");
+  const [year, setYear] = useState<string>("all");
   const progressRows = useProgress("EXEC", undefined, "Youth in Work", "Youth In Work Metrics", year);
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2025–2030" : String(year);
+  const periodLabel = periodText(year);
   const [program, setProgram] = useState<"all" | Program>("all");
   const [ptype, setPtype] = useState<"all" | ParticipantType>("all");
   const [gender, setGender] = useState<"all" | Gender>("all");
@@ -334,7 +334,7 @@ export default function YouthInWorkPage() {
 
   // Fetch Youth in Work data from Supabase
   useEffect(() => {
-    fetch(`/api/youth-in-work-participants${year === "all" ? "" : `?year=${year}`}`)
+    fetch(`/api/youth-in-work-participants${periodQuery(year)}`)
       .then(r => r.json())
       .then(result => {
         // A year with no figures leaves the values empty, so they show "In coming data".
@@ -372,7 +372,7 @@ export default function YouthInWorkPage() {
 
   const scope = useMemo(() =>
     youthData.filter(y => {
-      if (year !== "all" && y.year !== year) return false;
+      if (!inPeriod(year, y.year)) return false;
       if (program !== "all" && y.program !== program) return false;
       if (ptype !== "all" && (y.participantType !== ptype && y.program !== ptype)) return false;
       if (gender !== "all" && y.gender !== gender) return false;
@@ -555,9 +555,9 @@ export default function YouthInWorkPage() {
                         <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
                       </div>
                     </div>
-                    <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+                    <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
                       <FilterSelect label="Year" value={year} onChange={setYear}
-                        options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                        options={PERIOD_SELECT_OPTIONS} />
                     </div>
                   </div>
                 )}

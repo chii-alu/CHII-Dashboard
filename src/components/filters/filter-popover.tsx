@@ -1,4 +1,5 @@
 "use client";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -15,6 +16,15 @@ export function FilterSelect<T extends string | number>({ label, value, onChange
   options: { value: T; label: string }[];
   accent?: string;
 }) {
+  // The period list gets the two-step picker: a Year dropdown, then Full Year / H1 / H2.
+  if (isPeriodOptions(options)) {
+    return (
+      <div style={{ minWidth: 0, flex: "1 1 220px" }}>
+        <PeriodPicker variant="select" value={String(value)} allValue={String(options[0].value)}
+          onChange={v => onChange(v as T)} accent={accent} />
+      </div>
+    );
+  }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0, flex: "1 1 150px" }}>
       <label style={{ fontSize: 9.5, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>

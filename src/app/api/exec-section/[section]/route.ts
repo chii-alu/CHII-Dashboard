@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
+import { periodFromRequest, withPeriod } from "@/lib/period-query";
 
 // Always fetch fresh data; never serve a saved copy.
 export const dynamic = "force-dynamic";
@@ -13,30 +14,21 @@ export async function GET(
     const section = decodeURIComponent(params.section);
     // Optional: only rows of one metric_group, e.g. ?metricGroup=Entrepreneurship%20Metrics
     const metricGroup = new URL(request.url).searchParams.get("metricGroup");
-    // A year selects that year's values; without one, the all-years rows are used.
-    const yearParam = new URL(request.url).searchParams.get("year");
-    const year = yearParam && /^\d{4}$/.test(yearParam) ? yearParam : null;
+    // A period ("2026", "2026-H1") selects that period's values; without one, the cumulative rows are used.
+    const period = periodFromRequest(request);
     const supabase = getSupabaseServer();
 
     const [values, sync] = await Promise.all([
-      (metricGroup
-        ? supabase
-            .from("v_metric_values")
-            .select("*")
-            .eq("dashboard", "EXEC")
-            .eq("section", section)
-            .eq("metric_group", metricGroup)
-            .filter("year", year ? "eq" : "is", year ?? "null")
-            .eq("value_type", "actual")
-            .order("metric")
-        : supabase
-            .from("v_metric_values")
-            .select("*")
-            .eq("dashboard", "EXEC")
-            .eq("section", section)
-            .filter("year", year ? "eq" : "is", year ?? "null")
-            .eq("value_type", "actual")
-            .order("metric")),
+      (() => {
+        let query = supabase
+          .from("v_metric_values")
+          .select("*")
+          .eq("dashboard", "EXEC")
+          .eq("section", section)
+          .eq("value_type", "actual");
+        if (metricGroup) query = query.eq("metric_group", metricGroup);
+        return withPeriod(query, period).order("metric");
+      })(),
       supabase
         .from("v_last_sync")
         .select("last_synced, workbook")

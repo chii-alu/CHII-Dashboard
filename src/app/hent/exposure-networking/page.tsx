@@ -25,7 +25,8 @@ import {
   Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, LineChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
 } from "recharts";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
@@ -161,7 +162,7 @@ export default function ExposureNetworkingPage() {
     headlineRows?.find((h: any) => h.metric === metric)?.value ?? null;
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
-  const [fYear, setFYear]       = useState("All Years");
+  const [fYear, setFYear]       = useState(ALL_PERIODS);
   const PLATFORM_TYPES = ["All Platform Types", "Pitch Event", "Conference", "Roundtable", "Ecosystem Engagement", "Demo Day"];
   const [fType, setFType]       = useState("All Platform Types");
   const [fCountry, setFCountry] = useState("All Countries");
@@ -171,7 +172,7 @@ export default function ExposureNetworkingPage() {
   const STAKEHOLDER_TYPES = ["All Stakeholder Types", "Investors", "Partners", "Health Stakeholders", "Policymakers", "Peers"];
 
   const filtered = useMemo(() => exposureEvents.filter(e =>
-    (fYear === "All Years" || String(e.year) === fYear) &&
+    inPeriod(fYear, e.year) &&
     (fType === "All Platform Types" || e.type === fType) &&
     (fCountry === "All Countries" || e.country === fCountry) &&
     (fStakeholder === "All Stakeholder Types" || (e.stakeholders?.[fStakeholder] ?? 0) > 0) &&
@@ -179,7 +180,7 @@ export default function ExposureNetworkingPage() {
   ), [fYear, fType, fCountry, fStakeholder, fPilot]);
 
   const D = useMemo(() => derive(filtered), [filtered]);
-  const activeCount = (fYear !== "All Years" ? 1 : 0) + (fType !== "All Platform Types" ? 1 : 0) + (fCountry !== "All Countries" ? 1 : 0) + (fStakeholder !== "All Stakeholder Types" ? 1 : 0) + (fPilot !== "All Statuses" ? 1 : 0);
+  const activeCount = (fYear !== ALL_PERIODS ? 1 : 0) + (fType !== "All Platform Types" ? 1 : 0) + (fCountry !== "All Countries" ? 1 : 0) + (fStakeholder !== "All Stakeholder Types" ? 1 : 0) + (fPilot !== "All Statuses" ? 1 : 0);
 
   const [activeSection, setActiveSection] = useState<number>(1);
   const show = (n: number) => activeSection === n;
@@ -266,10 +267,10 @@ export default function ExposureNetworkingPage() {
             />
             <FilterDropdown
               isOpen={filtersOpen}
-              onResetFilters={() => { setFYear("All Years"); setFType("All Platform Types"); setFCountry("All Countries"); setFStakeholder("All Stakeholder Types"); setFPilot("All Statuses"); }}
+              onResetFilters={() => { setFYear(ALL_PERIODS); setFType("All Platform Types"); setFCountry("All Countries"); setFStakeholder("All Stakeholder Types"); setFPilot("All Statuses"); }}
             >
               {[
-                { label: "Year", value: fYear, setValue: setFYear, options: ["All Years", ...FILTER_YEARS.map(String)] },
+                { label: "Year", value: fYear, setValue: setFYear, options: PERIOD_FILTER_OPTIONS },
                 { label: "Platform type", value: fType, setValue: setFType, options: PLATFORM_TYPES },
                 { label: "Country", value: fCountry, setValue: setFCountry, options: ["All Countries", ...COUNTRIES] },
                 { label: "Stakeholder type", value: fStakeholder, setValue: setFStakeholder, options: STAKEHOLDER_TYPES },
@@ -280,7 +281,7 @@ export default function ExposureNetworkingPage() {
                     {filter.label}
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {filter.options.map(opt => (
+                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
                       <button
                         key={opt}
                         onClick={() => filter.setValue(opt)}

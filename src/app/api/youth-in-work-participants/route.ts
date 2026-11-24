@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
+import { periodFromRequest, withPeriod } from "@/lib/period-query";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -7,8 +8,7 @@ export const revalidate = 0;
 export async function GET(request: Request) {
   try {
     // A year selects that year's values; without one, the all-years totals are used.
-    const yearParam = new URL(request.url).searchParams.get("year");
-    const year = yearParam && /^\d{4}$/.test(yearParam) ? Number(yearParam) : null;
+    const period = periodFromRequest(request);
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       .eq("dashboard", "EXEC")
       .eq("section", "Youth in Work")
       .eq("value_type", "actual");
-    const { data, error } = await (year !== null ? base.eq("year", year) : base.is("year", null)).order("metric");
+    const { data, error } = await withPeriod(base, period).order("metric");
 
     if (error) {
       console.error("[API] Supabase error:", error);

@@ -1,6 +1,6 @@
 "use client";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import PortalNav from "@/components/layout/portal-nav";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -15,6 +15,7 @@ import {
   XAxis, YAxis, CartesianGrid, Legend, Tooltip, ResponsiveContainer, LabelList,
 } from "recharts";
 import { Users, Target, TrendingUp, Briefcase, type LucideIcon, ChevronDown, Search, Info } from "lucide-react";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
   return (
@@ -126,7 +127,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
                     filterContent
                   ) : (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {filterOptions?.map(opt => {
+                      {isPeriodOptions(filterOptions) && <PeriodPicker value={String(filterValue)} onChange={v => onFilterChange?.(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filterOptions) && filterOptions?.map(opt => {
                         const isSelected = filterValue === opt;
                         return (
                           <button
@@ -203,10 +204,10 @@ export default function CareerWorkshopsPage() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState("All Years");
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const [filterSessionType, setFilterSessionType] = useState("All Types");
   const [filterPartner, setFilterPartner] = useState("All Partners");
-  const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
+  const [filterHealthInterestYear, setFilterHealthInterestYear] = useState(ALL_PERIODS);
   const [partnerSearch, setPartnerSearch] = useState("");
 
   // TODO: Fetch real data from Supabase using getHeadlines('HEMP', 'Intervention', { intervention: 'Career Workshops' })
@@ -216,7 +217,7 @@ export default function CareerWorkshopsPage() {
   );
 
   const show = (category: string) => activeCategory === category;
-  const activeFilterCount = [filterYear !== "All Years", filterSessionType !== "All Types", filterPartner !== "All Partners"].filter(Boolean).length;
+  const activeFilterCount = [filterYear !== ALL_PERIODS, filterSessionType !== "All Types", filterPartner !== "All Partners"].filter(Boolean).length;
 
   const { data: inclusionRaw } = useDashboardData(
     () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => ({
@@ -230,7 +231,7 @@ export default function CareerWorkshopsPage() {
     const pick = (segment: string): number | null => {
       const rows = inclusionRaw.segments.filter((r: any) =>
         r.metric === 'Inclusion Reach' && r.segment === segment &&
-        (filterYear === 'All Years' ? r.year === null : r.year === Number(filterYear)));
+        rowInPeriod(filterYear, r));
       return rows.length ? rows.reduce((sum: number, r: any) => sum + r.value, 0) : null;
     };
     const refugee = pick('refugee_idp');
@@ -419,13 +420,13 @@ export default function CareerWorkshopsPage() {
             <FilterDropdown
               isOpen={filtersOpen}
               onResetFilters={() => {
-                setFilterYear("All Years");
+                setFilterYear(ALL_PERIODS);
                 setFilterSessionType("All Types");
                 setFilterPartner("All Partners");
               }}
             >
               {[
-                { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", ...FILTER_YEARS.map(String)] },
+                { label: "Year", value: filterYear, setValue: setFilterYear, options: PERIOD_FILTER_OPTIONS },
                 { label: "Session Type", value: filterSessionType, setValue: setFilterSessionType, options: ["All Types", "Format A", "Format B", "Format C", "Format D"] },
                 { label: "Partner", value: filterPartner, setValue: setFilterPartner, options: ["All Partners", ...PARTNERS.map(p => p.name)] },
               ].map(filter => (
@@ -434,7 +435,7 @@ export default function CareerWorkshopsPage() {
                     {filter.label}
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {filter.options.map(opt => (
+                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
                       <button
                         key={opt}
                         onClick={() => filter.setValue(opt)}
@@ -475,7 +476,7 @@ export default function CareerWorkshopsPage() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Career workshop participants by health interest" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterHealthInterestYear} onFilterChange={setFilterHealthInterestYear}>
+              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Career workshop participants by health interest" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterHealthInterestYear} onFilterChange={setFilterHealthInterestYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={healthInterestRows} height={300}>
                   <ResponsiveContainer width="100%" height={300}>
@@ -498,7 +499,7 @@ export default function CareerWorkshopsPage() {
                   </div>
                 </div>
               </Panel>
-              <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Career Workshop participants by primary academic programme" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Career Workshop participants by primary academic programme" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={academicProgrammeRows} height={300}>
                   <ResponsiveContainer width="100%" height={300}>
@@ -524,7 +525,7 @@ export default function CareerWorkshopsPage() {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginTop: 16 }}>
-              <Panel title="Cumulative Growth" subtitle="Participants vs 2030 goal & Session trends" info="Total participants growth trajectory and session count over time" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Cumulative Growth" subtitle="Participants vs 2030 goal & Session trends" info="Total participants growth trajectory and session count over time" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={SESSIONS_DATA} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
@@ -557,7 +558,7 @@ export default function CareerWorkshopsPage() {
                 </div>
               </Panel>
 
-              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={inclusionReachBars} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
@@ -604,7 +605,7 @@ export default function CareerWorkshopsPage() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Satisfaction Score" subtitle="Participant satisfaction scores" info="Average participant rating" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Satisfaction Score" subtitle="Participant satisfaction scores" info="Average participant rating" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={RATING_DIST} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
@@ -627,7 +628,7 @@ export default function CareerWorkshopsPage() {
                   </div>
                 </div>
               </Panel>
-              <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <ChartWithPlaceholder data={null} height={300}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">
@@ -664,7 +665,7 @@ export default function CareerWorkshopsPage() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Panel title="Partner by Type" subtitle="By organisation type" info="Distribution across partner types" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Partner by Type" subtitle="By organisation type" info="Distribution across partner types" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={null} height={280}><ResponsiveContainer width="100%" height={280}>
                     <BarChart data={PARTNERS_BY_TYPE} layout="vertical" margin={{ top: 6, right: 14, bottom: 0, left: 130 }}>

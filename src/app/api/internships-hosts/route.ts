@@ -12,7 +12,7 @@ export async function GET() {
       supabase.from("organizations").select("name").order("name"),
       supabase
         .from("v_metric_values")
-        .select("metric, organization, item, year, value")
+        .select("metric, organization, item, year, period, value")
         .eq("dashboard", "HEMP")
         .eq("intervention", "Internships")
         .eq("value_type", "actual")
@@ -25,12 +25,13 @@ export async function GET() {
       return NextResponse.json({ error: message }, { status: 500 });
     }
 
-    const metrics: Record<string, { organization: string; item: string | null; year: number | null; value: number }[]> = {};
+    const metrics: Record<string, { organization: string; item: string | null; year: number | null; period: string | null; value: number }[]> = {};
     for (const row of rows.data ?? []) {
       (metrics[row.metric] ??= []).push({
         organization: row.organization,
         item: row.item ?? null,
         year: row.year ?? null,
+        period: row.period ?? null,
         value: Number(row.value),
       });
     }

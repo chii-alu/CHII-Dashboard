@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 // Color palette - HENT green
 const BRAND = "#2D6A4F";
@@ -94,7 +95,7 @@ export function FilterDropdown({
                 {filter.label}
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {filter.options.map(opt => {
+                {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.currentValue)} onChange={v => filter.onValueChange(v)} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => {
                   const isSelected = filter.currentValue === opt;
                   return (
                     <button

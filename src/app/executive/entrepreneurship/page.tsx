@@ -3,7 +3,7 @@ import { downloadChart } from "@/lib/download-chart";
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight } from "@/lib/progressInsight";
 import { progressFor } from "@/lib/progressLabels";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { useRefreshTick } from "@/hooks/useRefreshTick";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -177,16 +177,16 @@ const SECTIONS: { n: number; label: string }[] = [
 
 export default function EntrepreneurshipPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const [year, setYear] = useState<"all" | number>("all");
+  const [year, setYear] = useState<string>("all");
   const progressRows = useProgress("EXEC", undefined, "Entrepreneurship", "Entrepreneurship Metrics", year);
   const refreshTick = useRefreshTick();
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2025–2030" : String(year);
+  const periodLabel = periodText(year);
   const [entHeadlines, setEntHeadlines] = useState<any[] | null>(null);
   useEffect(() => {
-    fetch(`/api/exec-section/Entrepreneurship?metricGroup=Entrepreneurship%20Metrics${year === "all" ? "" : `&year=${year}`}`)
+    fetch(`/api/exec-section/Entrepreneurship?metricGroup=Entrepreneurship%20Metrics${periodQuery(year, "&")}`)
       .then(r => r.json())
       .then(result => setEntHeadlines(Array.isArray(result.headlines) ? result.headlines : []))
       .catch(() => setEntHeadlines([]));
@@ -224,7 +224,7 @@ export default function EntrepreneurshipPage() {
 
   const scope = useMemo(() =>
     VENTURES.filter(x => {
-      if (year !== "all" && x.yearLaunched !== year) return false;
+      if (!inPeriod(year, x.yearLaunched)) return false;
       if (gender !== "all" && x.gender !== gender) return false;
       if (stage !== "all" && x.stage !== stage) return false;
       if (status !== "all" && x.status !== status) return false;
@@ -401,9 +401,9 @@ export default function EntrepreneurshipPage() {
                       <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
                     </div>
                   </div>
-                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
                     <FilterSelect label="Year Launched" value={year} onChange={setYear}
-                      options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                      options={PERIOD_SELECT_OPTIONS} />
                   </div>
                 </div>
               )}

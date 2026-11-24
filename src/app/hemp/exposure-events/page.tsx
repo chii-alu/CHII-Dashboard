@@ -1,6 +1,6 @@
 "use client";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
@@ -15,6 +15,7 @@ import {
   XAxis, YAxis, CartesianGrid, Legend, Tooltip, ResponsiveContainer, LabelList,
 } from "recharts";
 import { Briefcase, Target, TrendingUp, Users, Info, type LucideIcon, ChevronDown } from "lucide-react";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
   return (
@@ -142,7 +143,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
                     filterContent
                   ) : (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {filterOptions?.map(opt => {
+                      {isPeriodOptions(filterOptions) && <PeriodPicker value={String(filterValue)} onChange={v => onFilterChange?.(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filterOptions) && filterOptions?.map(opt => {
                         const isSelected = filterValue === opt;
                         return (
                           <button
@@ -197,10 +198,10 @@ export default function ExposureEvents() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState("All Years");
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
 
   const show = (category: string) => activeCategory === category;
-  const activeFilterCount = [filterYear !== "All Years"].filter(Boolean).length;
+  const activeFilterCount = [filterYear !== ALL_PERIODS].filter(Boolean).length;
 
   const totalParticipants = stats.totalParticipants;
   const totalPWD: number | null = null;
@@ -347,7 +348,7 @@ export default function ExposureEvents() {
                 filterGroups={[
                   {
                     label: "Year",
-                    options: ["All Years", ...FILTER_YEARS.map(String)],
+                    options: PERIOD_FILTER_OPTIONS,
                     value: filterYear,
                     onChange: (v) => setFilterYear(String(v)),
                   },
@@ -373,7 +374,7 @@ export default function ExposureEvents() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Exposure event participants by health interest" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Exposure event participants by health interest" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={healthInterestData.sort((a, b) => b.count - a.count)} height={300}>
                   <ResponsiveContainer width="100%" height={300}>
@@ -397,7 +398,7 @@ export default function ExposureEvents() {
                 </div>
               </Panel>
 
-              <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Exposure Events participants by primary academic programme" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Exposure Events participants by primary academic programme" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={null} height={300}>
                   <ResponsiveContainer width="100%" height={300}>
@@ -424,7 +425,7 @@ export default function ExposureEvents() {
 
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Event Trend" subtitle="Annual event delivery" info="Annual trend of events delivered" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Event Trend" subtitle="Annual event delivery" info="Annual trend of events delivered" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={eventTrendData} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
@@ -456,7 +457,7 @@ export default function ExposureEvents() {
                 </div>
               </Panel>
 
-              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={inclusionReachData} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
@@ -500,7 +501,7 @@ export default function ExposureEvents() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Panel title="Partners by Type" subtitle="Distribution across organisation types" info="Partner count by organisation category" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Partners by Type" subtitle="Distribution across organisation types" info="Partner count by organisation category" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={null} height={280}>
                   <ResponsiveContainer width="100%" height={280}>
@@ -568,7 +569,7 @@ export default function ExposureEvents() {
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Satisfaction Score" subtitle="Participant satisfaction scores" info="Average participant rating" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Satisfaction Score" subtitle="Participant satisfaction scores" info="Average participant rating" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={ratingDistData} height={250}>
                   <ResponsiveContainer width="100%" height={250}>
@@ -591,7 +592,7 @@ export default function ExposureEvents() {
                   </div>
                 </div>
               </Panel>
-              <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterYear} onFilterChange={setFilterYear}>
+              <Panel title="Quality Dimensions & Recommendation" subtitle="Comprehensive feedback assessment" info="Multi-dimensional ratings and NPS/confidence scores (0-5 scale)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterYear} onFilterChange={setFilterYear}>
                 <ChartWithPlaceholder data={null} height={300}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={[]} margin={{ top: 24, right: 10, bottom: 0, left: -16 }} barCategoryGap="20%">

@@ -13,7 +13,7 @@ import Link from "next/link";
 import { AluChartView, BacklogChart, PaceChart, PriorityDumbbell, PriorityPace, RateChart, monthsDone, rateTarget } from "@/components/alu/alu-charts";
 import { downloadChart } from "@/lib/download-chart";
 import type { ProgressInsight } from "@/lib/progressInsight";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodText } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import FeaturedImpactStory from "@/components/layout/featured-impact-story";
 import ImpactNav from "@/components/layout/portal-nav-executive";
@@ -111,7 +111,7 @@ function FiltersMenu({ filters, onChange }: { filters: Filters; onChange: (f: Fi
   const [open, setOpen] = useState(false);
   const activeCount = (Object.keys(DEFAULT_FILTERS) as (keyof Filters)[]).filter(k => filters[k] !== DEFAULT_FILTERS[k]).length;
   const set = (key: keyof Filters) => (v: string) => onChange({ ...filters, [key]: v });
-  const yearOpts = [{ value: "all", label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: String(y), label: String(y) }))];
+  const yearOpts = PERIOD_SELECT_OPTIONS;
 
   return (
     <div style={{ position: "relative", flexShrink: 0 }}>
@@ -150,7 +150,7 @@ function FiltersMenu({ filters, onChange }: { filters: Filters; onChange: (f: Fi
 
 /** The header period follows the Year filter, as on the Executive dashboard. */
 function periodOf(f: Filters): string {
-  return f.year === "all" ? "2025–2030" : f.year;
+  return periodText(f.year);
 }
 
 /** Page frame: navigation, header, then the content and footer in the Outreach wrapper. */
@@ -583,7 +583,7 @@ export function AluGalleryPage() {
   const [type, setType] = useState("All");
   const types = ["All", ...Array.from(new Set(GALLERY_EVENTS.map(e => e.type)))];
   const events = GALLERY_EVENTS.filter(e =>
-    (filters.year === "all" || String(e.year) === filters.year) && (type === "All" || e.type === type)
+    inPeriod(filters.year, e.year, new Date(e.date)) && (type === "All" || e.type === type)
   );
   const [viewing, setViewing] = useState<number | null>(null);
   const closeViewer = useCallback(() => setViewing(null), []);
@@ -600,7 +600,7 @@ export function AluGalleryPage() {
       <section className="space-y-4">
         <SectionHeader
           title="Events"
-          blurb={`${events.length} ${events.length === 1 ? "event" : "events"}${filters.year === "all" ? "" : ` in ${filters.year}`}.`}
+          blurb={`${events.length} ${events.length === 1 ? "event" : "events"}${filters.year === "all" ? "" : ` in ${periodText(filters.year)}`}.`}
         />
         {events.length === 0 ? (
           <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No events match these filters.</p>

@@ -17,6 +17,7 @@ import {
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import type { Stage } from "@/types";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
@@ -297,7 +298,7 @@ export default function VentureFundingPage() {
                     {filter.label}
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {filter.options.map(opt => (
+                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
                       <button
                         key={opt}
                         onClick={() => filter.setValue(opt)}

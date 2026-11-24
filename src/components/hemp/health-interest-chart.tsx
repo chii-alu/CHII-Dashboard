@@ -2,6 +2,7 @@
 import { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { ChevronDown } from "lucide-react";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 interface HealthInterestData {
   area: string;
@@ -153,7 +154,7 @@ export default function HealthInterestChart({
                 boxShadow: "0 10px 30px rgba(0,0,0,0.14)",
                 overflow: "hidden",
               }}>
-                {filterOptions.map(opt => (
+                {isPeriodOptions(filterOptions) && <PeriodPicker value={String(filterValue)} onChange={v => onFilterChange(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} padding={12} />}{!isPeriodOptions(filterOptions) && filterOptions.map(opt => (
                   <button
                     key={opt}
                     onClick={() => {

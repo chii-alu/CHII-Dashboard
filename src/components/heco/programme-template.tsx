@@ -1,6 +1,6 @@
 "use client";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -16,6 +16,7 @@ import {
 import { Cell } from "recharts";
 import { hostNameList, hostBars, hostColor, hasMetric, topWithOther, departmentBars, type HostMetrics } from "@/lib/hostChart";
 import { Briefcase, Target, TrendingUp, Users, Info, type LucideIcon, ChevronDown } from "lucide-react";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 function WomanIcon({ size = 20, color, style }: { size?: number; color?: string; style?: React.CSSProperties }) {
   return (
@@ -100,7 +101,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
                 minWidth: 140,
                 overflow: "hidden",
               }}>
-                {filterOptions.map(opt => (
+                {isPeriodOptions(filterOptions) && <PeriodPicker value={String(filterValue)} onChange={v => onFilterChange(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} padding={12} />}{!isPeriodOptions(filterOptions) && filterOptions.map(opt => (
                   <button
                     key={opt}
                     onClick={() => {
@@ -163,23 +164,23 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState("All Years");
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const [filterOrganization, setFilterOrganization] = useState("All");
   const [filterDepartment, setFilterDepartment] = useState("All");
   const [filterCohort, setFilterCohort] = useState("All");
   const [filterFemale, setFilterFemale] = useState("All");
   const [filterIDP, setFilterIDP] = useState("All");
   const [filterPLWD, setFilterPLWD] = useState("All");
-  const [filterOutcomeYear, setFilterOutcomeYear] = useState("All Years");
+  const [filterOutcomeYear, setFilterOutcomeYear] = useState(ALL_PERIODS);
   // Participant Trend: one point per year in the database (Internships section), narrowed by the year filter.
   const participantTrendRows = (interventionData?.segments ?? []).filter((r: any) => r.metric === "Participant Trend" && r.segment === "all" && r.year != null);
   const participantTrendData = participantTrendRows.length > 0
     ? participantTrendRows
-        .filter((r: any) => filterOutcomeYear === "All Years" || r.year === Number(filterOutcomeYear))
+        .filter((r: any) => inPeriod(filterOutcomeYear, r.year))
         .sort((a: any, b: any) => a.year - b.year)
         .map((r: any) => ({ year: String(r.year), students: r.value }))
     : null;
-  const [filterSectorYear, setFilterSectorYear] = useState("All Years");
+  const [filterSectorYear, setFilterSectorYear] = useState(ALL_PERIODS);
   // Host organisations and their per-host rows, read from the database (see /api/internships-hosts).
   const { data: hostData } = useDashboardData<{ hosts: string[]; metrics: HostMetrics }>(
     () => fetch(`/api/programme-hosts?dashboard=${dashboard}&intervention=${encodeURIComponent(intervention)}`).then(r => r.json()),
@@ -187,8 +188,8 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
   );
   const hostMetrics: HostMetrics = hostData?.metrics ?? {};
   const hosts = hostNameList(hostData?.hosts ?? [], hostMetrics);
-  const yearOf = (filter: string) => (filter === "All Years" ? null : Number(filter));
-  const hostYear = yearOf(filterSectorYear);
+  const yearOf = (filter: string) => parsePeriod(filter).year;
+  const hostYear = filterSectorYear;
   const placementBars = topWithOther(hostBars(hostMetrics, { Placements: "Placement By Organization" }, hostYear, hosts), "Placements", 8);
   const departmentData = departmentBars(hostMetrics, "Departments By Organization", hostYear, hosts);
   const overallBars = hostBars(hostMetrics, { "Overall Rating": "Overall Employer Rating" }, hostYear, hosts);
@@ -198,10 +199,10 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
   const placementAfterBars = hostBars(hostMetrics, { Placements: "Placement After Internship" }, hostYear, hosts);
   const learningBars = hostBars(hostMetrics, { "Real-World Application": "Learning & Skill Application" }, hostYear, hosts);
   const internRecBars = hostBars(hostMetrics, { Recommendation: "Intern Recommendation" }, hostYear, hosts);
-  const [filterHealthInterestYear, setFilterHealthInterestYear] = useState("All Years");
+  const [filterHealthInterestYear, setFilterHealthInterestYear] = useState(ALL_PERIODS);
 
   const show = (category: string) => activeCategory === category;
-  const activeFilterCount = [filterYear !== "All Years", filterOrganization !== "All", filterDepartment !== "All", filterCohort !== "All", filterFemale !== "All", filterIDP !== "All", filterPLWD !== "All"].filter(Boolean).length;
+  const activeFilterCount = [filterYear !== ALL_PERIODS, filterOrganization !== "All", filterDepartment !== "All", filterCohort !== "All", filterFemale !== "All", filterIDP !== "All", filterPLWD !== "All"].filter(Boolean).length;
 
   // Fetch data from Supabase
   const { data: internships, loading, error } = useDashboardData(() => Promise.resolve([] as any[]), []);
@@ -215,7 +216,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
   const filteredInternships = useMemo(() => {
     if (!internships) return [];
     return internships.filter(i => {
-      if (filterYear !== "All Years" && i.year !== parseInt(filterYear)) return false;
+      if (!inPeriod(filterYear, i.year)) return false;
       if (filterOrganization !== "All" && i.organization !== filterOrganization) return false;
       if (filterDepartment !== "All" && i.department !== filterDepartment) return false;
       if (filterCohort !== "All") {
@@ -242,7 +243,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
   const filteredInternshipsForHealthInterest = useMemo(() => {
     if (!internships) return [];
     return internships.filter(i => {
-      if (filterHealthInterestYear !== "All Years" && i.year !== parseInt(filterHealthInterestYear)) return false;
+      if (!inPeriod(filterHealthInterestYear, i.year)) return false;
       return true;
     });
   }, [filterHealthInterestYear, internships]);
@@ -387,7 +388,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
             <FilterDropdown
               isOpen={filtersOpen}
               onResetFilters={() => {
-                setFilterYear("All Years");
+                setFilterYear(ALL_PERIODS);
                 setFilterOrganization("All");
                 setFilterDepartment("All");
                 setFilterCohort("All");
@@ -397,7 +398,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
               }}
             >
               {[
-                { label: "Year", value: filterYear, setValue: setFilterYear, options: ["All Years", ...years.map(String)] },
+                { label: "Year", value: filterYear, setValue: setFilterYear, options: PERIOD_FILTER_OPTIONS },
                 { label: "Organization", value: filterOrganization, setValue: setFilterOrganization, options: ["All", ...hosts] },
                 { label: "Department", value: filterDepartment, setValue: setFilterDepartment, options: ["All", ...departmentData.departments] },
                 { label: "Cohort", value: filterCohort, setValue: setFilterCohort, options: ["All", ...cohorts.map(c => `Cohort ${c}`)] },
@@ -425,7 +426,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                       fontFamily: "inherit",
                     }}
                   >
-                    {filter.options.map(opt => (
+                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
                       <option key={opt} value={opt}>
                         {opt}
                       </option>
@@ -452,7 +453,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Internship participants by primary academic programme" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Participants by Academic Programmes" subtitle="Participant distribution across programmes" info="Internship participants by primary academic programme" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={academicProgrammeRows} height={300}><ResponsiveContainer width="100%" height={300}>
                     <BarChart data={academicProgrammeRows ?? []} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
@@ -473,7 +474,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   </div>
                 </div>
               </Panel>
-              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Internship participants by health interest" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Participants by Health Interest Area" subtitle="Distribution across health specializations" info="Internship participants by health interest" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <ChartWithPlaceholder data={hasData ? true : null} height={300}><ResponsiveContainer width="100%" height={300}>
                     <BarChart data={[]} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 180 }}>
@@ -494,7 +495,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   </div>
                 </div>
               </Panel>
-              <Panel title="Participant Trend" subtitle="Participation growth over time" info="Annual trend of students placed in internships" filterOptions={["All Years", ...years.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Participant Trend" subtitle="Participation growth over time" info="Annual trend of students placed in internships" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <ChartWithPlaceholder data={participantTrendData} height={250}><ResponsiveContainer width="100%" height={250}>
                   <LineChart data={participantTrendData ?? []} margin={{ top: 6, right: 14, bottom: 0, left: -12 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -506,7 +507,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   </LineChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
               </Panel>
-              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
+              <Panel title="Inclusion Reach" subtitle="Participant diversity" info="Breakdown across disability and refugee status" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterOutcomeYear} onFilterChange={setFilterOutcomeYear}>
                 <ChartWithPlaceholder data={inclusionBars} height={250}><ResponsiveContainer width="100%" height={250}>
                   <BarChart data={inclusionBars ?? []} margin={{ top: 6, right: 10, bottom: 0, left: -16 }} barCategoryGap="28%">
                     <CartesianGrid vertical={false} stroke={LIGHT_BORDER} />
@@ -541,7 +542,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
             </div>
             <div style={{ marginBottom: 24 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Placements by Organization" subtitle="Distribution across partner organizations" info="Number of placements across different organizations" filterOptions={["All Years", ...years.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Placements by Organization" subtitle="Distribution across partner organizations" info="Number of placements across different organizations" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={placementBars} height={300}><ResponsiveContainer width="100%" height={300}>
                   <BarChart data={placementBars} layout="vertical" margin={{ top: 6, right: 50, bottom: 0, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={LIGHT_BORDER} />
@@ -563,7 +564,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   ))}
                 </div>
               </Panel>
-              <Panel title="Departments by Organization" subtitle="Department distribution across partner organizations" info="Number of internship placements by department within each organization" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Departments by Organization" subtitle="Department distribution across partner organizations" info="Number of internship placements by department within each organization" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={departmentData.data} height={280}><ResponsiveContainer width="100%" height={280}>
                   <BarChart data={departmentData.data} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -598,7 +599,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
             </div>
             <div style={{ marginBottom: 32 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Overall Employer Rating" subtitle="Composite employer satisfaction score" info="Average rating across all employer assessment dimensions (0-10 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Overall Employer Rating" subtitle="Composite employer satisfaction score" info="Average rating across all employer assessment dimensions (0-10 scale)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={overallBars} height={280}><ResponsiveContainer width="100%" height={280}>
                   <BarChart data={overallBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -615,7 +616,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#479BD6" }} /> Score (0-10)</span>
                 </div>
               </Panel>
-              <Panel title="Workplace Skills" subtitle="Employer assessment of core competencies" info="Average employer ratings for student workplace skills (1=Never, 5=Consistently)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Workplace Skills" subtitle="Employer assessment of core competencies" info="Average employer ratings for student workplace skills (1=Never, 5=Consistently)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={skillsBars} height={280}><ResponsiveContainer width="100%" height={280}>
                   <BarChart data={skillsBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -632,7 +633,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#14306B" }} /> Score (0-10)</span>
                 </div>
               </Panel>
-              <Panel title="Health Sector Readiness" subtitle="Understanding and application of health context" info="Average employer ratings on health systems understanding and practical application (1=Not at all, 5=Extremely)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Health Sector Readiness" subtitle="Understanding and application of health context" info="Average employer ratings on health systems understanding and practical application (1=Not at all, 5=Extremely)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={healthBars} height={280}><ResponsiveContainer width="100%" height={280}>
                   <BarChart data={healthBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -645,7 +646,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
               </Panel>
-              <Panel title="Employer Recommendation & Hiring" subtitle="Likelihood to recommend ALU and hire graduates" info="Employer likelihood to recommend ALU students (0-10 scale) and hire graduates" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Employer Recommendation & Hiring" subtitle="Likelihood to recommend ALU and hire graduates" info="Employer likelihood to recommend ALU students (0-10 scale) and hire graduates" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={recommendBars} height={280}><ResponsiveContainer width="100%" height={280}>
                   <BarChart data={recommendBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -677,7 +678,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
             </div>
             <div style={{ marginBottom: 32 }} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
-              <Panel title="Internship Quality & Relevance" subtitle="Student perception of internship experience" info="Average student ratings for quality, relevance, clarity, support, and usefulness (1-5 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Internship Quality & Relevance" subtitle="Student perception of internship experience" info="Average student ratings for quality, relevance, clarity, support, and usefulness (1-5 scale)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={null} height={240}><ResponsiveContainer width="100%" height={240}>
                   <BarChart data={[]} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 190 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -693,7 +694,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#7FA5D6" }} /> Score</span>
                 </div>
               </Panel>
-              <Panel title="Placement After Internship" subtitle="Job placement outcomes by organization" info="Number of interns who secured positions following internship completion" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Placement After Internship" subtitle="Job placement outcomes by organization" info="Number of interns who secured positions following internship completion" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={placementAfterBars} height={280}><ResponsiveContainer width="100%" height={280}>
                   <BarChart data={placementAfterBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%" barGap={2}>
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -710,7 +711,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   </BarChart>
                 </ResponsiveContainer></ChartWithPlaceholder>
               </Panel>
-              <Panel title="Learning & Skill Application" subtitle="Student-perceived capability growth" info="Average student rating of ability to apply skills to real-world health challenges (1-5 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Learning & Skill Application" subtitle="Student-perceived capability growth" info="Average student rating of ability to apply skills to real-world health challenges (1-5 scale)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={learningBars} height={200}><ResponsiveContainer width="100%" height={200}>
                   <BarChart data={learningBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />
@@ -727,7 +728,7 @@ export default function ProgrammeTemplate({ dashboard, intervention, title, subt
                   <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: "#1D9E75" }} /> Real-World Application</span>
                 </div>
               </Panel>
-              <Panel title="Intern Recommendation" subtitle="Student recommendation likelihood" info="Average student recommendation score (0-10 scale)" filterOptions={["All Years", ...FILTER_YEARS.map(String)]} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
+              <Panel title="Intern Recommendation" subtitle="Student recommendation likelihood" info="Average student recommendation score (0-10 scale)" filterOptions={PERIOD_FILTER_OPTIONS} filterValue={filterSectorYear} onFilterChange={setFilterSectorYear}>
                 <ChartWithPlaceholder data={internRecBars} height={280}><ResponsiveContainer width="100%" height={280}>
                   <BarChart data={internRecBars} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 120 }} barCategoryGap="12%">
                     <CartesianGrid horizontal={false} stroke={LIGHT_BORDER} />

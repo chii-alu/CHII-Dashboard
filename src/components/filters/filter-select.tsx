@@ -1,4 +1,5 @@
 "use client";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 // The two select shapes used across the dashboards. Each was copy-pasted into 15
 // page files, in navy and green variants that differed only by colour.
 //
@@ -23,6 +24,15 @@ export function FilterSelect<T extends string | number>({
   /** flex-basis in px — lets a 4-up row breathe differently from a 2-up one. */
   basis?: number;
 }) {
+  // The period list gets the two-step picker: a Year dropdown, then Full Year / H1 / H2.
+  if (isPeriodOptions(options)) {
+    return (
+      <div style={{ minWidth: 0, flex: "1 1 220px" }}>
+        <PeriodPicker variant="select" value={String(value)} allValue={String(options[0].value)}
+          onChange={v => onChange(v as T)} accent={tint} />
+      </div>
+    );
+  }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0, flex: `1 1 ${basis}px` }}>
       <label style={{ fontSize: 9.5, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>

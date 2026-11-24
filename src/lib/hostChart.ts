@@ -1,6 +1,7 @@
 // Helpers for per-host charts. Hosts come from the database; colours are assigned by position.
+import { rowInPeriod } from "@/lib/filter-years";
 
-export type HostRow = { organization: string; item: string | null; year: number | null; value: number };
+export type HostRow = { organization: string; item: string | null; year: number | null; period?: string | null; value: number };
 export type HostMetrics = Record<string, HostRow[]>;
 
 // Palette cycled by position in the sorted host list, so a new host gets a colour without a code change.
@@ -16,19 +17,19 @@ export function hostNameList(orgNames: string[], metrics: HostMetrics): string[]
 
 export const hasMetric = (metrics: HostMetrics, metric: string) => (metrics[metric]?.length ?? 0) > 0;
 
-/** Sum of a host's rows for one metric and item. year null is the Current Total. Null when there is no row. */
-function valueOf(metrics: HostMetrics, metric: string, host: string, year: number | null, item: string | null = null): number | null {
-  const rows = (metrics[metric] ?? []).filter(r => r.organization === host && r.year === year && (r.item ?? null) === item);
+/** Sum of a host's rows for one metric and item in the chosen period (a period filter value; Cumulative Total uses the rows with no year). Null when there is no row. */
+function valueOf(metrics: HostMetrics, metric: string, host: string, period: string | number | null, item: string | null = null): number | null {
+  const rows = (metrics[metric] ?? []).filter(r => r.organization === host && rowInPeriod(period, r) && (r.item ?? null) === item);
   return rows.length === 0 ? null : rows.reduce((sum, r) => sum + r.value, 0);
 }
 
 /** One row per host: { name, [seriesKey]: value }, largest first by the first series. Hosts with no value are left out. */
-export function hostBars(metrics: HostMetrics, series: Record<string, string>, year: number | null, names: string[]) {
+export function hostBars(metrics: HostMetrics, series: Record<string, string>, period: string | number | null, names: string[]) {
   const keys = Object.keys(series);
   return names
     .map(name => {
       const row: Record<string, string | number | null> = { name };
-      keys.forEach(k => { row[k] = valueOf(metrics, series[k], name, year); });
+      keys.forEach(k => { row[k] = valueOf(metrics, series[k], name, period); });
       return row;
     })
     .filter(row => keys.some(k => row[k] !== null))
@@ -44,12 +45,12 @@ export function topWithOther<T extends Record<string, any>>(list: T[], key: stri
 }
 
 /** Departments for the stacked host chart: one row per host, one key per department (the item). */
-export function departmentBars(metrics: HostMetrics, metric: string, year: number | null, names: string[]) {
+export function departmentBars(metrics: HostMetrics, metric: string, period: string | number | null, names: string[]) {
   const departments = Array.from(new Set((metrics[metric] ?? []).map(r => r.item).filter((d): d is string => !!d)));
   const data = names
     .map(name => {
       const row: Record<string, string | number | null> = { organization: name };
-      departments.forEach(d => { row[d] = valueOf(metrics, metric, name, year, d); });
+      departments.forEach(d => { row[d] = valueOf(metrics, metric, name, period, d); });
       return row;
     })
     .filter(row => departments.some(d => row[d] !== null));

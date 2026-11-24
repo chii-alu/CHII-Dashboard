@@ -3,7 +3,7 @@ import { downloadChart } from "@/lib/download-chart";
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight } from "@/lib/progressInsight";
 import { progressFor } from "@/lib/progressLabels";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartTip } from "@/components/ui/executive";
@@ -176,7 +176,7 @@ const FE_SECTIONS: { n: number; label: string }[] = [
 
 export default function FurtherEducationPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const [year, setYear] = useState<"all" | number>("all");
+  const [year, setYear] = useState<string>("all");
   const progressRows = useProgress("EXEC", undefined, "Further Education", undefined, year);
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
@@ -205,7 +205,7 @@ export default function FurtherEducationPage() {
   const [funding, setFunding] = useState<string>("all");
   const [destination, setDestination] = useState<string>("all");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2025–2030" : String(year);
+  const periodLabel = periodText(year);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
@@ -221,7 +221,7 @@ export default function FurtherEducationPage() {
       if (field !== "all" && s.field !== field) return false;
       if (funding !== "all" && s.funding !== funding) return false;
       if (destination !== "all" && s.destination !== destination) return false;
-      if (year !== "all" && s.year !== year) return false;
+      if (!inPeriod(year, s.year)) return false;
       return true;
     }),
   [gender, scholar, qualification, field, funding, destination, year]);
@@ -324,9 +324,9 @@ export default function FurtherEducationPage() {
                 <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
               </div>
             </div>
-            <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+            <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
               <FilterSelect label="Year" value={year} onChange={setYear}
-                options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map(y => ({ value: y, label: String(y) }))]} />
+                options={PERIOD_SELECT_OPTIONS} />
             </div>
           </div>
         )}

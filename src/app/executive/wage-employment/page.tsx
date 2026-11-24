@@ -3,7 +3,7 @@ import { downloadChart } from "@/lib/download-chart";
 import { useProgress } from "@/hooks/useProgress";
 import { progressInsight } from "@/lib/progressInsight";
 import { progressFor } from "@/lib/progressLabels";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
 import { FilterSelect } from "@/components/ui/executive";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
 import { ChartTip } from "@/components/ui/executive";
@@ -165,12 +165,12 @@ const WE_SECTIONS: { n: number; label: string }[] = [
 
 export default function WageEmploymentPage() {
   // Live progress against target for the stat cards, from v_progress (Executive rows).
-  const [year, setYear] = useState<"all" | number>("all");
+  const [year, setYear] = useState<string>("all");
   const progressRows = useProgress("EXEC", undefined, "Wage Employment", undefined, year);
   const dataSource = useDataSource("EXEC");
   const syncedAt = useSyncedAt("EXEC");
   // The header and footer show the chosen year, or the full period when all years are selected
-  const periodLabel = year === "all" ? "2025–2030" : String(year);
+  const periodLabel = periodText(year);
   const [activeSection, setActiveSection] = useState<number>(1);
 
   // A link from another page can name a chart (e.g. #graduation-status): open its section and scroll to it.
@@ -287,9 +287,9 @@ export default function WageEmploymentPage() {
                       <button onClick={() => setFiltersOpen(false)} title="Close" style={{ color: "white", display: "flex", cursor: "pointer", background: "none", border: "none", padding: 0 }}><X size={13} /></button>
                     </div>
                   </div>
-                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "200px", gap: 10 }}>
+                  <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 10 }}>
                     <FilterSelect label="Year" value={year} onChange={setYear}
-                      options={[{ value: "all" as const, label: "All Years" }, ...FILTER_YEARS.map((y) => ({ value: y, label: String(y) }))]} />
+                      options={PERIOD_SELECT_OPTIONS} />
                   </div>
                 </div>
               )}

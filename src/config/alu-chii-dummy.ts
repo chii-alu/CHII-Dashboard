@@ -1,6 +1,7 @@
 // Dummy values for the ALU-CHII dashboard, used until the logs are connected.
 // Every number here is made up. Values are deterministic (same label, same number on every load).
 import type { AluTable } from "@/config/alu-chii";
+import { parsePeriod } from "@/lib/filter-years";
 
 function seed(text: string): number {
   let h = 2166136261;
@@ -142,7 +143,7 @@ export function dummyCell(table: AluTable, column: string, row: number, year: st
   const pick = (list: string[]) => list[(row + h) % list.length];
   if (/^status$/i.test(column)) return pick([...STATUSES]);
   if (/(evidence|link)$/i.test(column) && !/found/i.test(column)) return "View link";
-  const dateYear = year === "all" ? 2026 : Number(year);
+  const dateYear = parsePeriod(year).year ?? 2026;
   if (/date|launched|since|milestone|report due/i.test(column)) return `${dateYear}-${String(((row + h) % 12) + 1).padStart(2, "0")}-15`;
   if (/audience size/i.test(column)) return String(120 + ((row + h) % 900));
   const samples = COLUMN_SAMPLES[column];

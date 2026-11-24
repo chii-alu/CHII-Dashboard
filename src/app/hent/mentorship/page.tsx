@@ -5,7 +5,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { HeaderStatsPanel, FilterButton, FilterDropdown, ChartTip } from "@/components/ui/hent";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, LineChart, Line,
@@ -15,6 +15,7 @@ import { Star, Award, Users, Target, Zap, Briefcase, TrendingUp, CheckCircle2, I
 import PortalNav from "@/components/layout/portal-nav";
 import PortalFooter from "@/components/layout/portal-footer";
 import { DonutRing } from "@/components/charts/donut-chart";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 // HENT sample datasets are removed. Until HENT rows load, these lists are empty and the values show "In coming data".
 type Row = Record<string, any>;
@@ -118,7 +119,7 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
                 minWidth: 140,
                 overflow: "hidden",
               }}>
-                {filterOptions.map(opt => (
+                {isPeriodOptions(filterOptions) && <PeriodPicker value={String(filterValue)} onChange={v => onFilterChange(v)} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} padding={12} />}{!isPeriodOptions(filterOptions) && filterOptions.map(opt => (
                   <button
                     key={opt}
                     onClick={() => {
@@ -295,7 +296,7 @@ const QUAL_THEMES: { text: string; area: MFQualArea; threshold: number }[] = [
 ];
 const YEARS_LIST = [2022, 2023, 2024, 2025, 2026];
 
-type YearVal  = "All" | "2022" | "2023" | "2024" | "2025" | "2026";
+type YearVal  = string; // a period filter label (see lib/filter-years)
 type TypeVal  = "All" | "Mentorship" | "Fellowship" | "One-Year Fellowship" | "Advisory";
 type GenderVal = "All" | "Female" | "Male";
 
@@ -314,14 +315,14 @@ export default function MentorshipPage() {
   const categories = ["Program Delivery & Performance", "Participant Profile", "Quality & Impact"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
-  const [yearFilter,  setYearFilter]  = useState<YearVal>("All");
+  const [yearFilter,  setYearFilter]  = useState<YearVal>(ALL_PERIODS);
   const [typeFilter,  setTypeFilter]  = useState<TypeVal>("All");
   const [genderView,  setGenderView]  = useState<GenderVal>("All");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const show = (category: string) => activeCategory === category;
-  const [qualityYear, setQualityYear] = useState("All Years");
-  const qualityYearOptions = ["All Years", ...FILTER_YEARS.map(String)];
+  const [qualityYear, setQualityYear] = useState(ALL_PERIODS);
+  const qualityYearOptions = PERIOD_FILTER_OPTIONS;
   // Quality & Impact data: filled from the database once HENT rows exist; empty means "In coming data".
   const qualityRatings: { name: string; value: number }[] = [];
   const skillNps: { name: string; value: number }[] = [];
@@ -336,10 +337,10 @@ export default function MentorshipPage() {
     { name: "Active cohorts", value: headline("Active cohorts") },
     { name: "Cohort enrolments", value: headline("Cohort enrolments") },
   ].filter((d): d is { name: string; value: number } => d.value !== null);
-  const filtersActive = (yearFilter !== "All" ? 1 : 0) + (typeFilter !== "All" ? 1 : 0) + (genderView !== "All" ? 1 : 0);
+  const filtersActive = (yearFilter !== ALL_PERIODS ? 1 : 0) + (typeFilter !== "All" ? 1 : 0) + (genderView !== "All" ? 1 : 0);
 
   const filtered = useMemo(() => mentorshipPrograms.filter(p => {
-    if (yearFilter !== "All" && p.year !== Number(yearFilter)) return false;
+    if (!inPeriod(yearFilter, p.year, halfOfMonth(p.month))) return false;
     if (typeFilter === "Mentorship"          && (p.isFellowship || p.type === "Advisory Program")) return false;
     if (typeFilter === "Fellowship"          && (!p.isFellowship || p.isOneYearFellowship))        return false;
     if (typeFilter === "One-Year Fellowship" && !p.isOneYearFellowship)                            return false;
@@ -436,7 +437,7 @@ export default function MentorshipPage() {
   const fellowshipMentorRatio = oneYearProgs.length && oneYearProgs.reduce((s, p) => s + p.fellows, 0) > 0
     ? (oneYearProgs.reduce((s, p) => s + p.mentors, 0) / oneYearProgs.reduce((s, p) => s + p.fellows, 0)).toFixed(2) : " - ";
 
-  const isFiltered = yearFilter !== "All" || typeFilter !== "All" || genderView !== "All";
+  const isFiltered = yearFilter !== ALL_PERIODS || typeFilter !== "All" || genderView !== "All";
 
   const kpiValues = [
     { sub: "Across all programmes",   num: tot.fellows,    fmt: (n: number) => Math.round(n).toLocaleString() },
@@ -527,14 +528,14 @@ export default function MentorshipPage() {
             />
             <FilterDropdown
               isOpen={filtersOpen}
-              onResetFilters={() => { setYearFilter("All"); setTypeFilter("All"); setGenderView("All"); }}
+              onResetFilters={() => { setYearFilter(ALL_PERIODS); setTypeFilter("All"); setGenderView("All"); }}
             >
               <div style={{ marginBottom: 12 }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#0E4633", margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
                   Year
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {(["All", "2022", "2023", "2024", "2025", "2026"] as const).map(opt => (
+                  <PeriodPicker value={yearFilter} onChange={setYearFilter} accent={"#2D6A4F"} dark={"#0E4633"} border={"rgba(14, 70, 51, 0.12)"} hideYearHeading />{false && PERIOD_FILTER_OPTIONS.map(opt => (
                     <button
                       key={opt}
                       onClick={() => setYearFilter(opt as YearVal)}

@@ -5,7 +5,8 @@ import { useState } from "react";
 import { Info, ChevronDown } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { progressName } from "@/lib/progressLabels";
-import { FILTER_YEARS } from "@/lib/filter-years";
+import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
 export const HECO_NAVY = "#042C53";
 // Programme page headers use the HEMP programme header colour.
@@ -60,8 +61,8 @@ export function Panel({ title, subtitle, info, legend, children, filterOptions, 
 }) {
   const [tip, setTip] = useState(false);
   const [open, setOpen] = useState(false);
-  const [ownValue, setOwnValue] = useState("All Years");
-  const options = filterOptions ?? ["All Years", ...FILTER_YEARS.map(String)];
+  const [ownValue, setOwnValue] = useState(ALL_PERIODS);
+  const options = filterOptions ?? PERIOD_FILTER_OPTIONS;
   const value = filterValue ?? ownValue;
   const choose = onFilterChange ?? setOwnValue;
   const tipText = info ?? subtitle;
@@ -98,8 +99,9 @@ export function Panel({ title, subtitle, info, legend, children, filterOptions, 
             {value} <ChevronDown size={12} />
           </button>
           {open && (
-            <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 50, width: 200, maxHeight: 280, overflowY: "auto", backgroundColor: "white", borderRadius: 10, border: `1px solid ${HECO_LIGHT_BORDER}`, borderLeft: `5px solid ${HECO_BRAND}`, boxShadow: "0 10px 30px rgba(0,0,0,0.14)", overflow: "hidden" }}>
-              {options.map(option => (
+            <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 50, width: isPeriodOptions(options) ? undefined : 200, maxHeight: isPeriodOptions(options) ? undefined : 280, overflowY: "auto", backgroundColor: "white", borderRadius: 10, border: `1px solid ${HECO_LIGHT_BORDER}`, borderLeft: `5px solid ${HECO_BRAND}`, boxShadow: "0 10px 30px rgba(0,0,0,0.14)", overflow: "hidden" }}>
+              {isPeriodOptions(options) && <PeriodPicker value={value} onChange={choose} accent={HECO_BRAND} dark={HECO_BRAND_DK} border={HECO_LIGHT_BORDER} padding={12} />}
+              {!isPeriodOptions(options) && options.map(option => (
                 <button
                   key={option}
                   onClick={() => { choose(option); setOpen(false); }}
