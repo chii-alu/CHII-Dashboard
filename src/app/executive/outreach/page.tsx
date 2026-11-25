@@ -332,10 +332,19 @@ export default function OutreachPage() {
   /* ── Section 3: demographics ───────────────────────── */
   const inclusion = useMemo(() => {
     const headline = (metric: string) => supabaseData?.find((m: any) => m.metric === metric)?.value ?? null;
+    // The workbook rows 'Refugee / IDP (%)' and 'Persons with Disability (%)' hold head counts
+    // (e.g. 70), so the share is worked out against Total Participants for the same period.
+    const total = headline('Total Participants (All Programmes)');
+    const share = (count: number | null) => (count !== null && total ? (count / total) * 100 : null);
+    const refugeeCount = headline('Refugee / IDP (%)');
+    const pwdCount = headline('Persons with Disability (%)');
     return {
       female: headline('Female Share (%)'),
-      refugee: headline('Refugee / IDP (%)'),
-      pwd: headline('Persons with Disability (%)'),
+      refugee: share(refugeeCount),
+      refugeeCount,
+      pwd: share(pwdCount),
+      pwdCount,
+      total,
     };
   }, [supabaseData]);
 
@@ -480,10 +489,10 @@ export default function OutreachPage() {
               tooltip="Number of participants who are also mission (degree) students." />
             <StatsKpiCard missingText={supabaseData === null ? "" : "In coming data"} label="Female Participants" progress={progressInsight(progressFor(progressRows, "Female Participants"))} num={femaleParticipants} displayFmt={(n) => Math.round(n).toLocaleString()} sub="Across outreach programmes" Icon={WomanIcon}
               tooltip="Female participants across outreach interventions in scope." />
-            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Refugee / IDP" progress={progressInsight(progressFor(progressRows, "Refugee / IDP"))} num={inclusion.refugee} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Shield}
-              tooltip="Share of participants who are refugees or internally displaced persons." />
-            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Persons w/ Disability" progress={progressInsight(progressFor(progressRows, "Persons w/ Disability"))} num={inclusion.pwd} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub="Of participants" Icon={Accessibility}
-              tooltip="Share of participants who are persons with disability." />
+            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Refugee / IDP" progress={progressInsight(progressFor(progressRows, "Refugee / IDP"))} num={inclusion.refugee} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub={inclusion.refugeeCount !== null && inclusion.total ? `${Math.round(inclusion.refugeeCount).toLocaleString()} of ${Math.round(inclusion.total).toLocaleString()} participants` : "Of participants"} Icon={Shield}
+              tooltip="Refugee / IDP participants as a share of total participants (count ÷ total participants for the selected period)." />
+            <StatsKpiCard missingText={supabaseData === null ? "" : "–"} label="Persons w/ Disability" progress={progressInsight(progressFor(progressRows, "Persons w/ Disability"))} num={inclusion.pwd} displayFmt={(n) => `${(Math.round((n + Number.EPSILON) * 10) / 10).toFixed(1)}%`} sub={inclusion.pwdCount !== null && inclusion.total ? `${Math.round(inclusion.pwdCount).toLocaleString()} of ${Math.round(inclusion.total).toLocaleString()} participants` : "Of participants"} Icon={Accessibility}
+              tooltip="Participants with a disability as a share of total participants (count ÷ total participants for the selected period)." />
           </div>
 
           {/* Section pills (left) + compact filters dropdown (right) */}
