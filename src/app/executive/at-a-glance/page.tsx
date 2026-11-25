@@ -641,19 +641,19 @@ export default function AtAGlancePage() {
   const refugeeFemalePct = segmentPct('Refugee / IDP', 'female');
   const refugeeMalePct = segmentPct('Refugee / IDP', 'male');
 
-  // At a Glance insight cards come from the workbook (v_insights), in the order set there.
+  // Key Performance Insights are calculated from the synced data for the selected period (lib/exec-insights).
   const { data: insightResult } = useDashboardData(
-    () => fetch('/api/insights?dashboard=EXEC').then(r => r.json()),
-    []
+    () => fetch(`/api/exec-insights${periodQuery(year)}`).then(r => r.json()),
+    [year]
   );
   const INSIGHT_ACCENTS = ["var(--brand-secondary)", "#16A34A", "#9333EA", "#EAB308"];
   const insightRows: any[] = insightResult?.insights ?? [];
   const insightCards = insightRows.length > 0
     ? insightRows.map((row: any, i: number) => ({
         title: row.title,
-        figure: row.value_display ?? null,
-        detail: row.description,
-        copy: row.detail,
+        figure: row.figure ?? null,
+        detail: row.detail,
+        copy: row.copy,
         accentColor: INSIGHT_ACCENTS[i % INSIGHT_ACCENTS.length],
       }))
     : [{ title: "In coming data", figure: null, detail: "", copy: "", accentColor: "#9CA3AF" }];
