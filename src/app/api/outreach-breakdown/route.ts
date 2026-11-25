@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import { periodFromRequest, withPeriod } from "@/lib/period-query";
+import { isMetric } from "@/lib/progressLabels";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -138,7 +139,7 @@ export async function GET(request: Request) {
 
     const gradMap: Record<string, any> = {};
     data?.forEach((row: any) => {
-      if (row.metric !== "Graduation Status" || row.segment !== "all" || !row.label) return;
+      if (!isMetric(row.metric, "Health Mission Students Graduation Status") || row.segment !== "all" || !row.label) return;
       if (!gradMap[row.label]) gradMap[row.label] = { name: row.label, Graduated: null, "Not graduated": null };
       if (row.breakdown === "Graduated") gradMap[row.label].Graduated = row.value;
       if (row.breakdown === "Not Graduated") gradMap[row.label]["Not graduated"] = row.value;
@@ -148,7 +149,7 @@ export async function GET(request: Request) {
     const genderMap: Record<string, any> = {};
     const SEGMENT_KEYS: Record<string, string> = { female: "Female", male: "Male", non_binary: "Non-binary" };
     data?.forEach((row: any) => {
-      if (row.metric !== "Gender Split" || !row.label || !SEGMENT_KEYS[row.segment]) return;
+      if (!isMetric(row.metric, "Gender Split By Academic Program") || !row.label || !SEGMENT_KEYS[row.segment]) return;
       if (!genderMap[row.label]) genderMap[row.label] = { name: row.label, Female: null, Male: null, "Non-binary": null };
       genderMap[row.label][SEGMENT_KEYS[row.segment]] = row.value;
     });

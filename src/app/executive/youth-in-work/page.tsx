@@ -501,7 +501,7 @@ export default function YouthInWorkPage() {
         {/* ════ EXECUTIVE SNAPSHOT ════ */}
         <section className="space-y-4">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 12 }}>
-            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Participants" progress={progressInsight(progressFor(progressRows, "Participants"))} num={kpis.total} sub="students + alumni" Icon={Users}
+            <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="Participants" progress={progressInsight(progressFor(progressRows, "Participants", "Youth in Work"))} num={kpis.total} sub="students + alumni" Icon={Users}
               tooltip="Total youth tracked across the CHII ecosystem." />
             <StatsKpiCard missingText={metricsLoaded ? "In coming data" : ""} label="In Employment" progress={progressInsight(progressFor(progressRows, "In Employment"))} num={kpis.employed} sub="primary employment" Icon={Briefcase}
               tooltip="Youth in wage employment, including those at supported enterprises." />

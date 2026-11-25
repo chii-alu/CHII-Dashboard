@@ -17,6 +17,7 @@ import { createClient } from "@/lib/supabase-client";
 import { FilterSelect } from "@/components/ui/executive";
 import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
 import { useProgress } from "@/hooks/useProgress";
+import { isMetric } from "@/lib/progressLabels";
 import { progressInsight, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
 import { Users, BookOpen, Briefcase, TrendingUp, Zap, Target, Award, MessageCircle } from "lucide-react";
 
@@ -596,13 +597,15 @@ export default function AtAGlancePage() {
 
   // Calculate metrics from outreach headlines data
   const glance = (metric: string): number | null => atAGlanceHeadlines?.find((h: any) => h.metric === metric)?.value ?? null;
+  // Row 6 is 'Total Work-Enabling Outreach' in the half-year workbook ('Total Outreach' before).
+  const outreachRow = atAGlanceHeadlines?.find((h: any) => isMetric(h.metric, 'Total Work-Enabling Outreach'))?.metric ?? 'Total Work-Enabling Outreach';
   const totalBeneficiaries = year === "all"
     ? outreachHeadlines?.find((h: any) => h.metric === 'Total Participants (All Programmes)')?.value ?? null
-    : glance('Total Outreach');
+    : glance(outreachRow);
 
   // Calculate Youth in Work metrics
   const youthInWorkTotal = year === "all"
-    ? youthHeadlines?.find((h: any) => h.metric === 'Participants')?.value ?? null
+    ? youthHeadlines?.find((h: any) => isMetric(h.metric, 'Beneficiaries'))?.value ?? null
     : glance('Youth in Work (Total)');
 
   // Extract all KPI values from At a Glance section
@@ -619,8 +622,8 @@ export default function AtAGlancePage() {
     return Math.round((count / total) * 1000) / 10;
   };
 
-  const femaleShare = segmentPct('Total Outreach', 'female');
-  const maleShare = segmentPct('Total Outreach', 'male');
+  const femaleShare = segmentPct(outreachRow, 'female');
+  const maleShare = segmentPct(outreachRow, 'male');
 
   const currentlyEnrolled = atAGlanceHeadlines?.find((h: any) => h.metric === 'Currently Enrolled')?.value ?? null;
   const enrolledFemalePct = segmentPct('Currently Enrolled', 'female');
@@ -736,7 +739,7 @@ export default function AtAGlancePage() {
         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, color: HEADER_NAVY, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 14, flexShrink: 0, textAlign: "center" }}>Outreach & Access</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-            <KPICard label="Total Outreach" metric="Total Outreach" value={totalBeneficiaries} femalePct={femaleShare} malePct={maleShare} info="Total individuals reached across all CHII outreach programs." Icon={Users} href="/executive/outreach" />
+            <KPICard label="Total Outreach" metric={outreachRow} value={totalBeneficiaries} femalePct={femaleShare} malePct={maleShare} info="Total individuals reached across all CHII outreach programs." Icon={Users} href="/executive/outreach" />
             <KPICard label="Youth w/ Disability" metric="Youth with Disability" value={youthDisability} femalePct={disabilityFemalePct} malePct={disabilityMalePct} info="Youth with disability reached through outreach." Icon={Users} href="/executive/outreach#inclusion-by-program" />
             <KPICard label="Refugee / IDP" metric="Refugee / IDP" value={refugeeIdp} femalePct={refugeeFemalePct} malePct={refugeeMalePct} info="Refugees and internally displaced persons reached." Icon={Users} href="/executive/outreach#inclusion-by-program" />
             <KPICard label="Currently Enrolled" metric="Currently Enrolled" value={currentlyEnrolled} femalePct={enrolledFemalePct} malePct={enrolledMalePct} info="Participants currently active in outreach programs." Icon={BookOpen} href="/executive/outreach#graduation-status" />

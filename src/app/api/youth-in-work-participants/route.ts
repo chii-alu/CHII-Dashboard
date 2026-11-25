@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import { periodFromRequest, withPeriod } from "@/lib/period-query";
+import { isMetric } from "@/lib/progressLabels";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -47,14 +48,20 @@ export async function GET(request: Request) {
 
     // Card numbers: only the 'Youth In Work Metrics' group, actual values, all segments.
     const cardRows = (data ?? []).filter((r: any) => r.metric_group === "Youth In Work Metrics" && r.segment === "all");
-    const cardValue = (metric: string) => cardRows.find((r: any) => r.metric === metric)?.value ?? null;
+    const cardValue = (metric: string) => cardRows.find((r: any) => isMetric(r.metric, metric))?.value ?? null;
+    // 'Female Share' is a count of women in the half-year workbook (it was a % before): show it as a share.
+    const totalYouth = cardValue("Beneficiaries");
+    const femaleCount = cardRows.find((r: any) => r.metric === "Female Share")?.value ?? null;
+    const femalePct = femaleCount !== null
+      ? (totalYouth ? Math.round((femaleCount / totalYouth) * 1000) / 10 : null)
+      : cardValue("Female Share (%)");
     const metrics: any = {
-      totalParticipants: cardValue("Participants"),
+      totalParticipants: totalYouth,
       inInternships: cardValue("In Internships"),
       employed: cardValue("In Employment (Wage)"),
       founders: cardValue("Enterprise (Self-employment)"),
       jobsCreated: cardValue("Jobs Created"),
-      femalePct: cardValue("Female Share (%)"),
+      femalePct,
       africaPct: cardValue("Based in Africa (%)"),
     };
     const byLabel = (metric: string, label: string) =>

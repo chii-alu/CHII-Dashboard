@@ -14,7 +14,8 @@ export const PROGRESS_NAMES: Record<string, string> = {
   // Executive: Youth in Work
   "Enterprise": "Enterprise (Self-employment)",
   "In Employment": "In Employment (Wage)",
-  "Female": "Female Share (%)",
+  "Female": "Female Share",
+  "Youth in Work:Participants": "Beneficiaries",
   "Based in Africa": "Based in Africa (%)",
   // Executive: Wage Employment
   "Wage Employed": "Waged Employed",
@@ -23,6 +24,23 @@ export const PROGRESS_NAMES: Record<string, string> = {
   "Students w/ Ventures": "Students with ventures",
   "HEMP Engagement Rate": "HEMP engagement rate",
 };
+
+/** Workbook renames (25 Nov 2026 half-year layout): new name -> name before the migration.
+ *  Lookups try the new name first, so cards work before and after the migration runs. */
+export const PREVIOUS_NAMES: Record<string, string> = {
+  "Total Work-Enabling Outreach": "Total Outreach",
+  "Beneficiaries": "Participants",
+  "Female Share": "Female Share (%)",
+  "Pathway Distribution": "Work Pathway Distribution",
+  "Health Mission Students Graduation Status": "Graduation Status",
+  "Gender Split By Academic Program": "Gender Split",
+  "Employment Placement Rate": "Time To Employment After Graduation",
+};
+
+/** True when a row's metric is `name` or the name it had before the rename. */
+export function isMetric(rowMetric: unknown, name: string): boolean {
+  return rowMetric === name || (PREVIOUS_NAMES[name] !== undefined && rowMetric === PREVIOUS_NAMES[name]);
+}
 
 const warned = new Set<string>();
 
@@ -35,7 +53,7 @@ export function progressName(cardLabel: string, section?: string): string {
  *  In development, logs a warning once per label when no row matches. */
 export function progressFor(rows: Record<string, ProgressRow>, cardLabel: string, section?: string): ProgressRow | undefined {
   const name = (section && PROGRESS_NAMES[`${section}:${cardLabel}`]) || PROGRESS_NAMES[cardLabel] || cardLabel;
-  const row = rows[name];
+  const row = rows[name] ?? (PREVIOUS_NAMES[name] ? rows[PREVIOUS_NAMES[name]] : undefined);
   // Rows load asynchronously; an empty map means "not loaded yet", not "missing".
   const loaded = Object.keys(rows).length > 0;
   const key = `${section ?? ""}|${cardLabel}`;
