@@ -1,6 +1,7 @@
 "use client";
+import { PeriodFilterPanel } from "@/components/hemp/period-filter-panel";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { FILTER_YEARS, periodQuery, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -184,10 +185,12 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPSie() {
-  const progressRows = useProgress("HEMP", "SIE");
+  // Page period filter: Cumulative Total, a year, or a half. Drives the stat cards, their targets and the header period.
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
+  const progressRows = useProgress("HEMP", "SIE", undefined, undefined, filterYear);
   const { data: interventionData } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=SIE').then(r => r.json()),
-    []
+    () => fetch(`/api/hemp-intervention?intervention=SIE${periodQuery(filterYear, "&")}`).then(r => r.json()),
+    [filterYear]
   );
   const actualOf = (metric: string): number | null => interventionData?.headlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
@@ -197,7 +200,6 @@ export default function HEMPSie() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const [filterCountry, setFilterCountry] = useState("All Countries");
   const [filterRegion, setFilterRegion] = useState("All Regions");
 
@@ -424,7 +426,7 @@ export default function HEMPSie() {
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {periodText(filterYear)}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
@@ -518,47 +520,16 @@ export default function HEMPSie() {
               isOpen={filtersOpen}
               onClick={() => setFiltersOpen(!filtersOpen)}
             />
-            <FilterDropdown
+            <PeriodFilterPanel
               isOpen={filtersOpen}
-              onResetFilters={() => {
-                setFilterYear(ALL_PERIODS);
-                setFilterCountry("All Countries");
-                setFilterRegion("All Regions");
-              }}
-            >
-              {[
-                { label: "Year", value: filterYear, setValue: setFilterYear, options: PERIOD_FILTER_OPTIONS },
+              period={filterYear}
+              onPeriodChange={setFilterYear}
+              extraFilters={[
                 { label: "Region", value: filterRegion, setValue: setFilterRegion, options: ["All Regions", ...regions] },
                 { label: "Country", value: filterCountry, setValue: setFilterCountry, options: ["All Countries", ...countries] },
-              ].map(filter => (
-                <div key={filter.label} style={{ marginBottom: 12 }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: BRAND_DK, margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
-                    {filter.label}
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => filter.setValue(opt)}
-                        style={{
-                          fontSize: 10,
-                          fontWeight: filter.value === opt ? 700 : 500,
-                          padding: "5px 10px",
-                          borderRadius: 6,
-                          border: `1px solid ${filter.value === opt ? BRAND : LIGHT_BORDER}`,
-                          backgroundColor: filter.value === opt ? BRAND : "white",
-                          color: filter.value === opt ? "white" : BRAND_DK,
-                          cursor: "pointer",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </FilterDropdown>
+              ]}
+              onReset={() => { setFilterYear(ALL_PERIODS); setFilterCountry("All Countries"); setFilterRegion("All Regions"); }}
+            />
           </div>
         </div>
 
@@ -780,7 +751,7 @@ export default function HEMPSie() {
 
       </div>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodText(filterYear)} />
       </div>
 
     </div>

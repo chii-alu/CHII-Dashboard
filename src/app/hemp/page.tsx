@@ -14,6 +14,9 @@ import { COUNTRY_COORDS } from "@/lib/country-coords";
 import { progressInsight, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
 import { progressFor } from "@/lib/progressLabels";
 import { useProgress } from "@/hooks/useProgress";
+import { FilterButton, FilterDropdown } from "@/components/ui/hemp";
+import { PeriodPicker } from "@/components/filters/period-picker";
+import { ALL_PERIODS, periodQuery, periodText } from "@/lib/filter-years";
 
 // Fallback data for components
 const missionStudents: any[] = [];
@@ -487,16 +490,20 @@ function MapContainer({
 export default function HEMPPage() {
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
+  // Period filter: Cumulative Total shows the cumulative figures against the overall targets;
+  // a year or half shows that period's figures against that period's targets.
+  const [period, setPeriod] = useState(ALL_PERIODS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // Fetch headline data from Supabase
   const { data: headlineResult, loading, error } = useDashboardData(
-    () => fetch('/api/hemp-section/At%20a%20Glance').then(r => r.json()),
-    []
+    () => fetch(`/api/hemp-section/At%20a%20Glance${periodQuery(period)}`).then(r => r.json()),
+    [period]
   );
   const headlines = headlineResult?.headlines;
   const headlineValue = (metric: string): number | null => headlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const { data: workshopResult } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()),
-    []
+    () => fetch(`/api/hemp-intervention?intervention=Career%20Workshops${periodQuery(period, "&")}`).then(r => r.json()),
+    [period]
   );
   const workshopParticipants = workshopResult?.headlines?.find((h: any) => h.metric === "Total Participants")?.value ?? null;
   // At a Glance insight cards come from the workbook (v_insights), in the order set there.
@@ -509,7 +516,7 @@ export default function HEMPPage() {
     []
   );
   // Live progress against target for the stat cards, from v_progress (At a Glance rows).
-  const progressRows = useProgress("HEMP");
+  const progressRows = useProgress("HEMP", undefined, undefined, undefined, period);
   const INSIGHT_ACCENTS = ["#042C53", "#16A34A", "#3B82F6", "#9333EA"];
   const insightRows: any[] = insightResult?.insights ?? [];
   const insights = insightRows.length > 0
@@ -616,7 +623,7 @@ export default function HEMPPage() {
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {periodText(period)}</span>
                 <span aria-hidden="true">·</span>
                 <span>{countries === null ? "In coming data" : `${countries} countries active`}</span>
                 <span aria-hidden="true">·</span>
@@ -629,6 +636,15 @@ export default function HEMPPage() {
 
       {/* Stats Cards Section */}
       <div className="max-w-[1600px] mx-auto px-10 py-7">
+        {/* Period filter, same two-step picker as the other HEMP pages */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+          <div style={{ position: "relative" }}>
+            <FilterButton activeFilterCount={period === ALL_PERIODS ? 0 : 1} isOpen={filtersOpen} onClick={() => setFiltersOpen(o => !o)} />
+            <FilterDropdown isOpen={filtersOpen} onResetFilters={() => setPeriod(ALL_PERIODS)}>
+              <PeriodPicker value={period} onChange={setPeriod} accent="#14306B" dark="#0E2A5C" border="rgba(20,48,107,0.12)" />
+            </FilterDropdown>
+          </div>
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "220px minmax(0, 1fr) 220px", gap: 24, alignItems: "end", overflowX: "hidden" }}>
 
           {/* Left Column: Mission Students */}
@@ -794,7 +810,7 @@ export default function HEMPPage() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodText(period)} />
       </div>
     </div>
   );

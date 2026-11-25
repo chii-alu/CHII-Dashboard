@@ -1,6 +1,7 @@
 "use client";
+import { PeriodFilterPanel } from "@/components/hemp/period-filter-panel";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { FILTER_YEARS, periodQuery, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
@@ -184,10 +185,12 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function ExposureEvents() {
-  const progressRows = useProgress("HEMP", "Exposure Events");
+  // Page period filter: Cumulative Total, a year, or a half. Drives the stat cards, their targets and the header period.
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
+  const progressRows = useProgress("HEMP", "Exposure Events", undefined, undefined, filterYear);
   const { data: interventionData } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=Exposure%20Events').then(r => r.json()),
-    []
+    () => fetch(`/api/hemp-intervention?intervention=Exposure%20Events${periodQuery(filterYear, "&")}`).then(r => r.json()),
+    [filterYear]
   );
   const actualOf = (metric: string): number | null => interventionData?.headlines?.find((h: any) => h.metric === metric)?.value ?? null;
   const pctOf = (v: number | null) => (v === null ? null : Math.round(v * 10) / 10);
@@ -198,7 +201,6 @@ export default function ExposureEvents() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
 
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== ALL_PERIODS].filter(Boolean).length;
@@ -249,7 +251,7 @@ export default function ExposureEvents() {
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {periodText(filterYear)}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
@@ -343,19 +345,12 @@ export default function ExposureEvents() {
               isOpen={filtersOpen}
               onClick={() => setFiltersOpen(!filtersOpen)}
             />
-            {filtersOpen && (
-              <FilterDropdown
-                filterGroups={[
-                  {
-                    label: "Year",
-                    options: PERIOD_FILTER_OPTIONS,
-                    value: filterYear,
-                    onChange: (v) => setFilterYear(String(v)),
-                  },
-                ]}
-                onClose={() => setFiltersOpen(false)}
-              />
-            )}
+            <PeriodFilterPanel
+              isOpen={filtersOpen}
+              period={filterYear}
+              onPeriodChange={setFilterYear}
+              onReset={() => { setFilterYear(ALL_PERIODS); }}
+            />
           </div>
         </div>
 
@@ -617,7 +612,7 @@ export default function ExposureEvents() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodText(filterYear)} />
       </div>
 
     </div>

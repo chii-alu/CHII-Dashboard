@@ -1,6 +1,7 @@
 "use client";
+import { PeriodFilterPanel } from "@/components/hemp/period-filter-panel";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { FILTER_YEARS, periodQuery, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown } from "@/components/ui/hemp";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -140,10 +141,12 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 }
 
 export default function HEMPInternships() {
-  const progressRows = useProgress("HEMP", "Internships");
+  // Page period filter: Cumulative Total, a year, or a half. Drives the stat cards, their targets and the header period.
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
+  const progressRows = useProgress("HEMP", "Internships", undefined, undefined, filterYear);
   const { data: interventionData } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=Internships').then(r => r.json()),
-    []
+    () => fetch(`/api/hemp-intervention?intervention=Internships${periodQuery(filterYear, "&")}`).then(r => r.json()),
+    [filterYear]
   );
   // Participants by academic programme, from the Internships breakdown rows (all years).
   const academicProgrammeRows: { programme: string; count: number }[] | null =
@@ -166,7 +169,6 @@ export default function HEMPInternships() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const [filterOrganization, setFilterOrganization] = useState("All");
   const [filterDepartment, setFilterDepartment] = useState("All");
   const [filterCohort, setFilterCohort] = useState("All");
@@ -213,7 +215,7 @@ export default function HEMPInternships() {
   const cohorts = internships ? Array.from(new Set(internships.map(i => {
     const cohortNum = parseInt(i.id.substring(1));
     return Math.ceil(cohortNum / 5);
-  }))).sort((a, b) => a - b) : [];
+  }))).filter(c => !Number.isNaN(c)).sort((a, b) => a - b) : [];
 
   const filteredInternships = useMemo(() => {
     if (!internships) return [];
@@ -223,7 +225,7 @@ export default function HEMPInternships() {
       if (filterDepartment !== "All" && i.department !== filterDepartment) return false;
       if (filterCohort !== "All") {
         const cohortNum = Math.ceil(parseInt(i.id.substring(1)) / 5);
-        if (cohortNum !== parseInt(filterCohort)) return false;
+        if (cohortNum !== parseInt(filterCohort.replace("Cohort ", ""))) return false;
       }
       if (filterFemale === "Yes" && i.femaleStudents === 0) return false;
       if (filterIDP === "Yes" && i.idpParticipants === 0) return false;
@@ -293,7 +295,7 @@ export default function HEMPInternships() {
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {periodText(filterYear)}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
@@ -404,56 +406,20 @@ export default function HEMPInternships() {
               isOpen={filtersOpen}
               onClick={() => setFiltersOpen(!filtersOpen)}
             />
-            <FilterDropdown
+            <PeriodFilterPanel
               isOpen={filtersOpen}
-              onResetFilters={() => {
-                setFilterYear(ALL_PERIODS);
-                setFilterOrganization("All");
-                setFilterDepartment("All");
-                setFilterCohort("All");
-                setFilterFemale("All");
-                setFilterIDP("All");
-                setFilterPLWD("All");
-              }}
-            >
-              {[
-                { label: "Year", value: filterYear, setValue: setFilterYear, options: PERIOD_FILTER_OPTIONS },
+              period={filterYear}
+              onPeriodChange={setFilterYear}
+              extraFilters={[
                 { label: "Organization", value: filterOrganization, setValue: setFilterOrganization, options: ["All", ...hosts] },
                 { label: "Department", value: filterDepartment, setValue: setFilterDepartment, options: ["All", ...departmentData.departments] },
                 { label: "Cohort", value: filterCohort, setValue: setFilterCohort, options: ["All", ...cohorts.map(c => `Cohort ${c}`)] },
                 { label: "Female", value: filterFemale, setValue: setFilterFemale, options: ["All", "Yes"] },
                 { label: "IDP", value: filterIDP, setValue: setFilterIDP, options: ["All", "Yes"] },
                 { label: "PLWD", value: filterPLWD, setValue: setFilterPLWD, options: ["All", "Yes"] },
-              ].map(filter => (
-                <div key={filter.label} style={{ marginBottom: 12, minWidth: 140 }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: BRAND_DK, margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
-                    {filter.label}
-                  </p>
-                  <select
-                    value={filter.value}
-                    onChange={(e) => filter.setValue(e.target.value)}
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      padding: "6px 8px",
-                      borderRadius: 6,
-                      border: `1px solid ${LIGHT_BORDER}`,
-                      backgroundColor: "white",
-                      color: BRAND_DK,
-                      cursor: "pointer",
-                      width: "100%",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-            </FilterDropdown>
+              ]}
+              onReset={() => { setFilterYear(ALL_PERIODS); setFilterOrganization("All"); setFilterDepartment("All"); setFilterCohort("All"); setFilterFemale("All"); setFilterIDP("All"); setFilterPLWD("All"); }}
+            />
           </div>
         </div>
 
@@ -770,7 +736,7 @@ export default function HEMPInternships() {
 
       </div>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodText(filterYear)} />
       </div>
 
     </div>

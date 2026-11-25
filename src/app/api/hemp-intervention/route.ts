@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
+import { rowInPeriod } from "@/lib/filter-years";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -7,6 +8,8 @@ export const revalidate = 0;
 export async function GET(request: Request) {
   try {
     const intervention = new URL(request.url).searchParams.get("intervention") ?? "";
+    // ?year=2026 or 2026-H1 picks that period's headline and breakdown rows; without it, the cumulative rows.
+    const period = new URL(request.url).searchParams.get("year");
     const { data, error } = await getSupabaseServer()
       .from("v_metric_values")
       .select("*")
@@ -22,7 +25,7 @@ export async function GET(request: Request) {
 
     // Yearly rows: any segment with a year, plus non-'all' segments (e.g. refugee_idp, pwd, female).
     const yearly = (data ?? []).filter((row: any) => row.value_type === "actual" && (row.segment !== "all" || row.year !== null));
-    const actual = (data ?? []).filter((row: any) => row.value_type === "actual" && row.year === null);
+    const actual = (data ?? []).filter((row: any) => row.value_type === "actual" && rowInPeriod(period, row));
     const headlines = actual
       .filter((row: any) => row.segment === "all" && !row.label)
       .map((row: any) => ({ metric: row.metric, value: row.value }));
@@ -33,7 +36,8 @@ export async function GET(request: Request) {
       .forEach((row: any) => {
         (breakdowns[row.metric] ??= []).push({ name: row.label, count: row.value });
       });
-    const segments = yearly.map((row: any) => ({ metric: row.metric, segment: row.segment, year: row.year, value: row.value }));
+    // Segments keep every year (trend charts and per-chart filters pick their own period).
+    const segments = yearly.map((row: any) => ({ metric: row.metric, segment: row.segment, year: row.year, period: row.period ?? null, value: row.value }));
     return NextResponse.json({ headlines, breakdowns, segments });
   } catch (error: any) {
     console.error("[API] Error fetching HEMP intervention:", error);

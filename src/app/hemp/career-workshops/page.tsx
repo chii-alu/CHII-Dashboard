@@ -1,6 +1,7 @@
 "use client";
+import { PeriodFilterPanel } from "@/components/hemp/period-filter-panel";
 import { downloadChart } from "@/lib/download-chart";
-import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
+import { FILTER_YEARS, periodQuery, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { ChartWithPlaceholder } from "@/components/ChartWithPlaceholder";
 import PortalNav from "@/components/layout/portal-nav";
 import { useDataSource, useSyncedAt } from "@/hooks/useDataSource";
@@ -197,14 +198,15 @@ const QUALITY_BY_TYPE: any[] = [];
 const RATING_DIST: any[] = [];
 
 export default function CareerWorkshopsPage() {
-  const progressRows = useProgress("HEMP", "Career Workshops");
+  // Page period filter: Cumulative Total, a year, or a half. Drives the stat cards, their targets and the header period.
+  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
+  const progressRows = useProgress("HEMP", "Career Workshops", undefined, undefined, filterYear);
   const dataSource = useDataSource("HEMP");
   const syncedAt = useSyncedAt("HEMP");
   const categories = ["Reach & Engagement", "Quality & Experience", "Partners"];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterYear, setFilterYear] = useState(ALL_PERIODS);
   const [filterSessionType, setFilterSessionType] = useState("All Types");
   const [filterPartner, setFilterPartner] = useState("All Partners");
   const [filterHealthInterestYear, setFilterHealthInterestYear] = useState(ALL_PERIODS);
@@ -212,18 +214,18 @@ export default function CareerWorkshopsPage() {
 
   // TODO: Fetch real data from Supabase using getHeadlines('HEMP', 'Intervention', { intervention: 'Career Workshops' })
   const { data: headlineData, loading, error } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => result.headlines || []),
-    []
+    () => fetch(`/api/hemp-intervention?intervention=Career%20Workshops${periodQuery(filterYear, "&")}`).then(r => r.json()).then(result => result.headlines || []),
+    [filterYear]
   );
 
   const show = (category: string) => activeCategory === category;
   const activeFilterCount = [filterYear !== ALL_PERIODS, filterSessionType !== "All Types", filterPartner !== "All Partners"].filter(Boolean).length;
 
   const { data: inclusionRaw } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => ({
+    () => fetch(`/api/hemp-intervention?intervention=Career%20Workshops${periodQuery(filterYear, "&")}`).then(r => r.json()).then(result => ({
       segments: result.segments || [],
     })),
-    []
+    [filterYear]
   );
 
   const inclusionReachBars = useMemo(() => {
@@ -246,19 +248,19 @@ export default function CareerWorkshopsPage() {
   }, [inclusionRaw, filterYear]);
 
   const { data: academicProgrammeRows } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => {
+    () => fetch(`/api/hemp-intervention?intervention=Career%20Workshops${periodQuery(filterYear, "&")}`).then(r => r.json()).then(result => {
       const rows = result.breakdowns?.['Participants By Academic Programmes'];
       return rows && rows.length > 0 ? rows.map((r: any) => ({ programme: r.name, count: r.count })) : null;
     }),
-    []
+    [filterYear]
   );
 
   const { data: healthInterestRows } = useDashboardData(
-    () => fetch('/api/hemp-intervention?intervention=Career%20Workshops').then(r => r.json()).then(result => {
+    () => fetch(`/api/hemp-intervention?intervention=Career%20Workshops${periodQuery(filterYear, "&")}`).then(r => r.json()).then(result => {
       const rows = result.breakdowns?.['Participants By Health Interests'];
       return rows && rows.length > 0 ? rows.map((r: any) => ({ area: r.name, count: r.count })) : null;
     }),
-    []
+    [filterYear]
   );
 
   const filteredSessionsForHealthInterest = useMemo(() => {
@@ -306,7 +308,7 @@ export default function CareerWorkshopsPage() {
               <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[12px]" style={{ color: "rgba(215,225,245,0.5)" }}>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Data source:</span> {dataSource}</span>
                 <span aria-hidden="true">·</span>
-                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> 2025–2030</span>
+                <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Period:</span> {periodText(filterYear)}</span>
                 <span aria-hidden="true">·</span>
                 <span><span style={{ color: "rgba(181,212,244,0.8)", fontWeight: 600 }}>Last updated:</span> {syncedAt}</span>
               </div>
@@ -417,47 +419,15 @@ export default function CareerWorkshopsPage() {
               isOpen={filtersOpen}
               onClick={() => setFiltersOpen(!filtersOpen)}
             />
-            <FilterDropdown
+            <PeriodFilterPanel
               isOpen={filtersOpen}
-              onResetFilters={() => {
-                setFilterYear(ALL_PERIODS);
-                setFilterSessionType("All Types");
-                setFilterPartner("All Partners");
-              }}
-            >
-              {[
-                { label: "Year", value: filterYear, setValue: setFilterYear, options: PERIOD_FILTER_OPTIONS },
-                { label: "Session Type", value: filterSessionType, setValue: setFilterSessionType, options: ["All Types", "Format A", "Format B", "Format C", "Format D"] },
+              period={filterYear}
+              onPeriodChange={setFilterYear}
+              extraFilters={[
                 { label: "Partner", value: filterPartner, setValue: setFilterPartner, options: ["All Partners", ...PARTNERS.map(p => p.name)] },
-              ].map(filter => (
-                <div key={filter.label} style={{ marginBottom: 12 }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: BRAND_DK, margin: "0 0 6px 0", textTransform: "uppercase", letterSpacing: "0.02em" }}>
-                    {filter.label}
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {isPeriodOptions(filter.options) && <PeriodPicker value={String(filter.value)} onChange={v => filter.setValue(v)} accent={BRAND} dark={BRAND_DK} border={LIGHT_BORDER} hideYearHeading />}{!isPeriodOptions(filter.options) && filter.options.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => filter.setValue(opt)}
-                        style={{
-                          fontSize: 10,
-                          fontWeight: filter.value === opt ? 700 : 500,
-                          padding: "5px 10px",
-                          borderRadius: 6,
-                          border: `1px solid ${filter.value === opt ? BRAND : LIGHT_BORDER}`,
-                          backgroundColor: filter.value === opt ? BRAND : "white",
-                          color: filter.value === opt ? "white" : BRAND_DK,
-                          cursor: "pointer",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </FilterDropdown>
+              ]}
+              onReset={() => { setFilterYear(ALL_PERIODS); setFilterSessionType("All Types"); setFilterPartner("All Partners"); }}
+            />
           </div>
         </div>
 
@@ -721,7 +691,7 @@ export default function CareerWorkshopsPage() {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 pb-10">
-        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} />
+        <FeaturedImpactStory footer dataSynced={syncedAt} dataSource={dataSource} period={periodText(filterYear)} />
       </div>
 
     </div>
