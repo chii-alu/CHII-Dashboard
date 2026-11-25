@@ -35,6 +35,7 @@ export const PREVIOUS_NAMES: Record<string, string> = {
   "Health Mission Students Graduation Status": "Graduation Status",
   "Gender Split By Academic Program": "Gender Split",
   "Employment Placement Rate": "Time To Employment After Graduation",
+  "Enterprises Supported": "Enterprises",   // At a Glance row 23 only (Entrepreneurship keeps 'Enterprises')
 };
 
 /** True when a row's metric is `name` or the name it had before the rename. */

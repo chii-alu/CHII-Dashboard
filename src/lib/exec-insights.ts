@@ -176,14 +176,14 @@ export function computeExecInsights(rows: MetricRow[], periodValue: string | nul
 
   // 4. Venture momentum: enterprises started, female-led share and change on the previous period.
   {
-    const ent = get("At a Glance", "Enterprises", now);
-    const entFemale = get("At a Glance", "Enterprises", now, "female");
-    const g = growth("At a Glance", "Enterprises");
+    const ent = get("At a Glance", "Enterprises Supported", now);
+    const entFemale = get("At a Glance", "Enterprises Supported", now, "female");
+    const g = growth("At a Glance", "Enterprises Supported");
     insights.push({
       key: "ventures",
       title: "Venture Momentum",
       figure: ent === null ? null : fmtNum(ent),
-      detail: `Enterprises started${entFemale !== null && ent ? ` · ${fmtPct(pct(entFemale, ent))} female-led` : ""}`,
+      detail: `Enterprises supported${entFemale !== null && ent ? ` · ${fmtPct(pct(entFemale, ent))} female-led` : ""}`,
       copy: g?.text ?? "",
     });
   }

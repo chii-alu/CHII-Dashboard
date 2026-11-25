@@ -612,7 +612,9 @@ export default function AtAGlancePage() {
   const wageEmploymentTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Wage Employment')?.value ?? null;
   const entrepreneursTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Entrepreneurs')?.value ?? null;
   const jobsCreatedTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Jobs Created (Total)')?.value ?? null;
-  const enterprisesTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Enterprises')?.value ?? null;
+  // Row 23 is 'Enterprises Supported' in the workbook ('Enterprises' before).
+  const enterprisesRow = atAGlanceHeadlines?.find((h: any) => isMetric(h.metric, 'Enterprises Supported'))?.metric ?? 'Enterprises Supported';
+  const enterprisesTotal = glance(enterprisesRow);
   const jobSeekingTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Job Seeking')?.value ?? null;
   const furtherEducationTotal = atAGlanceHeadlines?.find((h: any) => h.metric === 'Further Education')?.value ?? null;
   const segmentPct = (metric: string, segment: 'female' | 'male'): number | null => {
@@ -771,7 +773,7 @@ export default function AtAGlancePage() {
             <KPICard label="Wage Employment" metric="Wage Employment" value={wageEmploymentTotal} info="Participants in paid employment." Icon={Briefcase} href="/executive/wage-employment#employment-rate-by-program" secondaryText="Employed" />
             <KPICard label="Entrepreneurs" metric="Entrepreneurs" value={entrepreneursTotal} info="Participants running their own enterprise." Icon={TrendingUp} href="/executive/entrepreneurship#founder-profile" secondaryText="Business owners" />
             <KPICard label="Jobs Created" metric="Jobs Created (Total)" value={jobsCreatedTotal} info="Total jobs created across all enterprises." Icon={Zap} href="/executive/entrepreneurship#jobs-by-employment-type" secondaryText="Direct employment" />
-            <KPICard label="Enterprises" metric="Enterprises" value={enterprisesTotal} info="New enterprises started by participants." Icon={Target} href="/executive/entrepreneurship#enterprise-status" secondaryText="Active ventures" />
+            <KPICard label="Enterprises Supported" metric={enterprisesRow} value={enterprisesTotal} info="Enterprises supported by CHII programmes." Icon={Target} href="/executive/entrepreneurship#enterprise-status" secondaryText="Active ventures" />
             <KPICard label="Job Seeking" metric="Job Seeking" value={jobSeekingTotal} info="Participants actively seeking employment." Icon={Users} href="/executive/youth-in-work#work-pathway-distribution" secondaryText="In transition" />
             <KPICard label="Further Education" metric="Further Education" value={furtherEducationTotal} info="Participants pursuing further study." Icon={BookOpen} href="/executive/further-education#qualification-level" secondaryText="Continuing studies" />
           </div>
