@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, type ComponentType } from "react";
 import { benchColor } from "@/theme/tokens";
-import type { ProgressInsight, ProgressStatus } from "@/lib/progressInsight";
+import { isHiddenProgress, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
 
 const PROGRESS_COLOR: Record<ProgressStatus, string> = {
   met: "#16A34A",
@@ -142,7 +142,7 @@ export default function StatsKpiCard({
       </div>
 
       {/* Live progress against target: bar (when a target exists) and caption */}
-      {progress && (
+      {progress && !isHiddenProgress(progress) && (
         <div style={{ marginTop: 7 }}>
           {progress.barPct != null && (
             <div style={{ height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.15)", overflow: "hidden" }}>

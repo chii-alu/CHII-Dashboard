@@ -15,7 +15,7 @@ import { getHeadlines } from "@/lib/dashboardData";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { createClient } from "@/lib/supabase-client";
 import { FilterSelect } from "@/components/ui/executive";
-import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText } from "@/lib/filter-years";
+import { FILTER_YEARS, PERIOD_SELECT_OPTIONS, inPeriod, periodQuery, periodText, periodHasTargets } from "@/lib/filter-years";
 import { useProgress } from "@/hooks/useProgress";
 import { isMetric } from "@/lib/progressLabels";
 import { progressInsight, type ProgressInsight, type ProgressStatus } from "@/lib/progressInsight";
@@ -680,7 +680,7 @@ export default function AtAGlancePage() {
   }
 
   const kpiLoading = !atAGlanceHeadlines || !outreachHeadlines || !youthHeadlines;
-  const yearProgress: Record<string, ProgressInsight> | null = year === "all"
+  const yearProgress: Record<string, ProgressInsight> | null = year === "all" || !periodHasTargets(year)
     ? null
     : Object.fromEntries(Object.entries(yearProgressRows).map(([m, row]) => [m, progressInsight(row)]));
   const periodLabel = periodText(year);

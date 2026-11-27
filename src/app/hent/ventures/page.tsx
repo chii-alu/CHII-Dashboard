@@ -191,8 +191,6 @@ function median(values: number[]): number | null {
 }
 
 export default function HENTVentures() {
-  // Live progress against target for the stat cards, from v_progress (HENT rows).
-  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: ventureHeadlines } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -208,6 +206,8 @@ export default function HENTVentures() {
   // Global filters
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterYear, setFilterYear] = useState(ALL_PERIODS);
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT", undefined, undefined, undefined, filterYear);
   const [filterStage, setFilterStage] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");

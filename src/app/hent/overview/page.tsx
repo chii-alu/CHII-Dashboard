@@ -184,8 +184,6 @@ function Panel({ title, subtitle, info, children, filterOptions, filterValue, on
 // ──────────────────────────────────────────────────────────
 
 export default function HENTOverview() {
-  // Live progress against target for the stat cards, from v_progress (HENT rows).
-  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: overviewHeadlines } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -211,6 +209,8 @@ export default function HENTOverview() {
   // Filter panel state
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterYear, setFilterYear] = useState(ALL_PERIODS);
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT", undefined, undefined, undefined, filterYear);
   const [filterStage, setFilterStage] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");

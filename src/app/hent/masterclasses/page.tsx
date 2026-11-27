@@ -231,8 +231,6 @@ function Stars({ score }: { score: number }) {
 
 // â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function MasterclassesPage() {
-  // Live progress against target for the stat cards, from v_progress (HENT rows).
-  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -243,6 +241,8 @@ export default function MasterclassesPage() {
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [yearFilter,  setYearFilter]  = useState<string>(ALL_PERIODS);
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT", undefined, undefined, undefined, yearFilter);
   const [topicFilter, setTopicFilter] = useState<"All"|MCTopic>("All");
   const [genderView,  setGenderView]  = useState<"All"|"Female"|"Male">("All");
   const [activeSection, setActiveSection] = useState<number>(1);

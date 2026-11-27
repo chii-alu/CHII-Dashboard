@@ -1,6 +1,9 @@
 // One place that maps a stat card's label to the metric name in v_progress.
 // Labels that already match the workbook name need no entry.
-import type { ProgressRow } from "@/lib/progressInsight";
+import { NO_TARGET_ROW, type ProgressRow } from "@/lib/progressInsight";
+
+/** What useProgress returns for a period with no targets (2025): every card gets NO_TARGET_ROW. */
+export const NO_TARGET_ROWS: Record<string, ProgressRow> = Object.freeze({}) as Record<string, ProgressRow>;
 
 export const PROGRESS_NAMES: Record<string, string> = {
   // Executive: Entrepreneurship
@@ -53,6 +56,7 @@ export function progressName(cardLabel: string, section?: string): string {
 /** The v_progress row for a card label. A section-specific entry ("Section:Label") wins over the plain label.
  *  In development, logs a warning once per label when no row matches. */
 export function progressFor(rows: Record<string, ProgressRow>, cardLabel: string, section?: string): ProgressRow | undefined {
+  if (rows === NO_TARGET_ROWS) return NO_TARGET_ROW;
   const name = (section && PROGRESS_NAMES[`${section}:${cardLabel}`]) || PROGRESS_NAMES[cardLabel] || cardLabel;
   const row = rows[name] ?? (PREVIOUS_NAMES[name] ? rows[PREVIOUS_NAMES[name]] : undefined);
   // Rows load asynchronously; an empty map means "not loaded yet", not "missing".

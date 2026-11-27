@@ -13,7 +13,8 @@ import { ChartTip, HeaderStatsPanel, FilterButton, FilterDropdown, type HeaderSt
 import { DATA_SOURCE } from "@/config/data-sources";
 import { FILTER_YEARS, ALL_PERIODS, PERIOD_FILTER_OPTIONS, inPeriod, rowInPeriod, parsePeriod, periodText, halfOfMonth } from "@/lib/filter-years";
 import { downloadChart } from "@/lib/download-chart";
-import { progressInsight } from "@/lib/progressInsight";
+import { progressInsight, NO_TARGET_ROW } from "@/lib/progressInsight";
+import { periodHasTargets } from "@/lib/filter-years";
 import { HM_PAGES, sampleTarget, sampleValue, type HMChart, type HMUnit } from "@/config/hm";
 import { PeriodPicker, isPeriodOptions } from "@/components/filters/period-picker";
 
@@ -194,7 +195,7 @@ export default function HMPage({ page }: { page: keyof typeof HM_PAGES }) {
       icon: k.icon,
       displayFmt: fmt(k.unit),
       tip: k.tip,
-      progress: progressInsight({ metric: k.label, unit: k.unit === "percent" ? "percent" : "count", actual: num, target, progress_pct: null }),
+      progress: !periodHasTargets(year) ? progressInsight(NO_TARGET_ROW) : progressInsight({ metric: k.label, unit: k.unit === "percent" ? "percent" : "count", actual: num, target, progress_pct: null }),
     };
   });
   const active = config.sections.find(s => s.name === section) ?? config.sections[0];

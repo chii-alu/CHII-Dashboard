@@ -301,8 +301,6 @@ type TypeVal  = "All" | "Mentorship" | "Fellowship" | "One-Year Fellowship" | "A
 type GenderVal = "All" | "Female" | "Male";
 
 export default function MentorshipPage() {
-  // Live progress against target for the stat cards, from v_progress (HENT rows).
-  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -316,6 +314,8 @@ export default function MentorshipPage() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
 
   const [yearFilter,  setYearFilter]  = useState<YearVal>(ALL_PERIODS);
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT", undefined, undefined, undefined, yearFilter);
   const [typeFilter,  setTypeFilter]  = useState<TypeVal>("All");
   const [genderView,  setGenderView]  = useState<GenderVal>("All");
   const [filtersOpen, setFiltersOpen] = useState(false);

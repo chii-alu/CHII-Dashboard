@@ -178,8 +178,6 @@ const KPI_TILES = [
 
 // â”€â”€â”€ page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function HackathonsPage() {
-  // Live progress against target for the stat cards, from v_progress (HENT rows).
-  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -192,6 +190,8 @@ export default function HackathonsPage() {
   const [activeSection, setActiveSection] = useState<number>(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterYear, setFilterYear] = useState(ALL_PERIODS);
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT", undefined, undefined, undefined, filterYear);
   const show = (n: number) => activeSection === n;
   const activeFilterCount = [filterYear !== ALL_PERIODS].filter(Boolean).length;
 

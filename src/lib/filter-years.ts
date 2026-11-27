@@ -9,6 +9,9 @@ export const FILTER_YEARS = [2025, 2026, 2027, 2028, 2029, 2030];
 /** Years reported in halves. */
 export const HALF_YEARS = FILTER_YEARS.filter(y => y >= 2026);
 
+/** Years with no targets: stat cards show no progress bar or target caption for these periods. */
+export const NO_TARGET_YEARS = [2025];
+
 export type Half = "H1" | "H2";
 
 /** The "all periods" option. */
@@ -44,7 +47,13 @@ export function parsePeriod(value: string | number | null | undefined): Period {
   return { year: Number(year[1]), half: (half?.[1] as Half) ?? null };
 }
 
-export const isAllPeriods = (value: string | number | null | undefined) => parsePeriod(value).year === null;
+/** False when the chosen period falls in a year with no targets (2025, or a half of it). */
+export const periodHasTargets = (value: string | number | null | undefined) => {
+  const { year } = parsePeriod(value);
+  return year === null || !NO_TARGET_YEARS.includes(year);
+};
+
+export const isAllPeriods =(value: string | number | null | undefined) => parsePeriod(value).year === null;
 
 /** Compact form for API query strings: "2026", "2026-H1", or "" for all periods. */
 export function periodParam(value: string | number | null | undefined): string {

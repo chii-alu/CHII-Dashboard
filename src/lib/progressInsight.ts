@@ -4,7 +4,16 @@ export type ProgressRow = {
   actual: number | null;
   target: number | null;
   progress_pct: number | null;
+  /** Set on NO_TARGET_ROW: the period has no targets, so the card shows no bar and no caption. */
+  hidden?: boolean;
 };
+
+/** Stands in for every card's row when the period has no targets (see periodHasTargets). */
+export const NO_TARGET_ROW: ProgressRow = { metric: "", unit: "count", actual: null, target: null, progress_pct: null, hidden: true };
+/** The insight for a period with no targets: no bar, empty caption (cards render nothing). */
+export const HIDDEN_PROGRESS = { barPct: null, caption: "", status: "no-target" } as const;
+/** True when a card should show no progress at all. */
+export const isHiddenProgress = (p?: ProgressInsight | null) => !!p && p.barPct == null && p.caption === "";
 export type ProgressStatus = "met" | "close" | "behind" | "no-data" | "no-target";
 export type ProgressInsight = { barPct: number | null; caption: string; status: ProgressStatus };
 
@@ -32,6 +41,7 @@ function gapText(gap: number, target: number, unit: string): string {
 }
 
 export function progressInsight(row?: ProgressRow | null): ProgressInsight {
+  if (row?.hidden) return { ...HIDDEN_PROGRESS };
   if (!row || row.target == null) return { barPct: null, caption: "No target set", status: "no-target" };
   const target = formatValue(row.target, row.unit);
   if (row.actual == null) return { barPct: 0, caption: `Target ${target} · awaiting data`, status: "no-data" };

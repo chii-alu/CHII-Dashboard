@@ -151,8 +151,6 @@ function SectionFilter({ label, value, options, onChange }: { label: string; val
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function ExposureNetworkingPage() {
-  // Live progress against target for the stat cards, from v_progress (HENT rows).
-  const progressRows = useProgress("HENT");
   // Headline values for the stat cards, from HENT At a Glance (actual values only).
   const { data: headlineRows } = useDashboardData(
     () => fetch("/api/hent-section/At%20a%20Glance").then(r => r.json()).then(r => r.headlines || []),
@@ -163,6 +161,8 @@ export default function ExposureNetworkingPage() {
   const dataSource = useDataSource("HENT");
   const syncedAt = useSyncedAt("HENT");
   const [fYear, setFYear]       = useState(ALL_PERIODS);
+  // Live progress against target for the stat cards, from v_progress (HENT rows).
+  const progressRows = useProgress("HENT", undefined, undefined, undefined, fYear);
   const PLATFORM_TYPES = ["All Platform Types", "Pitch Event", "Conference", "Roundtable", "Ecosystem Engagement", "Demo Day"];
   const [fType, setFType]       = useState("All Platform Types");
   const [fCountry, setFCountry] = useState("All Countries");

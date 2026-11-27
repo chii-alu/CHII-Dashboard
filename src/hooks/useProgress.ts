@@ -1,11 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { ProgressRow } from "@/lib/progressInsight";
-import { periodParam } from "@/lib/filter-years";
+import { periodParam, periodHasTargets } from "@/lib/filter-years";
+import { NO_TARGET_ROWS } from "@/lib/progressLabels";
 
 export function useProgress(dashboard: string, intervention?: string, section?: string, metricGroup?: string, year?: number | string) {
   const [byMetric, setByMetric] = useState<Record<string, ProgressRow>>({});
+  // A period with no targets (2025): no fetch, and every card shows no progress bar or caption.
+  const hasTargets = periodHasTargets(year);
   useEffect(() => {
+    if (!hasTargets) return;
     const params = new URLSearchParams({ dashboard });
     if (intervention) params.set("intervention", intervention);
     if (section) params.set("section", section);
@@ -25,6 +29,6 @@ export function useProgress(dashboard: string, intervention?: string, section?: 
     load();
     const timer = setInterval(load, 60_000);
     return () => clearInterval(timer);
-  }, [dashboard, intervention, section, metricGroup, year]);
-  return byMetric;
+  }, [dashboard, intervention, section, metricGroup, year, hasTargets]);
+  return hasTargets ? byMetric : NO_TARGET_ROWS;
 }

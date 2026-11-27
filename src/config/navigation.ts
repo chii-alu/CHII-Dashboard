@@ -28,6 +28,7 @@ export const PORTAL_NAVS: Record<Portal, PortalNavConfig> = {
       { label: "Overview",              href: "/hent/overview" },
       { label: "Ventures",              href: "/hent/ventures" },
       { label: "Venture Funding",       href: "/hent/venture-funding" },
+      { label: "Incubator Program",     href: "/hent/incubator-program" },
       { label: "Masterclass",           href: "/hent/masterclasses" },
       { label: "Hackathon",             href: "/hent/hackathons" },
       { label: "Mentorship",            href: "/hent/mentorship" },
